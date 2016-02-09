@@ -17,11 +17,42 @@
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
           <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".sidebar-nav">
-              <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
-            </button>
             <a class="navbar-brand" href="#">Stagemarkt</a>
           </div>
+        </div>
+      </div>
+
+      <!-- search section -->
+      <div class="jumbotron">
+        <div class="container">
+          <h1 class="heading-xxl text-center">Zoeken naar leerplaatsen en stages</h1>
+          <form action="/resultaten/">
+            <div class="row">
+              <div class="col-xs-12 col-sm-4 form-group">
+                <input type="text" class="form-control input" placeholder="Beroep, bedrijf, crebonummer etc." />
+              </div>
+              <div class="col-xs-12 col-sm-5 form-group has-feedback has-feedback-left">
+                <div class="input-group ">
+                  <div class="input-group-btn">
+                    <input type="text" class="form-control input" placeholder="Plaats of postcode" />
+                    <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">+10km <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="#">+10km</a></li>
+                      <li><a href="#">+50km</a></li>
+                      <li><a href="#">+100km</a></li>
+                    </ul>
+                  <span class="form-control-feedback glyphicon glyphicon-map-marker"></span>
+                  </div><!-- /btn-group -->
+                </div>
+                <div class="checkbox">
+                  <label><input type="checkbox" value="">Buitenlandse stages</label>
+                </div>
+              </div>
+              <div class="col-xs-12 col-sm-3">
+                <button type="submit" class="btn btn-block btn-primary"><span class="glyphicon glyphicon-search"></span> Zoeken</button>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
 
