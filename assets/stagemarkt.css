@@ -1,56 +1,67 @@
-body {
-  padding-top: 51px;  
+
+/* SEARCH SECTION */
+#srch-section {
+  margin-top: 50px; /* 50px nav bar */
+/*  padding: 30px 15px;
+  background-color: #eee; /* #D77B18; */
 }
-.text-center {
-  padding-top: 20px;
-}
-.col-xs-12 {
-  background-color: #fff;
-}
-#sidebar {
-  height: 100%;
-  padding-right: 0;
-  padding-top: 20px;
-}
-#sidebar .nav {
-  width: 95%;
-}
-#sidebar li {
-  border:0 #f2f2f2 solid;
-  border-bottom-width:1px;
+#srch-section .btn-group {
+  width: 100%;
 }
 
-/* collapsed sidebar styles */
-@media screen and (max-width: 767px) {
-  .row-offcanvas {
-    position: relative;
-    -webkit-transition: all 0.25s ease-out;
-    -moz-transition: all 0.25s ease-out;
-    transition: all 0.25s ease-out;
-  }
-  .row-offcanvas-right
-  .sidebar-offcanvas {
-    right: -75%;
-  }
-
-  .row-offcanvas-left
-  .sidebar-offcanvas {
-    left: -70%;
-  }
-  .row-offcanvas-right.active {
-    right: 75%;
-  }
-  .row-offcanvas-left.active {
-    left: 75%;
-  }
-  .sidebar-offcanvas {
-    position: absolute;
-    top: 0;
-    width: 75%;
-  }
-  #sidebar {
-    padding-top:0;
-  }
+/* .srch-input */
+.srch-input::-ms-clear {
+    display: none; /* one clear button is enough */
 }
 
+/* .srch-clear */
+.srch-clear {
+  color: #555; /* .form-control color */
+  position: absolute;
+  right: 10px;
+  top: 10px; /* (.form-control height 34 - fontsize 14)/2 */
+  cursor:  pointer;
+}
 
+/* #srch-loc */
+
+/* group buttons */
+.no-gutter {
+  padding: 0;
+}
+.gutter {
+  padding-left: 15px;  /* .col-*-* padding */
+  padding-right: 15px; /* .col-*-* padding */
+}
+
+.left-inner-addon {
+  position: relative;
+}
+.left-inner-addon input {
+  padding-left: 30px;
+}
+.left-inner-addon i { /* marker icon */
+  position: absolute;
+  padding: 10px 12px;
+  pointer-events: none;
+  color: #999; /* .form-control placeholder color */
+}
+
+/* #srch-loc-btn */
+#srch-section .dropdown-toggle {
+/*  position: absolute;
+  right: 1px;
+  border: 1px solid #ccc; */ /* .form-control border */
+}
+
+/* #srch-loc-drpmnu */
+.dropdown-menu, .dropdown-toggle {
+  min-width: 80px;
+  width: 100%;
+}
+
+/* #srch-what */
+
+/* #srch-commit */
+
+/* #srch-abroad */
