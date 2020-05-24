@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Groen Productions.com: #pg-GroenP, #pg-Ggroup, #pg-Pgroup, #pg-Roen, #pg-Roductions -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="60"
+   height="60"
+   viewBox="0 0 48 48"
+   xml:space="preserve"
+   color-interpolation-filters="sRGB"
+   id="pg-GroenP"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="GP.svg"
+   style="font-size:16px;fill:none;stroke-linecap:square;stroke-miterlimit:3;overflow:visible"><title
+   id="title3009">Groen Productions</title><metadata
+   id="metadata3119"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title>Groen Productions</dc:title><dc:creator><cc:Agent><dc:title>Groen</dc:title></cc:Agent></dc:creator></cc:Work></rdf:RDF></metadata>
+   <defs
+   id="defs3117" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview3115"
+   showgrid="false"
+   showguides="false"
+   inkscape:guide-bbox="true"
+   inkscape:zoom="5.515"
+   inkscape:cx="68.14"
+   inkscape:cy="20.49"
+   inkscape:current-layer="pg-GroenP"
+   inkscape:snap-to-guides="true"><sodipodi:guide
+     orientation="0,1"
+     position="0,2"
+     id="guide3127" /><sodipodi:guide
+     orientation="0,1"
+     position="0,58"
+     id="guide3015" /><sodipodi:guide
+     orientation="1,0"
+     position="2,0"
+     id="guide3017" /><sodipodi:guide
+     orientation="1,0"
+     position="58,0"
+     id="guide3019" /></sodipodi:namedview>
+
+
+<g
+   transform="matrix(1.017,0,0,1,17.54,10.4)"
+   id="pg-Ggroup">
+	<g
+   id="pg-Gcircle"
+   style="fill:#00b03a;fill-opacity:1">
+		<ellipse
+   style="fill:#00b03a;fill-opacity:1;stroke:none"
+   sodipodi:ry="14.17"
+   sodipodi:rx="14.17"
+   sodipodi:cy="21.83"
+   sodipodi:cx="14.17"
+   d="M 28.34,21.83 C 28.34,29.66 22,36 14.17,36 6.344,36 0,29.66 0,21.83 0,14 6.344,7.66 14.17,7.66 22,7.66 28.34,14 28.34,21.83 z"
+   id="pg-Gellipse"
+   ry="14.17"
+   rx="14.17"
+   cy="21.83"
+   cx="14.17" />
+	</g>
+	<g
+   transform="translate(5.197,-5.197)"
+   id="pg-Cshape">
+		<path
+   style="fill:#ffffff;stroke:none"
+   inkscape:connector-curvature="0"
+   id="pg-Cpath"
+   d="M 15.47,27.02 A 6.496,6.496 0 1 1 13.57,22.43 L 15.32,20.68 A 8.976,8.976 -180 1 0 17.95,27.02 L 15.47,27.02 z" />
+	</g>
+	<g
+   transform="translate(14.17,-12.99)"
+   id="pg-Gdash">
+		<path
+   style="fill:#ffffff;stroke:none"
+   inkscape:connector-curvature="0"
+   id="pg-dashpath"
+   d="M 8.5,33.64 7.09,33.64 0,33.64 0,36 8.5,36 8.5,34.82 8.98,34.82 8.98,33.64 8.5,33.64 z" />
+	</g>
+</g>
+<g
+   transform="matrix(1.017,0,0,1,1.66,-6.029)"
+   id="pg-Pgroup"
+   class="pg-Panim">
+   <g
+   id="pg-Pcircle"
+   style="fill:#00b056;fill-opacity:1">
+      <ellipse
+   style="fill:#00503b;fill-opacity:1;stroke:none"
+   sodipodi:ry="14.17"
+   sodipodi:rx="14.17"
+   sodipodi:cy="21.83"
+   sodipodi:cx="14.17"
+   d="M 28.34,21.83 C 28.34,29.66 22,36 14.17,36 6.344,36 0,29.66 0,21.83 0,14 6.344,7.66 14.17,7.66 22,7.66 28.34,14 28.34,21.83 z"
+   id="pg-Pellipse"
+   ry="14.17"
+   rx="14.17"
+   cy="21.83"
+   cx="14.17" />
+	</g>
+	<g
+   transform="translate(5.197,-5.197)"
+   id="pg-Oshape">
+		<path
+   style="fill:#ffffff;stroke:none"
+   inkscape:connector-curvature="0"
+   id="pg-Opath"
+   d="M 15.47,27.02 A 6.496,6.496 0 1 1 2.48,27.02 6.496,6.496 0 1 1 15.47,27.02 z M 17.95,27.02 A 8.976,8.976 -180 1 0 0,27.02 8.976,8.976 -180 1 0 17.95,27.02 z" />
+   </g>
+   <g
+   transform="translate(5.144,-1.417)"
+   id="pg-Istick">
+		<path
+   style="fill:#ffffff;stroke:none"
+   inkscape:connector-curvature="0"
+   id="pg-Ipath"
+   d="M 2.47,15.69 0.11,15.69 0,34.29 2.54,36 2.47,15.69 z" />
+   </g>
+</g>
+</svg>

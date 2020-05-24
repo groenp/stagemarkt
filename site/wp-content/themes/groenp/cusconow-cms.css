@@ -1,0 +1,1042 @@
+/******************************************************************************/
+/*                                                              Pieter Groen  */
+/*  Version 1.0 - July 21, 2014                                               */
+/*                                                                            */
+/*  CSS for CuscoNow website CMS in WordPress                                 */
+/*                                                                            */
+/******************************************************************************/
+
+/* removal of superfluous postbox containers; need entire width */
+#postbox-container-2, #postbox-container-3, #postbox-container-4 {
+    display: none;
+}
+#wpbody-content #dashboard-widgets #postbox-container,
+#wpbody-content #dashboard-widgets #postbox-container-1 {
+    width: 100%;
+    margin-right: 2px;
+}
+
+/* ************************************************************ */
+/*  meta box table elements                                     */
+/* ************************************************************ */
+div.postbox th {
+	background-color: #eeead9;
+	padding: 3px;
+}
+
+div.postbox table.manage th:last-child {
+	width: 110px;
+}
+/* exception: cus-my-billing doesn't have button column */
+div.postbox #cus-my-billing table.manage th:last-child {
+	width: inherit;
+}
+div.postbox table.edit th:first-child {
+	width: 190px;
+}
+
+/* list table: thumbnails */
+div.postbox table.manage .pic {
+	text-align: center;
+}
+div.postbox table.manage th.pic {
+	width: 80px;
+}
+/* list table: cells with numbers, dates, amounts */
+div.postbox table.manage .numb {
+	text-align: right;
+}
+div.postbox table.manage th.numb {
+	width: 50px;
+}
+
+div.postbox table.manage th.date {
+	width: 100px;
+}
+div.postbox table.manage .date {
+	text-align: center;
+}
+
+div.postbox table.manage .amnt {
+	text-align: right;
+}
+div.postbox table.manage td.amnt {
+    padding-right: 8px;
+}
+div.postbox table.manage th.amnt {
+	width: 120px;
+}
+/* comment cells with lots of text */
+div.postbox table.manage td.wrap {
+    white-space: normal;
+}
+
+/* list table: cells with checkboxes */
+div.postbox table.manage td.chck {
+	text-align: center;
+/*    background-color: #f9f7ed; */
+}
+div.postbox table.manage th.chck {
+	text-align: center;
+	width: 50px;
+    font-size: 10px;
+    line-height: 100%;
+    white-space: normal;
+}
+
+div.postbox table.manage tr:hover {
+    background-color: #f9f7ed;
+}
+
+div.postbox td textarea, div.postbox td input[type="text"] {
+	width: 100%
+}
+
+div.postbox td {
+	overflow: hidden;
+	border-bottom: 1px solid #dfdfdf;
+}
+div.postbox td.dvdr {
+    border-bottom: 1px solid #aaaaaa;
+}
+
+div.postbox td ul {
+	list-style: disc inside none;
+	margin-bottom: 0;
+}
+
+div.postbox td input[type="submit"]{
+	min-width: 50px;
+}
+
+/* filter section */
+div.postbox td.head {
+    background-color: #f9f7ed;
+}
+div.postbox td.head input[type="text"]{
+    width: 100%;
+}
+div.postbox td.head input.chk {
+    text-align: center;
+}
+div.postbox input.numb[type="text"] {
+    text-align: right;
+}
+
+/* muts table: receipt styling */
+div.postbox #muts_table {
+    background-color: #e8eef4;
+    border-collapse: collapse;
+}
+div.postbox #muts_table td {
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
+    font-size: 14px;
+    border-left: 2px solid #eaeef2;
+    border-right:2px solid #eaeef2;
+    border-bottom: 1px dashed #b1c2d3;
+    height: 36px;
+}
+div.postbox #muts_table th {
+    background-color: #b1c2d3;
+    border: 2px solid #eaeef2;
+}
+div.postbox #muts_table tr.bal {
+    background-color: #d7e4f2;
+    border-bottom: 1px solid #b1c2d3;
+}
+div.postbox #muts_table tr:hover {
+    background-color: #f2f7fc;
+}
+div.postbox #muts_table td.head {
+    background-color: #d7e4f2;
+    border-left: 2px solid #eaeef2;
+    border-right:2px solid #eaeef2;
+    border-bottom: 1px solid #b1c2d3;
+}
+#cus-mutations-mb #muts_table td:last-child {
+    font-family: inherit;
+}
+
+/* buttons in muts table*/
+div.postbox #muts_table .button-primary {
+    background: none repeat scroll 0 0 #85a4c4;
+    border-color: #85a4c4;
+    box-shadow: 0 1px 0 #b2cde8 inset, 0 1px 0 rgba(0, 0, 0, 0.15);
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 -1px 1px #85a4c4, 1px 0 1px #85a4c4, 0 1px 1px #85a4c4, -1px 0 1px #85a4c4;
+}
+div.postbox #muts_table .button-primary:hover {
+    background: none repeat scroll 0 0 #8fb1d3;
+    border-color: #627a91;
+    box-shadow: 0 1px 0 #b2cde8 inset, 0 1px 0 rgba(0, 0, 0, 0.15);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* cells with sequence numbers*/
+div.postbox #muts_table th.seqn {
+    width: 50px;
+}
+div.postbox #muts_table .seqn {
+	text-align: center;
+    font-size: 12px;
+}
+div.postbox #muts_table td.head .seqn {
+    padding: 3px 0;
+}
+
+/* empty results bar under muts table */
+#empty_msg {
+    background-color: #f9f7ed;
+    margin: 0 2px;
+    min-height: 18px;
+    padding: 3px;
+    text-align: center;
+}
+#cus-mutations-mb #empty_msg {
+    background-color: #d7e4f2; 
+}
+
+
+/* ************************************************************ */
+/* meta box form elements                                       */
+/* (pure W3C so works for Fx and IE, not so much for webkit)    */
+/* ************************************************************ */
+
+/* texts in meta boxes; for override on wordpress unfortunately two different specs:  
+	#dashboard-widgets, #poststuff */
+
+/* bars on the metaboxes */
+#dashboard-widgets div.postbox h3.hndle, #poststuff div.postbox h3.hndle {
+    background-color: #59524c;
+}
+#dashboard-widgets div.postbox h3.hndle span, #poststuff div.postbox h3.hndle span {
+    color: #fff;
+}
+
+/* Section headers */
+#dashboard-widgets div.postbox h4, #poststuff div.postbox h4 {
+	background-color: #efe6de;
+	padding: 3px;
+	margin: 30px 0 10px;
+    clear: both;
+}
+/* Form sub-headers */
+#dashboard-widgets div.postbox h5, #poststuff div.postbox h5 {
+    clear: both;
+    margin: 0;
+    font-size: 1em;
+    padding: 0.25em 0;
+    border-top: 1px solid #efe6de;
+}
+#dashboard-widgets div.postbox h5+p, #poststuff div.postbox h5+p {
+    margin-top: 0em;
+}
+
+/* Introduction fixed text on page */
+#post-body-content li {
+    display: inline;
+}
+/* Show bullets again */
+#dashboard-widgets div.postbox ul, #poststuff div.postbox ul {
+	list-style: disc outside none;
+	margin-left: 20px;
+	margin-bottom: 0;
+}
+
+/* Smaller font in forms help fit things in forms on smaller screens */
+#post-body-content, #dashboard-widgets div.postbox p, #dashboard-widgets div.postbox ul, #poststuff div.postbox p, 
+#poststuff div.postbox ul, div.postbox table.tel-list, div.postbox table.editform td {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+}
+div.postbox table.editform td input {
+	font-size: 14px;
+}
+
+div.postbox p.right {
+    text-align: right;
+}
+div.postbox p.right input {
+    vertical-align: middle;
+}
+
+div.postbox p label, div.postbox p span.prompt {
+	display: block;
+	float: left;
+	padding: 6px 3px;
+	width: 174px;
+	margin-right: 20px;
+    min-height: 12px;
+}
+div.postbox p span.prompt {
+    clear: left;
+    color: #444;
+}
+div.postbox p label>span {
+    color: #444;
+}
+
+div.postbox span, div.postbox span.context {
+	color: #a0a0a0;
+}
+div.postbox span.intro {
+    color: #444;
+    display: block;
+}
+/* checkboxes tend to float in small places, wrap label around it */
+div.postbox p label.chk {
+    width: auto;
+}
+div.postbox p label.chk > span {
+    display: inline-block;
+    float: left;
+    width: 198px;
+}
+div.postbox p label.chk input[type="checkbox"] {
+    margin: 0 180px 14px 0;
+}
+
+/* horizontal form section */
+div.postbox p.hor-form {
+	float: left;
+	width: 550px;
+    margin: 0 0 10px;
+}
+
+div.postbox p.hor-form label+span, div.postbox p.hor-form span.prompt+span.context {
+	display: block;
+	float: right;
+	padding-left: 10px;
+	width: 140px;
+}
+/* exception: after checkbox */
+div.postbox p.hor-form label.chk + span {
+    float: left;
+	padding-left: 0;
+    width: 174px;
+}
+div.postbox p.hor-form label + input[type="button"] {
+	float: right;
+    margin-right: 70px;
+}
+
+div.postbox p.hor-form span.display-only {
+    background-color: #f9f7ed;
+    color: #000;
+    float: left;
+    font-size: 14px;
+    line-height: 18px;
+    min-height: 18px;
+    padding: 3px 5px;
+    margin-bottom: 8px;
+    width: 190px;
+}
+div.postbox p.hor-form textarea {
+    float: left;
+}
+
+/* grouping establishments together in display */
+div.postbox p.hor-form label.dbl-line {
+    	padding: 0 3px;
+}
+div.postbox p.hor-form .grp-top, div.postbox table.editform .grp-top {
+    border-top: 1px solid #bbb;
+}
+div.postbox p.hor-form .grp-btm, div.postbox table.editform .grp-btm {
+    border-bottom: 1px solid #bbb;
+}
+div.postbox table.editform .grp-btm {
+    padding-bottom: 10px;
+}
+
+/* wide controls; display-only box */
+div.postbox p.hor-form.wide span.display-only {
+    width: 340px;
+}
+div.postbox p.hor-form.wide input, div.postbox p.hor-form.wide textarea {
+    width: 349px;
+}
+/* small text under display-only box */
+div.postbox p.hor-form.wide span.display-only + span {
+    display: block;
+    margin: 0 0 8px 200px;
+    width: 350px;
+    text-align: right;
+}
+/* end of: p.hor-form */
+
+/* show better distinction between enabled/disabled, disabled for checkbox and dropdown list is used as readonly */
+div.postbox select:disabled, textarea:disabled, input[type="text"]:disabled, input[type="file"]:disabled, input[type="email"]:disabled, input[type="checkbox"]:disabled {
+	background-color: #eee;
+    color: #000;
+    opacity: 1;
+}
+
+/* backgrounds for verf-ok and verf-err */
+div.postbox input.verf-ok, div.postbox p.hor-form span.display-only.verf-ok {
+    background-color: #e0ffe0;
+    color: #000;
+}
+div.postbox input.verf-err, div.postbox span.verf-err, div.postbox p.hor-form span.verf-err {
+    background-color: #ffe0e0;
+    color: #000;
+}
+/* attention text */
+div.postbox strong {
+    color:  #c00000;
+}
+
+/* textarea is the only control without visible readonly */
+textarea[readonly="readonly"] {
+    background-color: #eee;
+}
+
+div.postbox p.button-row, div.postbox p.alone {
+	display: inline-block;
+	width: 100%;
+}
+div.postbox .ctr {
+    text-align: center;
+}
+/* pushbuttons in menu form need to be on their own line */
+div.postbox p.alone input {
+    display: block;
+    clear: both;
+    margin: 5px auto;
+}
+
+/* some pusbutton labels in English are really short */
+div.postbox p.button-row input{
+	min-width: 50px;
+    margin-right: 10px;
+}
+/* select control in button row */
+div.postbox p.button-row select {
+    display: inline;
+    margin-left: 20px;
+}
+div.postbox p.button-row option.list-dvdr {
+    background:  #f9f7ed;
+    color: #777;
+    border-top: 1px solid #bbb;
+    margin: 2px 0;
+}
+
+/* all input elements are the same size  */
+div.postbox textarea, div.postbox input[type="text"], div.postbox input[type="email"], div.postbox select {
+	display: block;
+	width: 200px;
+	margin-bottom: 10px;
+    line-height: 18px;
+}
+div.postbox input.dbl-lbl, div.postbox p span.display-only.dbl-lbl {
+    margin-bottom: 20px;
+}
+/* (file upload does not work well with some browsers sometimes, better give smaller width) */
+div.postbox input[type="file"] {
+	display: block;
+	width: 198px;
+	margin-bottom: 10px;
+    font-size: 8pt;
+    padding: 0;
+}
+div.postbox .col1 input[type="file"] {
+    width: 178px;
+    color: #fff;
+}
+
+div.postbox input[type="checkbox"] {
+	margin: 6px 180px 14px 0;
+}
+div.postbox input[type="checkbox"]:before {
+	/*margin-top: 6px;*/
+}
+
+div.postbox input.chk2lbl[type="checkbox"]{
+	margin: 6px 3px 9px 1px;
+    float: left;
+}
+div.postbox div input.chk2lbl[type="checkbox"]+label {
+    width: 154px;
+    margin: 0;
+    min-height: 19px;
+}
+div.postbox div.col3 input.chk2lbl[type="checkbox"]+label {
+    width: 524px;
+    margin: 0;
+}
+div.postbox input.chk2lbl + label > img {
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+/* ugly webkit hack: its input file types are different */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	div.postbox input[type="file"] {
+		width: 198px;
+		display: inline;
+		margin-left: -1px;
+		padding: 0;
+	}
+}
+
+/* show greyed prompt information in the <select> box's (first choice) */
+div.postbox select.prompt, div.postbox select.prompt option:first-child {
+	color:  #a0a0a0;
+}
+/* but show black when disabled (as readonly) */
+div.postbox select.prompt:disabled {
+    color: #444;
+}
+
+/* all other options should always stay black */
+div.postbox select.prompt option {
+	color: #444;
+}
+
+/* use own error message display, in case std display changes in future versions of WordPress */
+div.postbox p.err-msg, div.postbox span.err-msg {
+    display: block;
+	font-weight: bold;
+	color: #f00;
+}
+/* special error msg for inside edit form, due to wp_user reference */
+div.postbox span.inline.err-msg {
+    width: 400px;
+}
+/* positive feedback messages (for large/filtered lists) */
+div.postbox p.fbk-msg {
+    display: block;
+	font-weight: bold;
+	color: #363;
+}
+
+/* Admin's subscriber u/i has div sections that shouldn't float */
+#est_details>div {
+    clear: both;
+}
+#est_details>div p.hor-form {
+    margin: 0;
+}
+#est_details select.multi_res {
+    margin-left: 200px;
+}
+
+
+/* ************************************************************ */
+/* Subscriber's homepage adjustments                            */
+/* ************************************************************ */
+
+/* task menu */
+#cus-task-menu {
+    background-color: #efe6de;
+    width: 188px; /* 200px - padding right: 12px for alignment */
+    padding: 0 12px;
+    float: left;
+    overflow: hidden;
+    min-height: 500px;
+}
+#dashboard-widgets #cus-est-details-mb #cus-task-menu h3 {
+    margin: 0 -12px 30px; /* only for task menu heading */
+}
+
+#dashboard-widgets #cus-task-menu h4 {
+    background-color: #59524c;
+    color: white;
+    margin: 0;
+}
+
+#dashboard-widgets #cus-task-menu ul {
+    list-style: none outside none;
+    margin: 0 0 30px;
+}
+#dashboard-widgets #cus-task-menu li {
+    background-color: #7c746c;
+    color: white;
+    margin: 0;
+}
+#dashboard-widgets #cus-task-menu a {
+    font-size: 14px;
+    color: white;
+    padding: 3px 10px;
+    display: block;
+}
+/* menu select and hover */
+#dashboard-widgets #cus-task-menu a:hover {
+    background-color: #c7a589;
+}
+#dashboard-widgets #cus-task-menu a.menu-hl {
+    background-color: #c7a589;
+}
+/* End of: task menu */
+
+/* multipage canvas */
+#cus-est-details-mb {
+    /*max-width: 1010px;*/
+    min-width:  910px;
+    min-height: 500px;
+}
+
+#dashboard-widgets #cus-est-details-mb div.inside {
+    margin: 0;
+    padding: 0;
+}
+#dashboard-widgets #cus-est-details-mb h2.hndle, #dashboard-widgets #cus-est-details-mb .handlediv {
+    display: none;
+} 
+#dashboard-widgets #cus-est-details-mb h3.hndle.multicol {
+    display: block;
+    color: #fff;
+}
+
+#dashboard-widgets #cus-est-details-mb div.multipage {
+    margin:  0 0 0 213px; /* menu: 200px + 12px margin + 1px line */
+    padding:  0;
+    overflow: hidden;
+}
+#dashboard-widgets #cus-est-details-mb div.multipage:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+/* multipage: ajax loader ani gif */
+#loader {
+    position: absolute;
+    top: 37px;
+    left: 213px;
+    right: 0;
+    line-height: 463px; /* min-height of task menu - 37px */
+    opacity: 0.18;
+    text-align: center;
+    background-color: #000;
+    z-index: 1;
+}
+
+/* multipage floating sections: 1, 2, 3 columns (full width) */
+
+/*#dashboard-widgets #cus-est-details-mb div.multipage.full {
+    padding: 0 10px;
+}*/
+
+div.postbox p.hor-form.full {
+    width: 800px;
+}
+div.postbox p.hor-form.full:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+div.postbox div.col3 {
+    float: left;
+    margin: 0 10px;
+    width: 580px;
+}
+div.postbox div.col2 {
+	float: left;
+    margin: 0 10px;
+    width: 380px;
+}
+div.postbox div.col2 p.hor-form {
+    width: 380px;
+    margin: 0;
+}
+div.postbox div.col1 {
+	float: left;
+    margin: 0 10px;
+    width: 180px;
+}
+div.postbox div.col1 p.hor-form {
+    width: 180px;
+    margin: 0 0 10px;
+}
+
+/* multi-page form elements */
+div.postbox div.col2 input[type="text"], div.postbox div.col1 input[type="text"] {
+    width: 179px;
+}
+div.postbox div.col2 span.display-only, div.postbox div.col1 span.display-only {
+    width: 169px; /* input minus padding */
+}
+
+/* top level p's (msg, intro etc.), any p (or h5) that needs to stretch full page (so no p's inside cols) */
+div.postbox div.multipage form > p, div.postbox div.multipage.full > p, #dashboard-widgets div.postbox div.multipage.full > h5 {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+/* margin for table inside muts */
+#muts div { 
+    margin: 0 10px;
+}
+/* to line up col2 cols with 2x col1*/
+div.postbox div.multipage div.col2 label:nth-of-type(2n+1) {
+    margin-right:  20px;
+}
+/* button-row: background and placement at bottom */
+div.postbox div.multipage p.button-row {
+    padding: 10px;
+    margin: 10px 0 0 0;
+    background-color: #eee;
+    text-align: center;
+    position: absolute;
+    left: 213px;
+    right: 0;
+    bottom: 0;
+    width: auto;
+}
+div.postbox div.multipage div.tabpage p.button-row { /* needs to cover entire tab + its padding */
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+}
+
+/* Section headers */
+#dashboard-widgets div.postbox div.multipage h4 {
+    margin: 5px 0;
+}
+#dashboard-widgets div.postbox div.multipage.full h4 {
+    margin: 5px 10px;
+}
+div.postbox div.multipage p.hor-form .multi-line {
+    min-height: 94px;
+}
+
+/* prompt inside control is class driven */
+div.postbox input.prompt {
+    text-align: center;
+    padding: 3px 0;
+    color: #ccc;
+}
+/* values inside disabled control are class driven */
+div.postbox input.greyed, div.postbox select.greyed {
+    color: #eee;
+}
+
+/* default focus color is blue, doesn't fit well with coffee
+a:focus, .wp-core-ui .button-secondary:focus { 
+    box-shadow: 0 0 0 1px #ea802a, 0 0 2px 1px rgba(234, 128, 42, 0.8);
+}
+.wp-core-ui .button-primary:focus {
+    box-shadow: 0 1px 0 #d7bfac inset, 0 0 0 1px #ea802a, 0 0 2px 1px rgba(234, 128, 42, 0.8);
+}
+input[type="checkbox"]:focus, input[type="date"]:focus, input[type="datetime-local"]:focus, input[type="datetime"]:focus, input[type="email"]:focus, input[type="number"]:focus, input[type="password"]:focus, input[type="radio"]:focus, input[type="text"]:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 2px rgba(234, 128, 42, 0.8);
+    border-color: #ea802a; 
+}*/
+
+/* ************************************************************ */
+/* Menu tabbed pages                                            */
+/* ************************************************************ */
+
+/* tabs */
+#dashboard-widgets #cus-my-menus ul.tabs {
+    list-style: none outside none;
+    margin-left: 10px;
+}
+#cus-my-menus ul.tabs li {
+    display: inline-block;
+    font-size: 13px;
+    line-height: 25px;
+    margin: 0 0 -1px;
+    padding: 6px 6px 0;
+    text-align: center;
+}
+#cus-my-menus ul.tabs li a {
+    display: inline-block;
+    width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+#cus-my-menus ul.tabs li.active-tab {
+    border-color: #dfdfdf #dfdfdf #fdfdfd;
+    border-style: solid;
+    border-width: 1px;
+    background-color: #fdfdfd;
+}
+#cus-my-menus ul.tabs li.active-tab a {
+    color: #333;
+    font-weight: bold;
+    cursor: default;
+    width: 98px;
+}
+#cus-my-menus ul.tabs li.new-tab {
+    vertical-align: top;
+}
+
+/* pages */
+div.tabpage {
+    width: 800px;
+    background-color: #fdfdfd;
+    border: 1px solid #dfdfdf;
+    margin: 0 10px;
+    padding: 10px;
+}
+/*div.tabpage:after { /* for buttonrow */
+div.tabpage p.alone:after {
+    content: ".";
+    display: block;
+    height: 35px; /* to make up for the button-row after it */
+    clear: both;
+    visibility: hidden;
+}
+div.tabpage > form > div {
+    position: relative;
+}
+/* editform table */
+div.postbox table.editform {
+    width: 800px;
+    table-layout: fixed;
+    display: inline-block;
+}
+div.postbox table.editform th {
+    width: 300px;
+}
+div.postbox table.editform th:first-child {
+	width: 190px;
+	/*background-color: transparent;*/
+}
+
+div.postbox table.edit td, div.postbox table.editform td {
+    vertical-align: top;
+}
+div.postbox table.editform td {
+	overflow: visible;
+	border-bottom: none;
+}
+/* hide templates */
+div.postbox table.editform tr.tmpl {
+    display: none;
+}
+#cus-my-menus div.tmpl {
+    display: none;
+}
+/* End of: editform table */
+
+/* ************************************************************ */
+/* Special control sets                                         */
+/* ************************************************************ */
+
+/* date, time, prc_rnge group */
+div.postbox p span.time label, div.postbox p span.date label, div.postbox span.prc_rnge label {
+    display: inline-block;
+    float: none;
+    margin: 0;
+    vertical-align: baseline;
+    width: auto;
+    color: #444;
+}
+div.postbox p span.time input[type="text"], div.postbox p span.date input[type="text"], div.postbox span.prc_rnge input[type="text"] {
+    margin-right: 0;
+    display: inline;
+    width: 30px;
+    text-align: center;
+}
+div.postbox p span.date input.dmy {
+    width: 48px;
+}
+div.postbox span.prc_rnge input[type="text"] {
+    width: 65px;
+    margin-right: 20px;
+}
+div.postbox span.prc_rnge label {
+    margin-right: 10px;
+}
+
+div.postbox p span.time input[type="checkbox"] {
+    margin: 8px 0 10px 10px;
+}
+div.postbox p span.time input[type="hidden"] + label {
+    margin-left: 12px;
+}
+
+div.postbox p span.time, div.postbox p span.date, div.postbox span.prc_rnge {
+    display: block;
+    float: left;
+    margin: 0; 
+}
+div.postbox p span.time input[type="radio"] {
+    margin: 0 0 1px;
+}
+div.postbox p span.time label + input[type="radio"] {
+    margin-left: 10px;
+}
+div.postbox p span.time input.numb {
+    margin-bottom: 0;
+}
+div.postbox p span.prompt + span + span.time { /* if there is a context span behind the time span */
+    margin-right: 48px;
+}
+/* error messages with date, time, telnr, prc_rnge controls */
+div.postbox p span.time.verf-err, div.postbox p span.date.verf-err, div.postbox p span.telnr.verf-err, div.postbox span.prc_rnge.verf-err {
+    border: 2px solid #633;
+    padding: 5px;
+    margin: 0 -7px 10px; /* hor: padding + border */
+}
+div.postbox p span.time span.err-msg, div.postbox p span.date span.err-msg, div.postbox p span.telnr span.err-msg, 
+div.postbox span.prc_rnge span.err-msg, div.postbox td span.err-msg {
+    display: none;
+}
+div.postbox p span.time.verf-err span.err-msg, div.postbox p span.date.verf-err span.err-msg, div.postbox p span.telnr.verf-err span.err-msg, 
+div.postbox span.prc_rnge.verf-err span.err-msg, div.postbox td.verf-err span.err-msg {
+    color: #633;
+    display: block;
+    float: none;
+    padding: 0;
+    width: 350px;
+}
+div.postbox td.verf-err span.err-msg {
+    width: auto;
+}
+
+div.postbox p span.context+span.time.verf-err span.err-msg, div.postbox p span.context+span.date.verf-err span.err-msg {
+    width: 200px;
+}
+div.postbox p span.time span.err-msg>span, div.postbox p span.date span.err-msg>span, div.postbox p span.telnr span.err-msg>span, 
+div.postbox span.prc_rnge span.err-msg>span, div.postbox td.verf-err span.err-msg>span  {
+    color: #633;
+}
+div.postbox table.editform tr.verf-err td, div.postbox table.editform td.verf-err {
+    border: 2px solid #633;
+    background:  #ffe0e0;
+}
+div.postbox p.global-err {
+    border: 2px solid #633;
+    background:  #ffe0e0;
+    color: #633;
+    font-weight: bold;
+    padding: 6px;
+    width: 784px;
+}
+/* tel nrs */
+div.postbox span.telnr {
+    display: inline-block;
+}
+div.postbox span.telnr label {
+    color: #444;
+}
+div.postbox span.telnr label.telnr {
+    width: auto;
+    padding: 0;
+    margin: 0 0 3px 10px;
+}
+div.postbox span.telnr select {
+    width: 110px;
+    float: left;
+}
+div.postbox span.telnr input[type="text"] {
+    display: inline;
+    width: 115px;
+}
+div.postbox p.hor-form span.telnr input[type="button"] { /* remove button at right */
+    margin: 0 0 12px 8px;
+    float: left;
+}
+/* telnr add button at bottom */
+span.telnr + input.telnr[type="button"] { 
+    display: block;
+    margin: 0 3px;
+    clear: both;
+}
+
+/* thumbnail */
+span.logo-box {
+    border: .075rem solid #342921;
+    background-color: #edece7;
+    border-radius: .25rem;
+    overflow: hidden;
+    display: inline-block;
+    height: 3rem;
+    width: 4rem;
+    margin-right: 10px;
+}
+span.logo-box div {
+    position: relative;
+    display: block;
+    right: 50%;
+    text-align: center;
+}
+.std-logo img {
+    display: inline-block;
+    margin-right: -100%;
+    margin-top: 0.15rem;
+}
+.usr-logo img {
+    height: 100%;
+    width: 100%;
+}
+
+/* ************************************************************ */
+/* Google maps for pois page                                    */
+/* ************************************************************ */
+#map {
+    display: block;
+    height: 560px;
+    width: 700px;
+}
+#gmaps_context_menu li {
+    border-top: 1px solid white;
+    margin-bottom: 0;
+    font-size: 12px;
+} 
+#gmaps_context_menu li a{
+    color: #59524c;
+    text-decoration: none;
+} 
+
+/* ************************************************************ */
+/* Sprite images                                                */
+/* ************************************************************ */
+div.postbox img.clip {
+    position: absolute; 
+    top: 0; 
+    left: 0;
+}
+.clipwrapper-sml { position: relative; display: block; height: 32px; width: 21px; margin: 0 auto;}
+span.clipwrapper-sml img.poitype1  { clip:rect(0  21px 32px 0); }
+span.clipwrapper-sml img.poitype2  { clip:rect(0  42px 32px  21px); left:  -21px;}
+span.clipwrapper-sml img.poitype3  { clip:rect(0  63px 32px  42px); left:  -42px;}
+span.clipwrapper-sml img.poitype4  { clip:rect(0  84px 32px  63px); left:  -63px;}
+span.clipwrapper-sml img.poitype5  { clip:rect(0 105px 32px  84px); left:  -84px;}
+span.clipwrapper-sml img.poitype6  { clip:rect(0 126px 32px 105px); left: -105px;}
+span.clipwrapper-sml img.poitype7  { clip:rect(0 147px 32px 126px); left: -126px;}
+span.clipwrapper-sml img.poitype8  { clip:rect(0 168px 32px 147px); left: -147px;}
+span.clipwrapper-sml img.poitype9  { clip:rect(0 189px 32px 168px); left: -168px;}
+span.clipwrapper-sml img.poitype10 { clip:rect(0 210px 32px 189px); left: -189px;}
+span.clipwrapper-sml img.poitype11 { clip:rect(0 231px 32px 210px); left: -210px;}
+span.clipwrapper-sml img.poitype12 { clip:rect(0 252px 32px 231px); left: -231px;}
+
+.clipwrapper-lrg { position: relative; display: block; height: 50px; width: 34px; margin: 0 auto; right:  inherit !important;}
+span.clipwrapper-lrg img.poitype1  { clip:rect(0  34px 50px 0); }
+span.clipwrapper-lrg img.poitype2  { clip:rect(0  68px 50px  34px); left:  -34px;}
+span.clipwrapper-lrg img.poitype3  { clip:rect(0 102px 50px  68px); left:  -68px;}
+span.clipwrapper-lrg img.poitype4  { clip:rect(0 136px 50px 102px); left: -102px;}
+span.clipwrapper-lrg img.poitype5  { clip:rect(0 170px 50px 136px); left: -136px;}
+span.clipwrapper-lrg img.poitype6  { clip:rect(0 204px 50px 170px); left: -170px;}
+span.clipwrapper-lrg img.poitype7  { clip:rect(0 238px 50px 204px); left: -204px;}
+span.clipwrapper-lrg img.poitype8  { clip:rect(0 272px 50px 238px); left: -238px;}
+span.clipwrapper-lrg img.poitype9  { clip:rect(0 306px 50px 272px); left: -272px;}
+span.clipwrapper-lrg img.poitype10 { clip:rect(0 340px 50px 306px); left: -306px;}
+span.clipwrapper-lrg img.poitype11 { clip:rect(0 374px 50px 340px); left: -340px;}
+span.clipwrapper-lrg img.poitype12 { clip:rect(0 408px 50px 374px); left: -374px;}
+span.clipwrapper-lrg img.fav.poitype1  { clip:rect(50px  34px 100px 0); }
+span.clipwrapper-lrg img.fav.poitype2  { clip:rect(50px  68px 100px  34px); left:  -34px;}
+span.clipwrapper-lrg img.fav.poitype3  { clip:rect(50px 102px 100px  68px); left:  -68px;}
+span.clipwrapper-lrg img.fav.poitype4  { clip:rect(50px 136px 100px 102px); left: -102px;}
+span.clipwrapper-lrg img.fav.poitype5  { clip:rect(50px 170px 100px 136px); left: -136px;}
+span.clipwrapper-lrg img.fav.poitype6  { clip:rect(50px 204px 100px 170px); left: -170px;}
+span.clipwrapper-lrg img.fav.poitype7  { clip:rect(50px 238px 100px 204px); left: -204px;}
+span.clipwrapper-lrg img.fav.poitype8  { clip:rect(50px 272px 100px 238px); left: -238px;}
+span.clipwrapper-lrg img.fav.poitype9  { clip:rect(50px 306px 100px 272px); left: -272px;}
+span.clipwrapper-lrg img.fav.poitype10 { clip:rect(50px 340px 100px 306px); left: -306px;}
+span.clipwrapper-lrg img.fav.poitype11 { clip:rect(50px 374px 100px 340px); left: -340px;}
+span.clipwrapper-lrg img.fav.poitype12 { clip:rect(50px 408px 100px 374px); left: -374px;}

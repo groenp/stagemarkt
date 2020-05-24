@@ -1,0 +1,15 @@
+*.zip
+*.dat
+.vscode*
+.well*
+site/license.txt
+site/readme.html
+site/*.php
+!site/wp-config.php
+wp-*
+!wp-content
+site/wp-content/upgrade
+site/wp-content/themes/*
+!site/wp-content/themes/groenp
+site/wp-content/uploads/2020
+debug.log

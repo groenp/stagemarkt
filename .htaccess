@@ -1,0 +1,15 @@
+# force the use of https, except for SSL for Free challenge
+<IfModule mod_rewrite.c>
+RewriteEngine on
+RewriteCond %{HTTPS} !=on
+RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/[0-9a-zA-Z_-]+$
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R,L,QSA,NE]
+</IfModule>
+
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^cuzconow\.com$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.cuzconow\.com$
+RewriteCond %{REQUEST_URI} !^/\.well-known/cpanel-dcv/[0-9a-zA-Z_-]+$
+RewriteCond %{REQUEST_URI} !^/\.well-known/pki-validation/(?:\ Ballot169)?
+RewriteCond %{REQUEST_URI} !^/\.well-known/pki-validation/[A-F0-9]{32}\.txt(?:\ Comodo\ DCV)?$
+RewriteRule ^/?$ "https\:\/\/cusconow\.com\/" [R=301,L]
