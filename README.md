@@ -11,6 +11,7 @@ Design:
 - client login will determine if it is their test account or their live account
 - only functionality for client's website loads
 - admin can see all
+- multi-lingual: en, nl, es
 
 Stages:
 
