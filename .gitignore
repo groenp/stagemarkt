@@ -7,6 +7,7 @@ site/readme.html
 site/*.php
 !site/wp-config.php
 wp-*
+!wp-config.php
 !wp-content
 site/wp-content/upgrade
 site/wp-content/themes/*
