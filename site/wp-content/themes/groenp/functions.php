@@ -1,31 +1,33 @@
 <?php
 /******************************************************************************/
 /*                                                              Pieter Groen  */
-/*  Version 0.1 - May 23, 2020                                                */
+/*  Version 0.1 - May 26, 2020                                                */
 /*                                                                            */
 /*  PHP for Groen Productions website CMS in WordPress                        */
 /*                                                                            */
+/*  Debug functions:                                                          */
+/* - Debugging into debug.log                                 (~line   40)    */
+/* - Logging into user_activity_log_{year}_{month}.txt        (~line   60)    */
+/*                                                                            */
 /*  Custom Admin Dashboard functions:                                         */
 /* - based on twentytwenty theme                                              */
-/* - change login screen                                      (~line   45)    */
-/* - create Manager role based on author and allow User Admin (~line  100)    */
-/* - simplify Profile pages for non Administrators            (~line  140)    */
-/* - collapse side menu for Subscriber role                   (~line  180)    */
-/* - remove unneccesary widgets                               (~line  200)    */
-/* - stop heartbeat (ajax calls)                              (~line  240)    */
-/* - redirect blocked user to login page - close session      (~line  270)    */
-/* - Logging user activities in Standard Wordpress interface  (~line  295)    */
-/* - insert CuscoNow asset files into admin pages             (~line  410)    */
-/* - create meta boxes for Groen Productions CMS              (~line  470)    */
+/* - change login screen                                      (~line   85)    */
+/* - create Manager role based on author and allow User Admin (~line  140)    */
+/* - simplify Profile pages for non Administrators            (~line  190)    */
+/* - collapse side menu for Subscriber role                   (~line  230)    */
+/* - remove unneccesary widgets                               (~line  265)    */
+/* - stop heartbeat (ajax calls)                              (~line  300)    */
+/* - redirect blocked user to login page - close session      (~line  305)    */
+/* - Logging user activities in Standard Wordpress interface  (~line  340)    */
+/* - insert Groen Productions asset files into admin pages    (~line  450)    */
+/* - create meta boxes for Groen Productions CMS              (~line  520)    */
 /*                                                                            */
 /*  Plugins needed:                                                           */
 /* - Groen Productions Mailing plugin to change registration mails            */
 /* - WP-Mail-SMTP plugin to use groenproductions.com for registration mail    */
 /*                                                                            */
-/* Functions used in other CuscoNow PHP files for site management:            */
-/* - Debugging into debug.log                                 (~line  500)    */
-/* - Logging into user_activity_log_{year}_{month}.txt        (~line  520)    */
-/* - Connect to CuscoNow database                             (~line  540)    */
+/* Functions used in other Groen Productions PHP files for site management:   */
+/* - Connect to Groen Productions database                    (~line  540)    */
 /* - Upload pictures                                          (~line  570)    */
 /* - Input/output functions for database, forms, web page     (~line  650)    */
 /*   . Sanitization of input data                               (~line  650)  */
@@ -34,6 +36,46 @@
 /* - Search (json) arrays for key <=> value pair              (~line  910)    */
 /*                                                                            */
 /******************************************************************************/
+
+// ****************************************************************
+// DEBUGGING, use: _log(). Arrays need to go into separate call
+// ****************************************************************
+if(!function_exists('_log')){
+	function _log( $message ) 
+    {
+		// Only print to log when WP_DEBUG is on. This is set in wp-config.php, together with print destination. 
+		// It is on only for local DB user on PG's environment.
+		if( WP_DEBUG === true ){
+			if( is_array( $message ) || is_object( $message ) )
+			{
+				error_log( print_r( $message, true ) );
+			} else {
+				error_log( $message );
+			}
+		} // end: if WP_DEBUG is on
+	}
+}
+
+// ****************************************************************
+// Groen Productions - Logging in User Activity Log
+// ****************************************************************
+if(!function_exists('_lua')){
+    function _lua( $mod = "", $message = "") 
+    {
+        // create a new file every month, create local timestamp for server
+        $filename = ABSPATH .'/logs/user_activity_log_'.date("Y_m", strtotime(get_option('gmt_offset') . " hours")).'.txt';
+        unset($current_user);
+        $current_user = wp_get_current_user();
+        if ( $current_user && !empty($current_user->user_login) ) 
+        {
+            $log = "[" . date("D d-M-y H:i:s", strtotime(get_option('gmt_offset') . " hours")) . "][" . str_pad(substr($mod, 0, 6), 6) . "] " . $current_user->user_login . ": " . $message . PHP_EOL;
+        } else {
+            $log = "[" . date("D d-M-y H:i:s", strtotime(get_option('gmt_offset') . " hours")) . "][" . str_pad(substr($mod, 0, 6), 6) . "] " . $message . PHP_EOL;
+        }
+        file_put_contents($filename, $log, FILE_APPEND);
+    }
+} 
+
 
 /******************************************************************************/
 /* Common Dashboard management functions                                      */
@@ -234,11 +276,6 @@ add_action('wp_dashboard_setup', 'groenp_remove_dashboard_widgets' );
 // Remove  WordPress Welcome Panel
 remove_action('welcome_panel', 'wp_welcome_panel');
 
-// Remove Help tab 
-// add_filter('show_admin_bar','groenp_help_tab_remove');
-// function groenp_help_tab_remove(){
-// }
-
 // Remove Screen Options tab
 // add_filter('screen_options_show_screen', '__return_false');
 
@@ -248,7 +285,7 @@ function groenp_remove_toolbar_items($wp_adminbar) {
     global $current_screen;
     $current_screen->remove_help_tabs();
     
-    _log("remove toolbar items: "); _log($wp_adminbar); // DEBUG //
+    // _log("remove toolbar items: "); _log($wp_adminbar); // DEBUG //
 	$wp_adminbar->remove_node('wp-logo');
   	$wp_adminbar->remove_node('comments');
     $wp_adminbar->remove_node('new-content');
@@ -414,54 +451,55 @@ function groenp_log_logout()
 // ****************************************************************
 
 // ****************************************************************
-// CuscoNow - cusconow_script_enqueuer()
-//          - Includes jQuery (ajax) javascript at the right spot, and 
-//            non-subscriber javascript only for CN admin
+// Groen Productions  - cusconow_script_enqueuer()
+//                    - Includes jQuery (ajax) javascript at the right spot, and 
+//                      non-subscriber javascript only for GP admin
 // ****************************************************************
-// add_action( 'init', 'cusconow_script_enqueuer' );
-function cusconow_script_enqueuer() 
+
+function groenp_script_enqueuer() 
 {
-    //_log("uri: " . $_SERVER['REQUEST_URI'] . " or base url: " . admin_url());                                                            // DEBUG //
+    // default SSL port number OR http: port number; use minimized version, otherwise not
+    $min_url = ($_SERVER['SERVER_PORT'] == "443" || $_SERVER['SERVER_PORT'] == "80") ? ".min" : "";
+    
+    wp_register_script( 'groenp-sbscrbr', trailingslashit( get_stylesheet_directory_uri() ) .'groenp-sbscrbr' . $min_url . '.js', array('jquery') );
+    if ( current_user_can('list_users') ) wp_register_script( 'groenp-sites-cms',  trailingslashit( get_stylesheet_directory_uri() ) . 'groenp-sites-cms' . $min_url . '.js', array('jquery') );
+    wp_localize_script( 'groenp-sbscrbr', 'groenpAsync', array( 'ajaxurl' => admin_url( 'admin-ajax.php' )));
 
-    //if ( $_SERVER['REQUEST_URI'] == '/wp-admin/index.php' || $_SERVER['REQUEST_URI'] == '/wp-admin/' )          // only load when it is the dashboard homepage
-    //{
-        wp_register_script( "cusconow-sbscrbr", trailingslashit( get_stylesheet_directory_uri() ) .'cusconow-sbscrbr.js', array('jquery') );
-        if ( current_user_can('list_users') ) wp_register_script( "cusconow-cms",  trailingslashit( get_stylesheet_directory_uri() ) . 'cusconow-cms.js', array('jquery') );
-        wp_localize_script( 'cusconow-sbscrbr', 'cusconowAsync', array( 'ajaxurl' => admin_url( 'admin-ajax.php' )));
+    wp_enqueue_script( 'jquery' );
+    wp_enqueue_script( 'groenp-sbscrbr' );
+    if ( current_user_can('list_users') ) wp_enqueue_script( 'groenp-sites-cms' );
+} // End of: groenp_script_enqueuer()
+add_action( 'init', 'groenp_script_enqueuer' );
 
-        wp_enqueue_script( 'jquery' );
-        wp_enqueue_script( 'cusconow-sbscrbr' );
-        if ( current_user_can('list_users') ) wp_enqueue_script( 'cusconow-cms' );
-    //}
-} // End of: cusconow_script_enqueuer()
-
-
-// add_action('admin_head','cusconow_include_asset_files');
-function cusconow_include_asset_files() 
+function groenp_include_asset_files() 
 { 
     // global vars driven by server
     echo "<script type='text/javascript'>
-        var TZsrvr = '". sprintf('%+03d', get_option('gmt_offset')) ."' + ':00'; // get server time-zone (from WordPress)
+        // var TZsrvr = '". sprintf('%+03d', get_option('gmt_offset')) ."' + ':00'; // get server time-zone (from WordPress)
 
         // jquery disables forward anchor links in page
-        jQuery(document).ready(function($){
-            var fwd_link = window.location.hash.substr(1);
-            if ( fwd_link != '' && window.location.href.indexOf('index.php?page') != -1 ) {
-                // scroll to anchor
-                $('html, body').animate({
-                    scrollTop: $('a[name=\"'+fwd_link+'\"]').offset().top - 90 // 90 px = h3 bar (link is just below it) + top nav bar (32px) + margin
-                }, 700);
-            }
-        });
+        // jQuery(document).ready(function($){
+        //     var fwd_link = window.location.hash.substr(1);
+        //     if ( fwd_link != '' && window.location.href.indexOf('index.php?page') != -1 ) {
+        //         // scroll to anchor
+        //         $('html, body').animate({
+        //             scrollTop: $('a[name=\"'+fwd_link+'\"]').offset().top - 90 // 90 px = h3 bar (link is just below it) + top nav bar (32px) + margin
+        //         }, 700);
+        //     }
+        // });
 
     </script>";
 
+    // default SSL port number OR http: port number; use minimized version, otherwise not
+    $min_url = ($_SERVER['SERVER_PORT'] == "443" || $_SERVER['SERVER_PORT'] == "80") ? ".min" : "";
+
     // include style sheets
-    echo "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "cusconow-cms.css' rel='stylesheet' media='all' />";
+    echo "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
 } 
+add_action('admin_head','groenp_include_asset_files');
 
 // Prints script in footer of Dashboard pages
-function cusconow_print_script_in_footer() {
+function groenp_print_script_in_footer() {
     echo "<script type='text/javascript'>
         jQuery(document).ready(function(){ 
 
@@ -473,7 +511,7 @@ function cusconow_print_script_in_footer() {
         });
         </script>";
 }
-// add_action( 'admin_footer', 'cusconow_print_script_in_footer' ); // is placed only in other .php admin files
+add_action( 'admin_footer', 'groenp_print_script_in_footer' ); // is placed only in other .php admin files
 
 /******************************************************************************/
 /* Groen Productions site management functions for all Dashboard pages        */
@@ -489,45 +527,6 @@ require_once( 'groenp_sites_management.php' );
 /* all meta boxes for the Subscribers page have been defined in: 'groenp_subscribers.php' */
 require_once( 'groenp_subscribers.php' );
 
-
-// ****************************************************************
-// DEBUGGING, use: _log(). Arrays need to go into separate call
-// ****************************************************************
-if(!function_exists('_log')){
-	function _log( $message ) 
-    {
-		// Only print to log when WP_DEBUG is on. This is set in wp-config.php, together with print destination. 
-		// It is on only for local DB user on PG's environment.
-		if( WP_DEBUG === true ){
-			if( is_array( $message ) || is_object( $message ) )
-			{
-				error_log( print_r( $message, true ) );
-			} else {
-				error_log( $message );
-			}
-		} // end: if WP_DEBUG is on
-	}
-}
-
-// ****************************************************************
-// Groen Productions - Logging in User Activity Log
-// ****************************************************************
-if(!function_exists('_lua')){
-    function _lua( $mod = "", $message = "") 
-    {
-        // create a new file every month, create local timestamp for server
-        $filename = ABSPATH .'/logs/user_activity_log_'.date("Y_m", strtotime(get_option('gmt_offset') . " hours")).'.txt';
-        unset($current_user);
-        $current_user = wp_get_current_user();
-        if ( $current_user && !empty($current_user->user_login) ) 
-        {
-            $log = "[" . date("D d-M-y H:i:s", strtotime(get_option('gmt_offset') . " hours")) . "][" . str_pad(substr($mod, 0, 6), 6) . "] " . $current_user->user_login . ": " . $message . PHP_EOL;
-        } else {
-            $log = "[" . date("D d-M-y H:i:s", strtotime(get_option('gmt_offset') . " hours")) . "][" . str_pad(substr($mod, 0, 6), 6) . "] " . $message . PHP_EOL;
-        }
-        file_put_contents($filename, $log, FILE_APPEND);
-    }
-} 
 
 // ****************************************************************
 // Groen Productions - Open GROENP_SITES_CMS database 

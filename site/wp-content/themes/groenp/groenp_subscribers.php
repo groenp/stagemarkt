@@ -38,7 +38,7 @@ function groenp_insert_subscribers_meta_boxes() {
     wp_enqueue_script('postbox');
  
     /* Add screen option: user can choose between 1 or 2 columns (default 1) */
-    // add_screen_option('layout_columns', array('max' => 2, 'default' => 1) );
+    add_screen_option('layout_columns', array('max' => 2, 'default' => 1) );
 }
  
 /* Create page content */
@@ -74,10 +74,10 @@ function groenp_subscribers_page_cb() {
                     <div class='inside'>
                         <h3>This page supports the following tasks:</h3>
                         <ul>
-                            <li><a href='#Sbscbr'>Manage Subscribers in list</a></li>
-                            <li><a href='#add_Sbscbr'>Add or edit Subscriber in form</a></li>
-                            <li><a href='#Domain'>Manage Domains in list</a></li>
-                            <li><a href='#add_Domain'>Add or edit Domain in form</a></li>
+                            <li><a href='#Sbscbr'>Manage Subscribers</a></li>
+                            <li><a href='#add_Sbscbr'>Add or edit Subscriber</a></li>
+                            <li><a href='#Domain'>Manage Domains</a></li>
+                            <li><a href='#add_Domain'>Add or edit Domain</a></li>
                         </ul>
                     </div>
 
@@ -126,7 +126,7 @@ add_action('add_meta_boxes_' . $struct_screen, 'groenp_subscribers_meta_boxes_ad
 function groenp_subscribers_meta_box_cb()  
 {  
     // open database
-    $con = groenp_open_database();
+    $gpcon = groenp_open_database();
 
     // ************************************************************
     // 1. Process any form data
@@ -429,15 +429,16 @@ function groenp_subscribers_meta_box_cb()
     // ************************************************************
 
     // Select correct database depending on server
-    $db = ( strpos($_SERVER['SERVER_NAME'], "test.") === false )? "cusconow_cms" : "cn_test_cms";
+    // $db = ( strpos($_SERVER['SERVER_NAME'], "test.") === false )? "cusconow_cms" : "cn_test_cms";
+    $db = "groenp_sites_cms";
 
     // Create query to get all subscribers that DON'T have admin panel access AND those that DO have admin panel access
 
-    $query_string = "SELECT cn.pk_sbscrbr_id, cn.sbscrbr_login, cn.is_usr_blocked, cn.gets_sub_mails, cn.gets_html_mail,";
-    $query_string .= " wp_fst.meta_value first, wp_lst.meta_value last, wp.user_registered, wp.user_email, cn.sbscrbr_notes"; 
-    $query_string .= " FROM ". $db .".subscribers cn LEFT JOIN ".DB_NAME.".wp_users wp ON ( wp.ID = cn.fr_ID )";
-    $query_string .= " LEFT JOIN ".DB_NAME.".wp_usermeta wp_fst ON ( wp_fst.user_id = cn.fr_ID AND wp_fst.meta_key = 'first_name')";
-    $query_string .= " LEFT JOIN ".DB_NAME.".wp_usermeta wp_lst ON ( wp_lst.user_id = cn.fr_ID AND wp_lst.meta_key = 'last_name') ORDER BY cn.sbscrbr_login;";
+    $query_string = "SELECT gp.pk_sbscrbr_id, gp.sbscrbr_login, gp.is_usr_blocked, gp.gets_sub_mails, gp.gets_html_mail,";
+    $query_string .= " wp_fst.meta_value first, wp_lst.meta_value last, wp.user_registered, wp.user_email, gp.sbscrbr_notes"; 
+    $query_string .= " FROM ". $db .".subscribers gp LEFT JOIN ".DB_NAME.".wp_users wp ON ( wp.ID = gp.fr_ID )";
+    $query_string .= " LEFT JOIN ".DB_NAME.".wp_usermeta wp_fst ON ( wp_fst.user_id = gp.fr_ID AND wp_fst.meta_key = 'first_name')";
+    $query_string .= " LEFT JOIN ".DB_NAME.".wp_usermeta wp_lst ON ( wp_lst.user_id = gp.fr_ID AND wp_lst.meta_key = 'last_name') ORDER BY gp.sbscrbr_login;";
 
     // store in different temp array
     $rows = array();
