@@ -12,15 +12,14 @@
 /*  Custom Admin Dashboard functions:                                         */
 /* - based on twentytwenty theme                                              */
 /* - change login screen                                      (~line   85)    */
-/* - create Manager role based on author and allow User Admin (~line  140)    */
-/* - simplify Profile pages for non Administrators            (~line  190)    */
-/* - collapse side menu for Subscriber role                   (~line  230)    */
-/* - remove unneccesary widgets                               (~line  265)    */
-/* - stop heartbeat (ajax calls)                              (~line  300)    */
-/* - redirect blocked user to login page - close session      (~line  305)    */
-/* - Logging user activities in Standard Wordpress interface  (~line  340)    */
-/* - insert Groen Productions asset files into admin pages    (~line  450)    */
-/* - create meta boxes for Groen Productions CMS              (~line  520)    */
+/* - create Manager role based on author and allow User Admin (~line  110)    */
+/* - simplify Profile pages for non Administrators            (~line  160)    */
+/* - collapse side menu for Subscriber role                   (~line  200)    */
+/* - remove unneccesary widgets                               (~line  230)    */
+/* - stop heartbeat (ajax calls)                              (~line  260)    */
+/* - Logging user activities in Standard Wordpress interface  (~line  305)    */
+/* - insert Groen Productions asset files into admin pages    (~line  420)    */
+/* - create meta boxes for Groen Productions CMS              (~line  490)    */
 /*                                                                            */
 /*  Plugins needed:                                                           */
 /* - Groen Productions Mailing plugin to change registration mails            */
@@ -83,58 +82,25 @@ if(!function_exists('_lua')){
 /******************************************************************************/
 
 // ****************************************************************
-// Custom admin login header logo and removal of return-to-blog link
+// Attach admin login header logo and removal of return-to-blog link by CSS
 // ****************************************************************
-function groenp_login_css_changes() 
-{
-    echo "<style  type='text/css'> 
-    .login h1 a {  
-        background-image:url('" . get_stylesheet_directory_uri() . "/PG.png'); 
-        background-size: 180px 180px; 
-        width: 180px; 
-        height: 180px; 
-    } 
-    /* remove <- Volver link */
-    body.login div#login p#backtoblog {
-        display: none;
-    } 
+// see: function groenp_include_in_head()
 
-    /* colour stylings */ 
-    .wp-core-ui .button-primary,
-    .wp-core-ui .button, .wp-core-ui .button-secondary {
-        background: #00503b;
-        border-color: #00503b;
-    }
-    .wp-core-ui .button-secondary { /* eye icon */
-        color: #00503b;
-    }
-    .wp-core-ui .button-secondary:focus, .wp-core-ui .button-secondary:hover { /* eye icon */
-        color: #00b03a;
-    }
-    .wp-core-ui .button-primary.focus, .wp-core-ui .button-primary.hover, .wp-core-ui .button-primary:focus, .wp-core-ui .button-primary:hover {
-        background: #00b03a;
-        border-color: #00b03a;
-    }
-    .wp-core-ui .button-primary:focus {
-        box-shadow: 0 0 0 1px #fff, 0 0 0 3px #00b03a;
-    }
-    input[type='password']:focus, input[type='text']:focus, select:focus, textarea:focus {
-        border-color: #00b03a;
-        box-shadow: 0 0 0 1px #00b03a;
-    }
-    body.login .message {
-      border-left: 4px solid #00b03a; 
-    }
-    </style>";
+// ****************************************************************
+// Custom admin login message
+// ****************************************************************
+function groenp_cookie_warning_login() {
+	return '<p class="message lowlight">This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>By logging in you accept the use of these cookies. If you are unsure about this, please contact the administrator.</p>';
 }
-add_action('login_head', 'groenp_login_css_changes');
+add_filter('login_message', 'groenp_cookie_warning_login');
+
 
 // ****************************************************************
-// Custom admin login logo link
+// Change admin login logo link
 // ****************************************************************
 function groenp_change_wp_login_url()
 {
-    return "https://admin.groenproductions.com/site/";
+    return "https://admin.groenproductions.com/site/wp-admin/";
 }
 add_filter('login_headerurl', 'groenp_change_wp_login_url');
 
@@ -428,7 +394,7 @@ function groenp_log_login($user_login, $user)
     {
         _lua("WPuser", "Subscriber (wpID:". $user->ID .", ". $user_login .") logged in.");
     } else {
-        _lua("WPuser", "CN User (wpID:". $user->ID .", ". $user_login .") logged in.");
+        _lua("WPuser", "GP User (wpID:". $user->ID .", ". $user_login .") logged in.");
     }
 }
 
@@ -471,24 +437,30 @@ function groenp_script_enqueuer()
 } // End of: groenp_script_enqueuer()
 add_action( 'init', 'groenp_script_enqueuer' );
 
-function groenp_include_asset_files() 
+
+// ****************************************************************
+// Groen Productions  - groenp_include_in_head()
+//                    - Includes groenp-sites-cms in head, and 
+//                      non-subscriber javascript only for GP admin
+// ****************************************************************
+function groenp_include_in_head() 
 { 
     // global vars driven by server
-    echo "<script type='text/javascript'>
-        // var TZsrvr = '". sprintf('%+03d', get_option('gmt_offset')) ."' + ':00'; // get server time-zone (from WordPress)
+    // echo "<script type='text/javascript'>
+    //     var TZsrvr = '". sprintf('%+03d', get_option('gmt_offset')) ."' + ':00'; // get server time-zone (from WordPress)
 
-        // jquery disables forward anchor links in page
-        // jQuery(document).ready(function($){
-        //     var fwd_link = window.location.hash.substr(1);
-        //     if ( fwd_link != '' && window.location.href.indexOf('index.php?page') != -1 ) {
-        //         // scroll to anchor
-        //         $('html, body').animate({
-        //             scrollTop: $('a[name=\"'+fwd_link+'\"]').offset().top - 90 // 90 px = h3 bar (link is just below it) + top nav bar (32px) + margin
-        //         }, 700);
-        //     }
-        // });
+    //     jquery disables forward anchor links in page
+    //     jQuery(document).ready(function($){
+    //         var fwd_link = window.location.hash.substr(1);
+    //         if ( fwd_link != '' && window.location.href.indexOf('index.php?page') != -1 ) {
+    //             // scroll to anchor
+    //             $('html, body').animate({
+    //                 scrollTop: $('a[name=\"'+fwd_link+'\"]').offset().top - 90 // 90 px = h3 bar (link is just below it) + top nav bar (32px) + margin
+    //             }, 700);
+    //         }
+    //     });
 
-    </script>";
+    // </script>";
 
     // default SSL port number OR http: port number; use minimized version, otherwise not
     $min_url = ($_SERVER['SERVER_PORT'] == "443" || $_SERVER['SERVER_PORT'] == "80") ? ".min" : "";
@@ -496,7 +468,9 @@ function groenp_include_asset_files()
     // include style sheets
     echo "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
 } 
-add_action('admin_head','groenp_include_asset_files');
+add_action('admin_head','groenp_include_in_head');
+add_action('login_head','groenp_include_in_head');
+
 
 // Prints script in footer of Dashboard pages
 function groenp_print_script_in_footer() {
@@ -507,11 +481,11 @@ function groenp_print_script_in_footer() {
             postboxes.add_postbox_toggles(pagenow); 
 
             // set bkgnd for boolean display with 'Y'
-            $('div.postbox table.manage td.chck:contains(\"Y\")').css('background-color','#f9f7ed');
+            // $('div.postbox table.manage td.chck:contains(\"Y\")').css('background-color','#f9f7ed');
         });
         </script>";
 }
-add_action( 'admin_footer', 'groenp_print_script_in_footer' ); // is placed only in other .php admin files
+// add_action( 'admin_footer', 'groenp_print_script_in_footer' ); // is placed only in other .php admin files
 
 /******************************************************************************/
 /* Groen Productions site management functions for all Dashboard pages        */

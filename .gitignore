@@ -14,3 +14,6 @@ site/wp-content/themes/*
 !site/wp-content/themes/groenp
 site/wp-content/uploads/2020
 debug.log
+site/logs/*.txt
+*).js
+*).css
