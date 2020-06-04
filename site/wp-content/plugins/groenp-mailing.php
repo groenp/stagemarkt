@@ -71,6 +71,7 @@ function groenp_multipart_mail($wp_user_id, $mail_content, $email_subject, $emai
     // Extract wp_user information
     $user = new WP_User($wp_user_id);
 
+
     // Set mail type to multipart/mixed and include boundary
     global $boundary;
     $boundary = uniqid('groenp');

@@ -24,10 +24,10 @@ html {
 /*  login screen elements                                       */
 /* ************************************************************ */
 body.login h1 a {  
-    background-image:url('./PG.png'); 
-    background-size: 180px 180px; 
-    width: 180px; 
-    height: 180px; 
+    background-image:url('./GroenProductionsPath.svg'); 
+    background-size: 300px 40px; 
+    width: 300px; 
+    height: 40px; 
 } 
 /* remove <- Volver link */
 body.login div#login p#backtoblog {
@@ -52,7 +52,7 @@ body.login .button-primary:hover
     border-color: #00b03a
 }
 body.login .button-primary:focus {
-    box-shadow: 0 0 0 1px #fff, 0 0 0 3px #00b03a;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 4px rgba(0, 176, 58, .5);
 }
 
 /* eye icon is also a button */

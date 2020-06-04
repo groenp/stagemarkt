@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Groen Productions.com: #pg-GroenP, #pg-Ggroup, #pg-Pgroup, #pg-Roen, #pg-Roductions -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -8,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="340"
+   width="300"
    height="40"
-   viewBox="0 0 272 32"
+   viewBox="0 0 240 32"
    xml:space="preserve"
    color-interpolation-filters="sRGB"
    id="pg-GroenP"
@@ -54,7 +55,7 @@
 <g
    style="fill:#002b0f;fill-opacity:1"
    id="pg-Roen"
-   transform="translate(0.7705,0.0963)"><path
+   transform="translate(-29.63,0.0963)"><path
      d="M 66.21,14.74 C 66.5,13.96 66.89,13.38 67.37,13 67.85,12.63 68.44,12.44 69.15,12.44 69.53,12.44 69.91,12.49 70.28,12.58 70.65,12.67 71.02,12.8 71.38,12.98 L 70.4,15.28 C 70.17,15.11 69.91,14.99 69.64,14.91 69.37,14.83 69.07,14.79 68.74,14.79 67.84,14.79 67.19,15.15 66.8,15.87 66.41,16.6 66.21,17.81 66.21,19.51 L 66.21,24.71 63.5,24.71 63.5,12.83 66.21,12.83 z"
      id="path3004"
      inkscape:connector-curvature="0" /><path
@@ -70,7 +71,7 @@
 <g
    style="fill:#1a1a1a;fill-opacity:1"
    id="pg-Roductions"
-   transform="translate(1.541,0.0963)"><path
+   transform="translate(-28.86,0.0963)"><path
      d="M 150.8,24.71 150.8,13.28 152.5,13.28 152.5,15.65 C 153.1,14.66 153.6,13.95 154.2,13.53 154.8,13.11 155.5,12.89 156.4,12.89 156.6,12.89 156.8,12.91 157,12.95 157.3,12.99 157.5,13.04 157.7,13.12 L 157,14.88 C 156.8,14.8 156.6,14.75 156.4,14.71 156.2,14.67 156,14.65 155.8,14.65 154.8,14.65 154,15.03 153.5,15.77 153,16.52 152.7,17.64 152.7,19.14 L 152.7,24.71 z"
      id="path3013"
      inkscape:connector-curvature="0" /><path
@@ -102,7 +103,7 @@
      id="path3031"
      inkscape:connector-curvature="0" /></g>
 <g
-   transform="matrix(1.017,0,0,1,33.12,-5.495)"
+   transform="matrix(1.017,0,0,1,2.72,-5.495)"
    id="pg-Ggroup">
 	<g
    id="pg-Gcircle"
@@ -140,7 +141,7 @@
 	</g>
 </g>
 <g
-   transform="matrix(1.017,0,0,1,119.5,-5.473)"
+   transform="matrix(1.017,0,0,1,89.1,-5.473)"
    id="pg-Pgroup"
    class="pg-Panim">
    <g

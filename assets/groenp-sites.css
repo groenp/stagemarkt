@@ -1,0 +1,296 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+    background-color: #f9f9f9;
+    font-family: Verdana, Geneva, sans-serif;;
+    font-weight: 300;
+}
+
+
+/* ***************************************** */
+/*                  HEADER                   */
+/* ***************************************** */
+
+h1 img {
+    width: 90vw;
+}
+
+/* ***************************************** */
+/*      PRIV & TOU ALERT, COOKIE MODAL       */
+/* ***************************************** */
+
+#priv-tou, .modal-content {
+    /* z-index: 2000; */
+    /* position: absolute; */
+    /* margin: 20rem 2rem 0 0; */
+    border-radius: 0;
+}
+#priv-tou {
+    background-color: #eef7f0;
+}
+
+/* .compressed .priv-tou.alert {
+    margin: 14rem 2rem 0 0;
+} */
+
+a.txt, #priv-tou i {
+    color: #00503b;
+    font-weight: bold;
+}
+a.txt:hover {
+    color: #00b03a;
+    text-decoration: none;
+}
+
+
+/* ***************************************** */
+/*                 FOOTER                    */ 
+/* ***************************************** */
+
+
+/* ****************************************** */
+/*              PAGE CONTENT                  */
+/* ****************************************** */
+
+.content {
+    background-color: #fff;
+    border: solid 1px #00503b;
+    color: #00503b;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+h1 {
+    font-family: Futura, Futura-Medium, "Futura Medium", "Century Gothic", CenturyGothic, "Apple Gothic", sans-serif;
+    font-weight: 500;
+}
+
+/* ***********   BUTTON LINKS   *********** */
+
+.btn.float-right,
+.btn.float-left {
+    margin: .5rem;
+    background-color: #00503b;
+    color: #fff;
+}
+
+a.anchr {
+    display: block;
+    position: relative;
+    top: -50px;
+    visibility: hidden;
+}
+
+.btn:hover, .btn:active {
+    background-color: #00b03a; 
+}
+.btn:focus {
+    outline: 0;
+    box-shadow: 0 0 0 .1rem rgba(0, 176, 58,.1);
+}
+
+.btn.float-right:after,
+.btn.float-left:after
+{
+    font-family: FontAwesome;
+    display: inline-block;
+    padding-left: .4rem;
+    content: "\f054"; /* chevron right */
+}
+
+/* ***************************************** */
+/*           PRIVACY & TOU  PAGE             */
+/* ***************************************** */
+
+/* switch control */ 
+.custom-control {
+   margin-bottom: 1rem;
+} 
+.custom-control-label {
+    font-weight: 500;
+}
+.custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 .1rem #fff, 0 0 0 .4rem rgba(0, 176, 58, .5);
+}
+/* switch off */
+.custom-switch .custom-control-label::after {
+    background-color: #ecf1f3;  /* knob */
+}
+.custom-control-input:checked, .custom-control-label::before,
+.custom-control-input  { 
+    border-color: #545454;
+    background-color: #545454;  /* background area */ 
+}
+.custom-control-input:focus:not(:checked) ~ .custom-control-label::before {
+    background: #00503b;
+}
+/* switch on */
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+    background-color: #eff4e5;  /* knob */
+}
+.custom-control-input:checked ~ .custom-control-label::before { 
+    border-color: #00503b;
+    background-color: #00503b;  /* background area */ 
+}
+.custom-control-input:focus:checked ~ .custom-control-label::before {
+    background: #00503b;
+}
+/* priv-tou text switch */
+.upd-priv {
+    display: none;
+}
+/* tou statement inside banner */
+.lowlight {
+    font-size: .8em;
+}
+
+
+/* ***************************************** */
+/*       CONTENT BREAKPOINT SPECIFIC         */ 
+/*      (anything higher than XS/SM)         */
+/* ***************************************** */
+
+/* ****************   SM+   **************** */
+@media only screen and (min-width: 576px) {
+/* @include media-breakpoint-up(sm) { */
+}
+/* ****************   MD+   **************** */
+@media only screen and (min-width: 768px) { 
+/* @include media-breakpoint-up(md) { */
+    .content {
+        max-width: 780px;
+        margin: 2rem auto;
+    }
+    h1 img {
+        width: 600px;
+    }
+}
+
+/* ****************   LG+   **************** */
+@media only screen and (min-width: 1025px) {
+/* @include media-breakpoint-up(lg+) { */
+}
+
+
+/* ***************************************** */
+/*        GROEN PRODUCTIONS.COM BADGE        */
+/* ***************************************** */
+/* #pg-Ggroup, #pg-Pgroup, #pg-Roen, #pg-Roductions */
+/* .groenp {
+    position: relative;
+    height: 0;
+    bottom: 3rem;
+    width: calc(100% - 2rem);
+} */
+.groenp a {
+    color: #00503b !important;
+    margin-left: 1rem;
+    white-space: nowrap;
+    display: block;
+}
+.groenp a:hover, .groenp a:active {
+    text-decoration: none;
+    color: #00b03a !important;
+} 
+
+/* SVG section */
+#pg-GroenP {
+    transform-origin: 0% 40%;
+    /* transform: scale(2, 2); */
+    transform: scale(.7, .7);
+    /* transform: scale(.5, .5); */
+}
+/* .reveal #pg-Roen, .reveal #pg-Roductions {
+    fill: #eff4e5 !important;
+}
+.conceal #pg-Roen, .conceal #pg-Roductions {
+    fill: #c9cfc3 !important;
+} */
+#pg-Pgroup {
+    transform-origin: .895rem 1.355rem;
+    transform: translate(.15rem, -.333rem);
+}
+#pg-Roen {
+    clip-path: polygon(0 0, 0 100%, 0% 100%, 0% 0);
+}
+#pg-Roductions {
+    opacity: 0;
+}
+
+/* .reveal #pg-Pgroup {
+    animation: pg2gp 7s ease-in-out forwards;
+}
+.conceal #pg-Pgroup {
+    animation: pg2gp 7s ease-in-out 12s reverse backwards;
+} 
+.reveal #pg-Roen {
+    animation: wipe 3.5s ease-in-out 2.5s forwards;
+}
+.conceal #pg-Roen {
+    animation: wipe 3.5s ease-in-out 13s reverse backwards;
+}
+.reveal #pg-Roductions {
+    animation: appear 10s ease-in 7s forwards;
+}
+.conceal #pg-Roductions {
+    animation: appear 10s ease-in reverse backwards;
+} */
+
+
+/* .reveal #pg-Pgroup {
+    animation: pg2gp .7s ease-in-out forwards;
+}
+.conceal #pg-Pgroup {
+    animation: pg2gp .7s ease-in-out 1.2s reverse backwards;
+}
+.reveal #pg-Roen {
+    animation: wipe .35s ease-in-out .25s forwards;
+}
+.conceal #pg-Roen {
+    animation: wipe .35s ease-in-out 1.3s reverse backwards;
+} */
+.reveal #pg-Pgroup {
+    animation: pg2gp 1.4s ease-in-out forwards;
+}
+.conceal #pg-Pgroup {
+    animation: pg2gp 1.4s ease-in-out 1.2s reverse backwards;
+}
+.reveal #pg-Roen {
+    animation: wipe .7s ease-in-out .5s forwards;
+}
+.conceal #pg-Roen {
+    animation: wipe .7s ease-in-out 1.4s reverse backwards;
+}
+
+.reveal #pg-Roductions {
+    animation: appear 1s ease-in 1.4s forwards;
+}
+.conceal #pg-Roductions {
+    animation: appear 1s ease-in reverse backwards;
+}
+
+@keyframes pg2gp {
+  0% {
+    transform: translate(.15rem, -.333rem) rotate(0deg);
+  } 100% {
+    transform: translate(7.6rem, -.333rem) rotate(720deg);
+  }
+}
+@keyframes wipe {
+    0% {
+        clip-path: polygon(0 0, 0 100%, 0% 100%, 0% 0);
+        /* clip-path: inset(0 100% 0 0); */
+    } 100% {
+        clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
+        /* clip-path: inset(0 0% 0 0); */
+    } 
+}
+@keyframes appear {
+    0% {
+        opacity: 0;
+    } 100% {
+        opacity: 1;
+    } 
+}

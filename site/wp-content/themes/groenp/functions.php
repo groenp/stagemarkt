@@ -90,7 +90,7 @@ if(!function_exists('_lua')){
 // Custom admin login message
 // ****************************************************************
 function groenp_cookie_warning_login() {
-	return '<p class="message lowlight">This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>By logging in you accept the use of these cookies. If you are unsure about this, please contact the administrator.</p>';
+	return '<p class="message lowlight">This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>By logging in you accept the use of these cookies. Please review the <a href="privacy_and_terms_of_use.php">Privacy Statement and Terms of Use</a> for more detail.</p>';
 }
 add_filter('login_message', 'groenp_cookie_warning_login');
 
@@ -100,7 +100,7 @@ add_filter('login_message', 'groenp_cookie_warning_login');
 // ****************************************************************
 function groenp_change_wp_login_url()
 {
-    return "https://admin.groenproductions.com/site/wp-admin/";
+    return trailingslashit(admin_url());
 }
 add_filter('login_headerurl', 'groenp_change_wp_login_url');
 
@@ -261,7 +261,7 @@ add_action('admin_bar_menu', 'groenp_remove_toolbar_items', 999);
 // ****************************************************************
 // Stop admin-ajax.php making unneccesary calls every 30secs
 // ****************************************************************
-add_action( 'init', 'stop_heartbeat', 1 );
+// add_action( 'init', 'stop_heartbeat', 1 );
 function stop_heartbeat() {
         wp_deregister_script('heartbeat');
 }
@@ -304,7 +304,7 @@ if(!empty($_GET['custom-logout']) && strtolower($_GET['custom-logout']) == "yes"
 // ****************************************************************
 // Logs the actions in the Std WordPress interface ('Add New User', 'Edit', 'Delete', 'Olvidó su contraseña', 'Iniciar Sesión', 'Cerrar sesión' )
 // ****************************************************************
-add_action( 'user_register', 'groenp_log_add_user', 10, 1); // hooked right after creation
+// add_action( 'user_register', 'groenp_log_add_user', 10, 1); // hooked right after creation
 function groenp_log_add_user( $user_id ) 
 {
     if ( isset($_POST['user_login']) )
@@ -493,7 +493,7 @@ function groenp_print_script_in_footer() {
 /******************************************************************************/
 
 // Check user privileges and determine which sections can be loaded
-_log('load other page files');
+// _log('load other page files');
 
 /* all general and admin meta boxes for the Dashboard page have been defined in: 'groenp_sites_management.php' */
 require_once( 'groenp_sites_management.php' );

@@ -17,3 +17,4 @@ debug.log
 site/logs/*.txt
 *).js
 *).css
+*).php

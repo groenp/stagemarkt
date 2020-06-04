@@ -201,10 +201,12 @@ function groenp_subscribers_meta_box_cb()
                                 'first_name' => $_POST['first_name'],
                                 'last_name' => $_POST['last_name'])
                         );
-                        // Mail the user with the new ID and pwd
-                        //groenp_plain_mail(   $user_id, "new_user_notification", "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
-                        //groenp_html_mail(   $user_id, "new_user_notification", "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
-                        groenp_multipart_mail($user_id, "new_user_notification", "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
+                        // Cannot create the reset key immediately afterwards, it expires
+
+                        // Mail the user with the new ID and pwd, this is a safer bet (need to understand hashing)
+                        // groenp_plain_mail(    $user_id, "new_user_notification", "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
+                        // groenp_html_mail(     $user_id, "new_user_notification", "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
+                        groenp_multipart_mail($user_id, "new_user_notification", "Welcome to Groen Productions - Sites Management", "Registration details", NULL, $password);
                         //wp_mail( $_POST['user_email'], 'Bienvenido a CuscoNow!', 'Your loginID: '. $_POST['user_login'] . ', Your Password: ' . $password );
 
                         if ( is_wp_error( $user_id ) ) { // There was an error updating the wp_user table...

@@ -46,18 +46,20 @@ function loc(dat_time) {
     if (dat_time != undefined) {
 
         // create time zone information for client, assume server data always in GMT
-        var tz = Date().split("GMT")[1].substring(0, 3);
-        if ( tz && !isNaN(parseInt(tz)) ) {
+        // var tz = Date().split("GMT")[1].substring(0, 3);
+        // if ( tz && !isNaN(parseInt(tz)) ) {
 
-            // create Date object, add timezone hours to it (can be negative for N/A), then strip off all TZ data
-            var loc_dt = new Date((dat_time));
-            loc_dt.setHours(loc_dt.getHours() + parseInt(tz));
-            // console.log(loc_dt);                                         // DEBUG //
-            loc_dt = loc_dt.toString().split("GMT")[0];
-        } else {
-            // just take the GMT time that was put in (this has the SAME RESULT!)
-            var loc_dt = new Date((dat_time).replace(" ", "T") + "+00:00").toString().split("GMT")[0]; // any server, seems to be a wp update? 
-        }
+        //     // create Date object, add timezone hours to it (can be negative for N/A), then strip off all TZ data
+        //     var loc_dt = new Date((dat_time));
+        //     loc_dt.setHours(loc_dt.getHours() + parseInt(tz));
+        //     // console.log(loc_dt);                                         // DEBUG //
+        //     loc_dt = loc_dt.toString().split("GMT")[0];
+        // } else {
+        //     // just take the GMT time that was put in (this has the SAME RESULT!)
+        //     var loc_dt = new Date((dat_time).replace(" ", "T") + "+00:00").toString().split("GMT")[0]; // any server, seems to be a wp update? 
+        // }
+        // just take the GMT time that was put in (this has the SAME RESULT!)
+        var loc_dt = new Date((dat_time).replace(" ", "T") + "+00:00").toString().split("GMT")[0]; // any server, seems to be a wp update? 
         return loc_dt;
     } else {
         return ""; // fail silently, so no "undefined" shown
