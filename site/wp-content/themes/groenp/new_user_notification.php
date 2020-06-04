@@ -20,7 +20,7 @@
                     You can login into <a href="<?php echo site_url('/wp-login.php') ?>" style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: #1388BF;font-weight: normal;text-decoration: underline;">your site management tool</a> with your username and password. 
                     For the best security you should change your password after logging in.<br><br>
                     We hope that you enjoy using the Sites Management tool. If you have any questions or suggestions please do not hesitate to contact us at: 
-                    <a href="mailto: admin@groenproductions.com" style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: #1388BF;font-weight: normal;text-decoration: underline;">admin@groenproductions.com</a>
+                    <a href="mailto://admin@groenproductions.com" style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: #1388BF;font-weight: normal;text-decoration: underline;">admin@groenproductions.com</a>
                     <br><br>
                     Greetings,<br>
                     The staff at Groen Productions<br>
