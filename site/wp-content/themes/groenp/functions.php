@@ -1,7 +1,7 @@
 <?php
 /******************************************************************************/
 /*                                                              Pieter Groen  */
-/*  Version 0.1 - May 26, 2020                                                */
+/*  Version 0.1 - June 5, 2020                                                */
 /*                                                                            */
 /*  PHP for Groen Productions website CMS in WordPress                        */
 /*                                                                            */
@@ -17,9 +17,10 @@
 /* - collapse side menu for Subscriber role                   (~line  200)    */
 /* - remove unneccesary widgets                               (~line  230)    */
 /* - stop heartbeat (ajax calls)                              (~line  260)    */
-/* - Logging user activities in Standard Wordpress interface  (~line  305)    */
-/* - insert Groen Productions asset files into admin pages    (~line  420)    */
-/* - create meta boxes for Groen Productions CMS              (~line  490)    */
+/* - Rewrite email messages for change and reset pwd          (~line  270)    */
+/* - Logging user activities in Standard Wordpress interface  (~line  365)    */
+/* - insert Groen Productions asset files into admin pages    (~line  480)    */
+/* - create meta boxes for Groen Productions CMS              (~line  555)    */
 /*                                                                            */
 /*  Plugins needed:                                                           */
 /* - Groen Productions Mailing plugin to change registration mails            */
@@ -302,9 +303,67 @@ if(!empty($_GET['custom-logout']) && strtolower($_GET['custom-logout']) == "yes"
 
 
 // ****************************************************************
+// Changed password notification to user - message  filter hook
+// ****************************************************************
+add_filter( 'password_change_email',  'groenp_changed_pwd_mail_message', 10, 3);
+function groenp_changed_pwd_mail_message(  $pass_change_mail,  $user,  $userdata ) {
+
+    $user_login = $user['user_login'];
+    $user_email = $user['user_email'];
+
+    $message = "This notice confirms that the password has been changed on Groen Productions – Sites Management Tool for the following user.\n\n";
+    $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";  
+    $message .= "If you did not change your password, please contact us at: admin@groenproductions.com\n";
+    $message .= "This email has been sent to " . $user_email ."\r\n\r\n";
+    $message .= "Greetings,\nThe staff at Groen Productions\n\n";
+
+  $pass_change_mail[ 'message' ] = $message;
+  return $pass_change_mail;
+}
+
+// ****************************************************************
+// User requested new password - message  filter hook
+// ****************************************************************
+add_filter( 'retrieve_password_message', 'groenp_retrieve_password_message', 10, 2 );
+function groenp_retrieve_password_message( $message, $key ){
+    $user_data = '';
+
+    // If no value is posted, return false
+    if( ! isset( $_POST['user_login'] )  ){
+            return '';
+    }
+
+    // Fetch user information from user_login (if user_login has email)
+    if ( strpos( $_POST['user_login'], '@' ) ) {
+        $user_data = get_user_by( 'email', trim( $_POST['user_login'] ) );
+
+    } else {
+        // user_login has userID
+        $login = trim($_POST['user_login']);
+        $user_data = get_user_by('login', $login);
+    }
+    if( ! $user_data  ){
+        return '';
+    }
+
+    $user_login = $user_data->user_login;
+    $user_email = $user_data->user_email;
+
+    // Set up message for retrieve password
+    $message = "A password reset has been requested for your account on the Groen Productions | Sites Management Tool.\n\n";
+    $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";  
+    $message .= "If you did not request this, just ignore this email and nothing will happen.\n\n"; 
+    $message .= "To reset your password, select the following link:\n";
+    $message .= site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . "\r\n\r\n";
+    $message .= "We hope that you enjoy using the Sites Management Tool. If you have any questions or suggestions please do not hesitate to contact us at: admin@groenproductions.com\n\n";
+    $message .= "Greetings,\nThe staff at Groen Productions\n\n";
+    return $message;
+}
+
+// ****************************************************************
 // Logs the actions in the Std WordPress interface ('Add New User', 'Edit', 'Delete', 'Olvidó su contraseña', 'Iniciar Sesión', 'Cerrar sesión' )
 // ****************************************************************
-// add_action( 'user_register', 'groenp_log_add_user', 10, 1); // hooked right after creation
+add_action( 'user_register', 'groenp_log_add_user', 10, 1); // hooked right after creation
 function groenp_log_add_user( $user_id ) 
 {
     if ( isset($_POST['user_login']) )

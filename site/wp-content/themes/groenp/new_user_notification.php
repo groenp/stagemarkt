@@ -24,7 +24,6 @@
                     <br><br>
                     Greetings,<br>
                     The staff at Groen Productions<br>
-                    https://admin.groenproductions.com<br>
                     <br>
                 </td>
             </tr>
@@ -50,7 +49,7 @@ We hope that you enjoy using the Sites Management Tool. If you have any question
 
 Greetings,
 The staff at Groen Productions
-https://admin.groenproductions.com
+
 Groen Productions' Privacy Statement: ". site_url('/privacy_and_terms_of_use.php') . "
 
 ";

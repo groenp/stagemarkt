@@ -2,10 +2,11 @@
 /******************************************************************************/
 /*                                                              Pieter Groen  */
 /*  Version 0.1 - May 23, 2020 (conversion from cusconow)                     */
+/*  Version 0.2 - June 5, 2020 (domain mgmt)                                  */
 /*                                                                            */
 /*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                    */
 /*   - subscriber management                (~line  125)                      */
-/*   - domain management                    (~line  560)                      */
+/*   - domain management                    (~line  660)                      */
 /*                                                                            */
 /******************************************************************************/
 
@@ -114,8 +115,8 @@ function groenp_subscribers_meta_boxes_add()
 {
     //global $struct_screen;
     $struct_screen = 'groenp_subscribers';
-    add_meta_box( 'gp-subscribers-mb', 'Sites Mgmt - Manage subscribers',    'groenp_subscribers_meta_box_cb', $struct_screen, 'normal' );
-    // add_meta_box( 'gp-domains-mb', 'Sites Mgmt - Manage domains', 'groenp_domains_meta_box_cb', $struct_screen, 'normal' );
+    add_meta_box( 'gp-subscribers-mb', 'Manage subscribers',    'groenp_subscribers_meta_box_cb', $struct_screen, 'normal' );
+    add_meta_box( 'gp-domains-mb', 'Manage domains', 'groenp_domains_meta_box_cb', $struct_screen, 'normal' );
 }
 add_action('add_meta_boxes_' . $struct_screen, 'groenp_subscribers_meta_boxes_add');
 
@@ -138,7 +139,6 @@ function groenp_subscribers_meta_box_cb()
     // If no Edit button pressed inside the table of this meta box
     if ( !array_search('Edit', $_POST) ) echo "<a name=" . $func . "></a>";  // Set anchor
 
-
     // default SSL port number; use https version, otherwise not
     $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
 
@@ -148,9 +148,9 @@ function groenp_subscribers_meta_box_cb()
     // DEBUG section
 	// All form fields (name and id) have the same name as the column name of their counterpart in the database
 	// lang specific fields have DB name and "_<lng>" appended to it
-    _log("===> START CHECKING MANAGEMENT FORM for: " . $func ); // DEBUG //
-	_log("form url will be index.php with: " . $form_url );     // DEBUG // 
- 	_log("POST: "); _log($_POST); // form fields //             // DEBUG // 
+    // _log("===> START CHECKING MANAGEMENT FORM for: " . $func ); // DEBUG //
+	// _log("form url will be index.php with: " . $form_url );     // DEBUG // 
+ 	// _log("POST: "); _log($_POST); // form fields //             // DEBUG // 
  	// _log($_FILES);                // pics //                    // DEBUG // 
 
     // ************************************************************
@@ -658,5 +658,276 @@ function groenp_subscribers_meta_box_cb()
 // Callback for DOMAINS Meta Box
 // ****************************************************************
 // TODO: write domains mb
+
+function groenp_domains_meta_box_cb()  
+{  
+    // open database
+    $con = groenp_open_database();
+
+    // ************************************************************
+    // 1. Process any form data
+    // ************************************************************
+
+    // Make this form unique
+    $func = 'Domain';
+    
+    // If no Edit button pressed inside the table of this meta box
+    if ( !array_search('Edit', $_POST) ) echo "<a name=" . $func . "></a>";  // Set anchor
+
+    // default SSL port number; use https version, otherwise not
+    $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
+
+    // Create form url for this meta box
+	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "#" . $func;
+
+    
+    // ************************************************************
+	if ( isset($_POST[('add_'. $func)]) || isset($_POST[('edit_'. $func)]) )  // THIS form has been submitted
+    // ************************************************************
+    {
+		// Check if all mandatory fields have been entered
+		if ( empty($_POST['dom_name']) || empty($_POST['dom_php']) || empty($_POST['base_url']) ) // empty($_POST['upload_dir']) left out: upload is optional, also test is optional
+		{
+            //_log("*** input error ***");
+    		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
+        }
+        elseif ( ( isset($_POST['is_test_active']) && empty($_POST['test_url']) ) || ( !empty($_POST['upload_dir']) && isset($_POST['is_test_active']) && empty($_POST['test_upl_dir']) ) )
+        {
+            if ( isset($_POST['is_test_active']) && empty($_POST['test_url']) )
+            {
+                echo "<p class='err-msg'>Test version cannot be active without a test url.</p>";
+            }
+            if ( !empty($_POST['upload_dir']) && isset($_POST['is_test_active']) && empty($_POST['test_upl_dir']) )
+            {
+                echo "<p class='err-msg'>When upload directory is defined and test version is active, upload directory must be defined for test version as well.</p>";
+            }
+        }
+        else {
+                // define and sanitize vars
+                $dom_name       = prep($_POST['dom_name'], "s");
+                $dom_php        = prep($_POST['dom_php'], "s");
+                $base_url       = prep($_POST['base_url'], "s");
+                $upload_dir     = prep($_POST['upload_dir'], "s");
+                // $upload_dir     = ( isset($_POST['upload_dir']) )? prep($_POST['upload_dir'], "s") : "NULL";
+                $is_test_active = prep($_POST['is_test_active'], "chk");
+                $test_url       = prep($_POST['test_url'], "s");
+                $test_upl_dir   = prep($_POST['test_upl_dir'], "s");
+
+            // ************************************************************
+		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
+			// ************************************************************
+			{
+                // create a prepared statement 
+                $query_string = "INSERT INTO gp_domains " .
+                    "(dom_name, dom_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) " . 
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                _log("Add query for ". $func .": ". $query_string);                // DEBUG //
+                $stmt = mysqli_prepare($con, $query_string);
+
+                if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
+                else {
+                    // bind stmt = i: integer, d: double, s: string
+                    $bind = mysqli_stmt_bind_param($stmt, "ssssiss", $dom_name, $dom_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir);
+                    if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
+                    else {
+                        // execute query 
+                        $exec = mysqli_stmt_execute($stmt);
+                        mysqli_stmt_close($stmt); 
+                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                    } // end of: binding successful
+                } // end of: stmt prepared successful
+			} // End of: add
+			// ************************************************************
+			elseif ( isset($_POST[('edit_'. $func)]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]!=='no')  // update tables row with editkey 
+			// ************************************************************
+			{
+                // sanitize editkey
+                $pk_dom_id= prep($_POST['editkey'], "i");
+
+                // create a prepared statement 
+                $query_string = "UPDATE LOW_PRIORITY gp_domains SET " .
+                    "dom_name = ?, dom_php = ?, base_url = ?, upload_dir = ?, is_test_active = ?, test_url = ?, test_upl_dir = ? " . 
+                    "WHERE pk_dom_id = ?";
+                //_log("Edit query for ". $func .": ". $query_string);              // DEBUG //
+                $stmt = mysqli_prepare($con, $query_string);
+
+                if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
+                else {
+                    // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
+                    $bind = mysqli_stmt_bind_param($stmt, "ssssissi", $dom_name, $dom_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir, $pk_dom_id);
+                    if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
+                    else {
+                        // execute query 
+                        $exec = mysqli_stmt_execute($stmt);
+                        mysqli_stmt_close($stmt); 
+                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not update item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                    } // end of: binding successful
+                } // end of: stmt prepared successful
+			} // End of: edit
+		} // End of: not missing mandatory fields
+    } // End of: add or edit (form submitted)
+
+    // ************************************************************
+    elseif (isset($_POST[('sure_'. $func)]))  // check for 'sure_'+function to see whether pushbutton used in THIS table or form
+    // ************************************************************
+    {
+        $delkey = intval(array_search('Delete', $_POST));   // Maybe it's a Delete; check for id on 'Delete' button (case sensitive) and store it
+        $editkey = intval(array_search('Edit', $_POST));    // Maybe it's an Edit; check for id on 'Edit' button (case sensitive) and store it
+        if ( empty($editkey) ) unset($editkey);             // It's not an Edit, so unset otherwise the form will load as an edit
+
+		// If there is a delete id and user answered 'Yes' on RUsure?
+        if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
+        {
+            // Create a prepared statement and delete row
+            $query_string = "DELETE LOW_PRIORITY FROM gp_domains WHERE pk_dom_id = ?";
+            $stmt = mysqli_prepare($con, $query_string);
+            if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
+            else {
+                $bind = mysqli_stmt_bind_param($stmt, "i", $delkey);
+                $exec = mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt); 
+                if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not delete item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+            } // end of: stmt prepared successful
+	    } // End of: deletion
+    } // End of: checking for form submits
+	
+    // ************************************************************
+    //  2. Build updated table with DOMAINS
+    // ************************************************************
+
+    // Meta box introduction
+    echo "<p>Entry fields marked with a '*' are mandatory.</p>";
+    
+    // Start of form
+	echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'><p>
+            <input type='hidden' name='sure_" . $func . "' id='sure_" . $func . "' value='maybe' /></p>"; // hidden input field to store RUsure? response
+			
+	// Start table build
+    echo "<table class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'><thead style='text-align: left'>
+            <tr style='text-align: left'>
+                <th>Project name</th>
+                <th>Base url</th>
+                <th>PHP filename</th>
+                <th>Upload dir</th>
+                <th class='chck'>Test active?</th>
+                <th>Test url</th>
+                <th>Action</th>
+            </tr></thead><tbody>";
+
+
+    // Query table, and leave out 'edit' row depending on action selection, and filter 
+    unset($result); unset($row); // re-initialize
+    if (isset($editkey))
+    {
+        $stmt = mysqli_prepare($con, "SELECT pk_dom_id, dom_name, dom_php, base_url, upload_dir, is_test_active, test_url" .
+                             " FROM gp_domains WHERE pk_dom_id != ? ORDER BY dom_name, dom_php");
+        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $row['pk_dom_id'], $row['dom_name'], $row['dom_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
+        //$result = mysqli_stmt_get_result($stmt);
+
+        // Retrieve row by row the project data in the DB
+        while ( mysqli_stmt_fetch($stmt) )
+        {
+            // Build row
+            echo "<tr>
+                    <td>" . dis($row['dom_name'],"s") . "</td>
+                    <td>" . dis($row['base_url'],"s") . "</td>
+                    <td>" . dis($row['dom_php'],"s") . "</td>
+                    <td>" . dis($row['upload_dir'],"s") . "</td>
+                    <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
+                    <td>" . dis($row['test_url'],"s") . "</td>";
+
+                    // Add final cell with button section and link to javascript pop-up
+                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_dom_id'] . "' value='Edit'> 
+                              <input type='submit' class='button-secondary' name='" . $row['pk_dom_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+                 </tr>";
+        } // End of: while result
+        mysqli_stmt_close($stmt);
+
+    } else {
+        $result = mysqli_query($con, "SELECT pk_dom_id, dom_name, dom_php, base_url, upload_dir, is_test_active, test_url" .
+                                     " FROM gp_domains ORDER BY dom_name, dom_php;");
+
+        // Retrieve row by row the project data in the DB
+        while ( $row = mysqli_fetch_array($result) )
+        {
+            // Build row
+            echo "<tr>
+                    <td>" . dis($row['dom_name'],"s") . "</td>
+                    <td>" . dis($row['base_url'],"s") . "</td>
+                    <td>" . dis($row['dom_php'],"s") . "</td>
+                    <td>" . dis($row['upload_dir'],"s") . "</td>
+                    <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
+                    <td>" . dis($row['test_url'],"s") . "</td>";
+
+                    // Add final cell with button section and link to javascript pop-up
+                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_dom_id'] . "' value='Edit'> 
+                              <input type='submit' class='button-secondary' name='" . $row['pk_dom_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+                 </tr>";
+        } // End of: while result
+    } // End of: not set editkey
+
+    // finalize table
+    echo "</tbody></table>";
+
+
+    // ************************************************************
+    // 3. Build add/edit form
+    // ************************************************************
+
+    // Retrieve edit row, if edit version of form
+    if ( isset($editkey) )
+    {
+        unset($stmt);
+        $stmt = mysqli_prepare($con, "SELECT dom_name, dom_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir" .
+                             " FROM gp_domains WHERE pk_dom_id = ?");
+        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $editrow['dom_name'], $editrow['dom_php'], $editrow['base_url'], $editrow['upload_dir'], $editrow['is_test_active'], $editrow['test_url'], $editrow['test_upl_dir']);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt); 
+    }
+    
+    // If it is an Edit then we need to scroll till here.
+    if ( isset($editkey) ) echo "<a name=" . $func . "></a>";  // Set anchor
+
+    // Start rendering the form
+    echo "<h4><a name=add_" . $func . "></a>Add or edit domain</h4>
+    <p class='hor-form'>";
+        // If edit form keep edit key in hidden field
+        if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > "; 
+        
+        // If Edit populate each field with the present values
+        echo "
+        <label for='dom_name'>Project name *</label><span>(max. 50 chars, only for this interface)</span><input type='text' name='dom_name' id='dom_name' maxlength='50' value='" . dis($editrow['dom_name'],"s") . "' />
+        <label for='dom_php'>PHP file *</label><span>(filename in themes directory)</span><input type='text' name='dom_php' id='dom_php' maxlength='50' value='" . dis($editrow['dom_php'],"s") . "' />
+        <label for='base_url'>Base url *</label><span>(without protocol)</span><input type='text' name='base_url' id='base_url' maxlength='100' value='" . dis($editrow['base_url'],"s") . "' />
+        <label for='upload_dir'>Upload directory</label><span>(relative from public_html)</span><input type='text' name='upload_dir' id='upload_dir' maxlength='100' value='" . dis($editrow['upload_dir'],"s") . "' />
+        <label for='sponsorship'>Test version active?</label><input type='checkbox' name='is_test_active' id='is_test_active' " . dis($editrow['is_test_active'],"chk_ctrl") . "/><br />
+        <label for='test_url'>Test url †</label><span>(† mandatory if test version is active)</span><input type='text' name='test_url' id='test_url' maxlength='100' value='" . dis($editrow['test_url'],"s") . "' />
+        <label for='test_upl_dir'>Test upload directory †</label><span>(† mandatory if upload directory filled out and test version is active)</span><input type='text' name='test_upl_dir' id='test_upl_dir' maxlength='100' value='" . dis($editrow['test_upl_dir'],"s") . "' />
+    </p>
+    <p class='button-row'>";
+
+    if ( isset($editkey) )
+    {
+        // Edit form, so create Edit and Cancel buttons  
+        echo "<input type='submit'  class='button-primary' name='edit_" . $func . "' value='Edit domain'> <input type='submit' class='button-secondary' name='cancel' value='Cancel'>";
+    } else {
+        // Normal (Add) form, so only Add button needed
+        echo "<input type='submit'  class='button-primary' name='add_" . $func . "' value='Add domain'>";
+    }
+     echo "
+    </p>
+    </form>";
+
+    // 4. Clean up
+    mysqli_close($con);
+	unset($result);
+	unset($row);
+	unset($editrow);
+
+}  // End: groenp_domains_meta_box_cb() 
 
 ?>
