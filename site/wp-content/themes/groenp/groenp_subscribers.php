@@ -6,7 +6,7 @@
 /*                                                                            */
 /*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                    */
 /*   - subscriber management                (~line  125)                      */
-/*   - domain management                    (~line  660)                      */
+/*   - project management                    (~line  660)                     */
 /*                                                                            */
 /******************************************************************************/
 
@@ -54,7 +54,7 @@ function groenp_subscribers_page_cb() {
     $struct_screen = 'groenp_subscribers';
 
     echo "<div class='wrap'>
-        <h2>Sites Management - Subscribers and their Domains</h2>";
+        <h2>Subscribers and their projects</h2>";
  
         /* Used to save closed meta boxes and their order. 
 		   This is not working, because a form will interfere with the other forms in the Groen Productions Meta Boxes. */
@@ -75,10 +75,10 @@ function groenp_subscribers_page_cb() {
                     <div class='inside'>
                         <h3>This page supports the following tasks:</h3>
                         <ul>
-                            <li><a href='#Sbscbr'>Manage Subscribers</a></li>
-                            <li><a href='#add_Sbscbr'>Add or edit Subscriber</a></li>
-                            <li><a href='#Domain'>Manage Domains</a></li>
-                            <li><a href='#add_Domain'>Add or edit Domain</a></li>
+                            <li><a href='#Sbscbr'>Manage subscribers</a></li>
+                            <li><a href='#add_Sbscbr'>Add or edit subscriber</a></li>
+                            <li><a href='#Prjct'>Manage projects</a></li>
+                            <li><a href='#add_Prjct'>Add or edit project</a></li>
                         </ul>
                     </div>
 
@@ -116,7 +116,7 @@ function groenp_subscribers_meta_boxes_add()
     //global $struct_screen;
     $struct_screen = 'groenp_subscribers';
     add_meta_box( 'gp-subscribers-mb', 'Manage subscribers',    'groenp_subscribers_meta_box_cb', $struct_screen, 'normal' );
-    add_meta_box( 'gp-domains-mb', 'Manage domains', 'groenp_domains_meta_box_cb', $struct_screen, 'normal' );
+    add_meta_box( 'gp-domains-mb', 'Manage projects', 'groenp_projects_meta_box_cb', $struct_screen, 'normal' );
 }
 add_action('add_meta_boxes_' . $struct_screen, 'groenp_subscribers_meta_boxes_add');
 
@@ -490,7 +490,8 @@ function groenp_subscribers_meta_box_cb()
     (When the subscriber doesn't know how to change their email address, you can sever the present email from their account, then create a new email in the Users section with the same username, 
     and then join the email account with the subscriber account again.)</p>
 
-    <p>Entry fields marked with a '*' are mandatory. Entry fields marked with '†' are only saved when the Email address has been provided.</p>
+    <p>Entry fields marked with a '*' are mandatory. Entry fields marked with '†' are only saved when the Email address has been provided. 
+    Subscribers cannot be deleted when they are assigned to one or more projects.</p>
 
     <p>Select Filter to obtain a list of subscribers according to the filter criteria. Most fields also accepts a '*' for any entry. 
     Any boolean field (with ? in label) accepts Y/N or '*' for both Y & N . Select Clear to remove any filtering, then select Filter to obtain full list.</p>";
@@ -655,11 +656,11 @@ function groenp_subscribers_meta_box_cb()
 
 
 // ****************************************************************
-// Callback for DOMAINS Meta Box
+// Callback for PROJECTS Meta Box
 // ****************************************************************
 // TODO: write domains mb
 
-function groenp_domains_meta_box_cb()  
+function groenp_projects_meta_box_cb()  
 {  
     // open database
     $con = groenp_open_database();
@@ -669,7 +670,7 @@ function groenp_domains_meta_box_cb()
     // ************************************************************
 
     // Make this form unique
-    $func = 'Domain';
+    $func = 'Prjct';
     
     // If no Edit button pressed inside the table of this meta box
     if ( !array_search('Edit', $_POST) ) echo "<a name=" . $func . "></a>";  // Set anchor
@@ -686,7 +687,7 @@ function groenp_domains_meta_box_cb()
     // ************************************************************
     {
 		// Check if all mandatory fields have been entered
-		if ( empty($_POST['dom_name']) || empty($_POST['dom_php']) || empty($_POST['base_url']) ) // empty($_POST['upload_dir']) left out: upload is optional, also test is optional
+		if ( empty($_POST['prjct_name']) || empty($_POST['prjct_php']) || empty($_POST['base_url']) ) // empty($_POST['upload_dir']) left out: upload is optional, also test is optional
 		{
             //_log("*** input error ***");
     		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
@@ -704,8 +705,8 @@ function groenp_domains_meta_box_cb()
         }
         else {
                 // define and sanitize vars
-                $dom_name       = prep($_POST['dom_name'], "s");
-                $dom_php        = prep($_POST['dom_php'], "s");
+                $prjct_name       = prep($_POST['prjct_name'], "s");
+                $prjct_php        = prep($_POST['prjct_php'], "s");
                 $base_url       = prep($_POST['base_url'], "s");
                 $upload_dir     = prep($_POST['upload_dir'], "s");
                 // $upload_dir     = ( isset($_POST['upload_dir']) )? prep($_POST['upload_dir'], "s") : "NULL";
@@ -718,8 +719,8 @@ function groenp_domains_meta_box_cb()
 			// ************************************************************
 			{
                 // create a prepared statement 
-                $query_string = "INSERT INTO gp_domains " .
-                    "(dom_name, dom_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) " . 
+                $query_string = "INSERT INTO gp_projects " .
+                    "(prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) " . 
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
                 _log("Add query for ". $func .": ". $query_string);                // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
@@ -727,7 +728,7 @@ function groenp_domains_meta_box_cb()
                 if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string
-                    $bind = mysqli_stmt_bind_param($stmt, "ssssiss", $dom_name, $dom_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir);
+                    $bind = mysqli_stmt_bind_param($stmt, "ssssiss", $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -742,19 +743,19 @@ function groenp_domains_meta_box_cb()
 			// ************************************************************
 			{
                 // sanitize editkey
-                $pk_dom_id= prep($_POST['editkey'], "i");
+                $pk_prjct_id= prep($_POST['editkey'], "i");
 
                 // create a prepared statement 
-                $query_string = "UPDATE LOW_PRIORITY gp_domains SET " .
-                    "dom_name = ?, dom_php = ?, base_url = ?, upload_dir = ?, is_test_active = ?, test_url = ?, test_upl_dir = ? " . 
-                    "WHERE pk_dom_id = ?";
+                $query_string = "UPDATE LOW_PRIORITY gp_projects SET " .
+                    "prjct_name = ?, prjct_php = ?, base_url = ?, upload_dir = ?, is_test_active = ?, test_url = ?, test_upl_dir = ? " . 
+                    "WHERE pk_prjct_id = ?";
                 //_log("Edit query for ". $func .": ". $query_string);              // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
-                    $bind = mysqli_stmt_bind_param($stmt, "ssssissi", $dom_name, $dom_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir, $pk_dom_id);
+                    $bind = mysqli_stmt_bind_param($stmt, "ssssissi", $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir, $pk_prjct_id);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -779,7 +780,7 @@ function groenp_domains_meta_box_cb()
         if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
         {
             // Create a prepared statement and delete row
-            $query_string = "DELETE LOW_PRIORITY FROM gp_domains WHERE pk_dom_id = ?";
+            $query_string = "DELETE LOW_PRIORITY FROM gp_projects WHERE pk_prjct_id = ?";
             $stmt = mysqli_prepare($con, $query_string);
             if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
             else {
@@ -792,11 +793,29 @@ function groenp_domains_meta_box_cb()
     } // End of: checking for form submits
 	
     // ************************************************************
-    //  2. Build updated table with DOMAINS
+    //  2. Build updated table with PROJECTS
     // ************************************************************
 
     // Meta box introduction
-    echo "<p>Entry fields marked with a '*' are mandatory.</p>";
+    echo "<p>Projects are the products (websites) that can be managed in this Sites Management tool. 
+    The project name is only used as a label in this tool. The url is the domain link used by the users/customers of the subscriber. 
+    It typically resides under the public_html directory on GoDaddy. Some products allow the upload of files into the cms. 
+    For this purpose the directory path relative to the public_html can be stored.</p>
+    
+    <p>A project can have a test version. This version could serve two purposes:</p>
+    <ol>
+        <li>test new functionality as a stage in the development process. 
+        For this purpose it will have a separate cms php file containing the meta boxes that will load in the test version of this tool.</li>
+        <li>test new content in the live version of the product. 
+        For this purpose the live cms php file will link to the test database for this product. 
+        (This is the same database that the test version of the Sites Mgmt tool links to.)</li>
+    </ol>
+    <p>This interface controls subscriber access to the test version.</p>
+
+    <p>If there is a test version of the product, it will reside in a different directory at GoDaddy which may mean a different relative upload directory. 
+    This is stored in the Test upload directory.</p>
+
+    <p>Projects cannot be deleted when they are assigned to one or more subscribers. Entry fields marked with a '*' are mandatory.</p>";
     
     // Start of form
 	echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'><p>
@@ -819,11 +838,11 @@ function groenp_domains_meta_box_cb()
     unset($result); unset($row); // re-initialize
     if (isset($editkey))
     {
-        $stmt = mysqli_prepare($con, "SELECT pk_dom_id, dom_name, dom_php, base_url, upload_dir, is_test_active, test_url" .
-                             " FROM gp_domains WHERE pk_dom_id != ? ORDER BY dom_name, dom_php");
+        $stmt = mysqli_prepare($con, "SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url" .
+                             " FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name, prjct_php");
         mysqli_stmt_bind_param($stmt, "i", $editkey);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $row['pk_dom_id'], $row['dom_name'], $row['dom_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
+        mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name'], $row['prjct_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
         //$result = mysqli_stmt_get_result($stmt);
 
         // Retrieve row by row the project data in the DB
@@ -831,39 +850,39 @@ function groenp_domains_meta_box_cb()
         {
             // Build row
             echo "<tr>
-                    <td>" . dis($row['dom_name'],"s") . "</td>
+                    <td>" . dis($row['prjct_name'],"s") . "</td>
                     <td>" . dis($row['base_url'],"s") . "</td>
-                    <td>" . dis($row['dom_php'],"s") . "</td>
+                    <td>" . dis($row['prjct_php'],"s") . "</td>
                     <td>" . dis($row['upload_dir'],"s") . "</td>
                     <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
                     <td>" . dis($row['test_url'],"s") . "</td>";
 
                     // Add final cell with button section and link to javascript pop-up
-                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_dom_id'] . "' value='Edit'> 
-                              <input type='submit' class='button-secondary' name='" . $row['pk_dom_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
+                              <input type='submit' class='button-secondary' name='" . $row['pk_prjct_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
                  </tr>";
         } // End of: while result
         mysqli_stmt_close($stmt);
 
     } else {
-        $result = mysqli_query($con, "SELECT pk_dom_id, dom_name, dom_php, base_url, upload_dir, is_test_active, test_url" .
-                                     " FROM gp_domains ORDER BY dom_name, dom_php;");
+        $result = mysqli_query($con, "SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url" .
+                                     " FROM gp_projects ORDER BY prjct_name, prjct_php;");
 
         // Retrieve row by row the project data in the DB
         while ( $row = mysqli_fetch_array($result) )
         {
             // Build row
             echo "<tr>
-                    <td>" . dis($row['dom_name'],"s") . "</td>
+                    <td>" . dis($row['prjct_name'],"s") . "</td>
                     <td>" . dis($row['base_url'],"s") . "</td>
-                    <td>" . dis($row['dom_php'],"s") . "</td>
+                    <td>" . dis($row['prjct_php'],"s") . "</td>
                     <td>" . dis($row['upload_dir'],"s") . "</td>
                     <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
                     <td>" . dis($row['test_url'],"s") . "</td>";
 
                     // Add final cell with button section and link to javascript pop-up
-                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_dom_id'] . "' value='Edit'> 
-                              <input type='submit' class='button-secondary' name='" . $row['pk_dom_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
+                              <input type='submit' class='button-secondary' name='" . $row['pk_prjct_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
                  </tr>";
         } // End of: while result
     } // End of: not set editkey
@@ -880,11 +899,11 @@ function groenp_domains_meta_box_cb()
     if ( isset($editkey) )
     {
         unset($stmt);
-        $stmt = mysqli_prepare($con, "SELECT dom_name, dom_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir" .
-                             " FROM gp_domains WHERE pk_dom_id = ?");
+        $stmt = mysqli_prepare($con, "SELECT prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir" .
+                             " FROM gp_projects WHERE pk_prjct_id = ?");
         mysqli_stmt_bind_param($stmt, "i", $editkey);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $editrow['dom_name'], $editrow['dom_php'], $editrow['base_url'], $editrow['upload_dir'], $editrow['is_test_active'], $editrow['test_url'], $editrow['test_upl_dir']);
+        mysqli_stmt_bind_result($stmt, $editrow['prjct_name'], $editrow['prjct_php'], $editrow['base_url'], $editrow['upload_dir'], $editrow['is_test_active'], $editrow['test_url'], $editrow['test_upl_dir']);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt); 
     }
@@ -900,8 +919,8 @@ function groenp_domains_meta_box_cb()
         
         // If Edit populate each field with the present values
         echo "
-        <label for='dom_name'>Project name *</label><span>(max. 50 chars, only for this interface)</span><input type='text' name='dom_name' id='dom_name' maxlength='50' value='" . dis($editrow['dom_name'],"s") . "' />
-        <label for='dom_php'>PHP file *</label><span>(filename in themes directory)</span><input type='text' name='dom_php' id='dom_php' maxlength='50' value='" . dis($editrow['dom_php'],"s") . "' />
+        <label for='prjct_name'>Project name *</label><span>(max. 50 chars, only for this interface)</span><input type='text' name='prjct_name' id='prjct_name' maxlength='50' value='" . dis($editrow['prjct_name'],"s") . "' />
+        <label for='prjct_php'>PHP file *</label><span>(filename in themes directory)</span><input type='text' name='prjct_php' id='prjct_php' maxlength='50' value='" . dis($editrow['prjct_php'],"s") . "' />
         <label for='base_url'>Base url *</label><span>(without protocol)</span><input type='text' name='base_url' id='base_url' maxlength='100' value='" . dis($editrow['base_url'],"s") . "' />
         <label for='upload_dir'>Upload directory</label><span>(relative from public_html)</span><input type='text' name='upload_dir' id='upload_dir' maxlength='100' value='" . dis($editrow['upload_dir'],"s") . "' />
         <label for='sponsorship'>Test version active?</label><input type='checkbox' name='is_test_active' id='is_test_active' " . dis($editrow['is_test_active'],"chk_ctrl") . "/><br />
@@ -913,10 +932,10 @@ function groenp_domains_meta_box_cb()
     if ( isset($editkey) )
     {
         // Edit form, so create Edit and Cancel buttons  
-        echo "<input type='submit'  class='button-primary' name='edit_" . $func . "' value='Edit domain'> <input type='submit' class='button-secondary' name='cancel' value='Cancel'>";
+        echo "<input type='submit'  class='button-primary' name='edit_" . $func . "' value='Edit project'> <input type='submit' class='button-secondary' name='cancel' value='Cancel'>";
     } else {
         // Normal (Add) form, so only Add button needed
-        echo "<input type='submit'  class='button-primary' name='add_" . $func . "' value='Add domain'>";
+        echo "<input type='submit'  class='button-primary' name='add_" . $func . "' value='Add project'>";
     }
      echo "
     </p>
@@ -928,6 +947,6 @@ function groenp_domains_meta_box_cb()
 	unset($row);
 	unset($editrow);
 
-}  // End: groenp_domains_meta_box_cb() 
+}  // End: groenp_projects_meta_box_cb() 
 
 ?>

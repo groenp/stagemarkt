@@ -237,10 +237,19 @@ div.postbox input.numb[type="text"] {
 } */
 
 /* Smaller font in forms help fit things in forms on smaller screens */
-#post-body-content, #dashboard-widgets div.postbox p, #dashboard-widgets div.postbox ul, #poststuff div.postbox p, 
-#poststuff div.postbox ul, div.postbox table.tel-list, div.postbox table.editform td {
+#post-body-content, 
+#dashboard-widgets div.postbox p, 
+#dashboard-widgets div.postbox ul, 
+#poststuff div.postbox p, 
+#poststuff div.postbox ul, 
+#poststuff div.postbox ol, 
+div.postbox table.tel-list, 
+div.postbox table.editform td {
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-size: 8pt;
+}
+div.postbox li {
+    margin-bottom: 0;
 }
 div.postbox table.editform td input {
 	font-size: 14px;
