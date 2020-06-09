@@ -270,7 +270,7 @@ function stop_heartbeat() {
 // ****************************************************************
 // Redirect blocked user to login page - close session
 // ****************************************************************
-// add_action( 'admin_init', 'groenp_redirect_blocked_users' );
+add_action( 'admin_init', 'groenp_redirect_blocked_users' );
 function groenp_redirect_blocked_users() {
 
     // Open groenp_sites_cms database
@@ -316,8 +316,9 @@ function groenp_changed_pwd_mail_message(  $pass_change_mail,  $user,  $userdata
     $message .= "If you did not change your password, please contact us at: admin@groenproductions.com\n";
     $message .= "This email has been sent to " . $user_email ."\r\n\r\n";
     $message .= "Greetings,\nThe staff at Groen Productions\n\n";
+    $message .= "Groen Productions' Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n\n";
+    $pass_change_mail[ 'message' ] = $message;
 
-  $pass_change_mail[ 'message' ] = $message;
   return $pass_change_mail;
 }
 
@@ -357,6 +358,7 @@ function groenp_retrieve_password_message( $message, $key ){
     $message .= site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . "\r\n\r\n";
     $message .= "We hope that you enjoy using the Sites Management Tool. If you have any questions or suggestions please do not hesitate to contact us at: admin@groenproductions.com\n\n";
     $message .= "Greetings,\nThe staff at Groen Productions\n\n";
+    $message .= "Groen Productions' Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n\n";
     return $message;
 }
 
@@ -453,21 +455,23 @@ function groenp_log_login($user_login, $user)
     {
         _lua("WPuser", "Subscriber (wpID:". $user->ID .", ". $user_login .") logged in.");
     } else {
-        _lua("WPuser", "GP User (wpID:". $user->ID .", ". $user_login .") logged in.");
+        _lua("WPuser", "Admin user (wpID:". $user->ID .", ". $user_login .") logged in.");
     }
 }
 
 add_action('wp_logout', 'groenp_log_logout'); // called after auth cookie cleared
 function groenp_log_logout() 
 {
-    global $wpdb;
-    $user = wp_get_current_user();
-    if ( $user )
-    {
-        _lua("WPuser", "User (wpID:". $user->ID . ", ". $user->user_login  . ") logged out.");
-    } else {
-        _lua("WPuser", "User logged out.");
-    }
+    _lua("WPuser", "User logged out.");
+
+    // global $wpdb;
+    // $user = wp_get_current_user();
+    // if ( isset($user) && ($user->ID != "0") )
+    // {
+    //     _lua("WPuser", "User (wpID:". $user->ID . ", ". $user->user_login  . ") logged out.");
+    // } else {
+    //     _lua("WPuser", "User logged out.");
+    // }
 }
 
 
@@ -486,8 +490,8 @@ function groenp_script_enqueuer()
     // default SSL port number OR http: port number; use minimized version, otherwise not
     $min_url = ($_SERVER['SERVER_PORT'] == "443" || $_SERVER['SERVER_PORT'] == "80") ? ".min" : "";
     
-    wp_register_script( 'groenp-sbscrbr', trailingslashit( get_stylesheet_directory_uri() ) .'groenp-sbscrbr' . $min_url . '.js', array('jquery') );
-    if ( current_user_can('list_users') ) wp_register_script( 'groenp-sites-cms',  trailingslashit( get_stylesheet_directory_uri() ) . 'groenp-sites-cms' . $min_url . '.js', array('jquery') );
+    wp_register_script( 'groenp-sbscrbr', trailingslashit( get_stylesheet_directory_uri() ) .'assets/groenp-sbscrbr' . $min_url . '.js', array('jquery') );
+    if ( current_user_can('list_users') ) wp_register_script( 'groenp-sites-cms',  trailingslashit( get_stylesheet_directory_uri() ) . 'assets/groenp-sites-cms' . $min_url . '.js', array('jquery') );
     wp_localize_script( 'groenp-sbscrbr', 'groenpAsync', array( 'ajaxurl' => admin_url( 'admin-ajax.php' )));
 
     wp_enqueue_script( 'jquery' );
@@ -507,25 +511,13 @@ function groenp_include_in_head()
     // global vars driven by server
     // echo "<script type='text/javascript'>
     //     var TZsrvr = '". sprintf('%+03d', get_option('gmt_offset')) ."' + ':00'; // get server time-zone (from WordPress)
-
-    //     jquery disables forward anchor links in page
-    //     jQuery(document).ready(function($){
-    //         var fwd_link = window.location.hash.substr(1);
-    //         if ( fwd_link != '' && window.location.href.indexOf('index.php?page') != -1 ) {
-    //             // scroll to anchor
-    //             $('html, body').animate({
-    //                 scrollTop: $('a[name=\"'+fwd_link+'\"]').offset().top - 90 // 90 px = h3 bar (link is just below it) + top nav bar (32px) + margin
-    //             }, 700);
-    //         }
-    //     });
-
     // </script>";
 
     // default SSL port number OR http: port number; use minimized version, otherwise not
     $min_url = ($_SERVER['SERVER_PORT'] == "443" || $_SERVER['SERVER_PORT'] == "80") ? ".min" : "";
 
     // include style sheets
-    echo "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
+    echo "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "assets/groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
 } 
 add_action('admin_head','groenp_include_in_head');
 add_action('login_head','groenp_include_in_head');
@@ -538,9 +530,6 @@ function groenp_print_script_in_footer() {
 
             // initialize meta box handling
             postboxes.add_postbox_toggles(pagenow); 
-
-            // set bkgnd for boolean display with 'Y'
-            // $('div.postbox table.manage td.chck:contains(\"Y\")').css('background-color','#f9f7ed');
         });
         </script>";
 }

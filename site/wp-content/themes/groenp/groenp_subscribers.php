@@ -2,11 +2,13 @@
 /******************************************************************************/
 /*                                                              Pieter Groen  */
 /*  Version 0.1 - May 23, 2020 (conversion from cusconow)                     */
-/*  Version 0.2 - June 5, 2020 (domain mgmt)                                  */
+/*  Version 0.2 - June 5, 2020 (project mgmt)                                 */
+/*  Version 0.3 - June 9, 2020 (subscriber-project pairing)                   */
 /*                                                                            */
 /*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                    */
-/*   - subscriber management                (~line  125)                      */
+/*   - subscriber management                 (~line  125)                     */
 /*   - project management                    (~line  660)                     */
+/*   - subscriber-project pairing            (~line  930)                     */
 /*                                                                            */
 /******************************************************************************/
 
@@ -228,7 +230,7 @@ function groenp_subscribers_meta_box_cb()
                                 // execute query 
                                 $exec = mysqli_stmt_execute($stmt);
                                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                                else { _lua($func, "Subscriber (ID:". mysqli_insert_id($con) .", ". $user_login . ", email: ". $_POST['user_email'] .") with panel access created."); }
+                                else { _lua($func, "Subscriber (ID: ". mysqli_insert_id($con) .", ". $user_login . ", email: ". $_POST['user_email'] .") with panel access created."); }
                                 mysqli_stmt_close($stmt); 
                             } // end of: binding successful
                         } // end of: stmt prepared successful
@@ -256,7 +258,7 @@ function groenp_subscribers_meta_box_cb()
                                 // execute query 
                                 $exec = mysqli_stmt_execute($stmt);
                                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                                else { _lua($func, "Subscriber (ID:". mysqli_insert_id($con) .", ". $user_login .") - no panel access - created."); }
+                                else { _lua($func, "Subscriber (ID: ". mysqli_insert_id($con) .", ". $user_login .") - no panel access - created."); }
                                 mysqli_stmt_close($stmt); 
                             } // end of: binding successful
                         } // end of: stmt prepared successful
@@ -283,7 +285,7 @@ function groenp_subscribers_meta_box_cb()
                         // execute query 
                         $exec = mysqli_stmt_execute($stmt);
                         if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not update item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                        else { _lua($func, "Subscriber (ID:". $pk_sbscrbr_id .", ". $user_login .") updated."); }
+                        else { _lua($func, "Subscriber (ID: ". $pk_sbscrbr_id .", ". $user_login .") updated."); }
                         mysqli_stmt_close($stmt); 
                     } // end of: binding successful
                 } // end of: stmt prepared successful
@@ -304,11 +306,11 @@ function groenp_subscribers_meta_box_cb()
                         'first_name' => $_POST['first_name'],
                         'last_name' => $_POST['last_name'])
                     );
-                    _lua($func, "Subscriber (ID:". $pk_sbscrbr_id .", ". $user_login .") wp_user part edit successful? (no answer means yes)"); 
+                    _lua($func, "Subscriber (ID: ". $pk_sbscrbr_id .", ". $user_login .") wp_user part edit successful? (no answer means yes)"); 
                 }
                 if ( is_wp_error( $row['fr_ID'] ) ) { // There was an error updating the wp_user table...
                     echo "<p class='err-msg'>Could not update the WordPress section of the subscriber with all form data. Try to edit the subscriber in Users.</p>";
-                    _lua($func, "Subscriber (ID:". $pk_sbscrbr_id .", ". $user_login .") wp_user part edit failed!"); 
+                    _lua($func, "Subscriber (ID: ". $pk_sbscrbr_id .", ". $user_login .") wp_user part edit failed!"); 
                 }
 			}
 		} // end of not missing mandatory fields
@@ -368,14 +370,14 @@ function groenp_subscribers_meta_box_cb()
                 $bind = mysqli_stmt_bind_param($stmt, "i", $sbscrbr_id);
                 $exec = mysqli_stmt_execute($stmt);
                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Invalid remove wp_user query for " . $func . ": " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                else { _lua($func, "Subscriber (ID:". $sbscrbr_id .", ". $row['sbscrbr_login'] .") wp_user section removed."); }
+                else { _lua($func, "Subscriber (ID: ". $sbscrbr_id .", ". $row['sbscrbr_login'] .") wp_user section removed."); }
                 mysqli_stmt_close($stmt); 
 
                 if ( $wp_user->roles[0] == "subscriber")
                 {
                     wp_delete_user($wp_user->ID);
-                   _log("wp_user (ID:" . $wp_user->ID . ") deleted.");						// DEBUG //
-                   _lua($func, "Subscriber's wp_user (ID:". $wp_user->ID .", ". $wp_user->user_login .") deleted.");
+                   _log("wp_user (ID: " . $wp_user->ID . ") deleted.");						// DEBUG //
+                   _lua($func, "Subscriber's wp_user (ID: ". $wp_user->ID .", ". $wp_user->user_login .") deleted.");
                 } else {
                     echo "<p class='err-msg'>The corresponding wp_user of this subscriber has a role higher than subscriber and cannot be deleted.</p>";
                 }
@@ -396,7 +398,7 @@ function groenp_subscribers_meta_box_cb()
                 mysqli_stmt_bind_param($stmt, "ii", $wp_user->ID, $sbscrbr_id);
                 $exec = mysqli_stmt_execute($stmt);
                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Invalid attach wp_user query for " . $func . ": " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                else { _lua($func, "Subscriber (ID:". $sbscrbr_id .", ". $wp_user->user_login .") wp_user section added."); }
+                else { _lua($func, "Subscriber (ID: ". $sbscrbr_id .", ". $wp_user->user_login .") wp_user section added."); }
                 mysqli_stmt_close($stmt); 
             } else {
                 echo "<p class='err-msg'>Could not find the subscriber (whose wp_user with corresponding login ID needs to be attached) through its ID: " . $_POST['edit_id'] . "</p>";
@@ -411,19 +413,19 @@ function groenp_subscribers_meta_box_cb()
             $stmt = mysqli_prepare($con, $query_string);
             mysqli_stmt_bind_param($stmt, "i", $delkey);
             $exec = mysqli_stmt_execute($stmt);
-            if ($exec === FALSE) { echo "<p class='err-msg'>Subscriber could not be deleted: Subscriber may own an establishment, see below. " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+            if ($exec === FALSE) { echo "<p class='err-msg'>Subscriber could not be deleted: Subscriber may be linked to a project, see below. " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
             elseif ( $wp_user ) 
             {
                 // delete wp_user only if user role is "subscriber" when wp_user exists
                 if ( $wp_user->roles[0] == "subscriber" ) 
                 {
                     wp_delete_user($wp_user->ID );
-                    _lua($func, "Subscriber (ID:". $delkey .", ". $wp_user->user_login .") deleted, and corresponding wp_user deleted.");
+                    _lua($func, "Subscriber (ID: ". $delkey .", ". $wp_user->user_login .") deleted, and corresponding wp_user deleted.");
                 } else {
                     echo "<p class='err-msg'>The corresponding wp_user part of this subscriber has a role higher than subscriber and cannot be deleted.</p>";
                 }
             } // wp_user exists for deletion
-            else { _lua($func, "Subscriber (ID:". $delkey .", ". $row['sbscrbr_login'] .") deleted (but no wp_user deleted)."); }
+            else { _lua($func, "Subscriber (ID: ". $delkey .", ". $row['sbscrbr_login'] .") deleted (but no wp_user deleted)."); }
             mysqli_stmt_close($stmt); 
 	    } // end deletion
     } // end checking for form submits
@@ -585,7 +587,10 @@ function groenp_subscribers_meta_box_cb()
                     mysqli_stmt_bind_param($stmt, "i",$editrow['pk_sbscrbr_id']);
                     $exec = mysqli_stmt_execute($stmt);
                     if ($exec ===  FALSE) { echo "<span class='inline err-msg'>Invalid remove wp_user reference query for " . $func . ": " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</span>"; } 
-                    else { echo "<span class='inline err-msg'>Old reference to wp_user removed. Re-edit this subscriber (Cancel and Edit again) to see possible corresponding wp_user.</span>"; } 
+                    else { 
+                        echo "<span class='inline err-msg'>Old reference to wp_user removed. Re-edit this subscriber (Cancel and Edit again) to see possible corresponding wp_user.</span>"; 
+                        _lua($func, "Subscriber (ID: ". $editrow['pk_sbscrbr_id'] .", ". $editrow['fr_ID'] .") wp_user has been deleted in WordPress U/I. Reference to wp_user removed."); 
+                    } 
                     mysqli_stmt_close($stmt); 
 
                 } else { // corresponding wp_user found; provide U/I to Delete wp_user part
@@ -709,7 +714,7 @@ function groenp_projects_meta_box_cb()
                 $query_string = "INSERT INTO gp_projects " .
                     "(prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) " . 
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-                _log("Add query for ". $func .": ". $query_string);                // DEBUG //
+                // _log("Add query for ". $func .": ". $query_string);                // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
@@ -720,8 +725,9 @@ function groenp_projects_meta_box_cb()
                     else {
                         // execute query 
                         $exec = mysqli_stmt_execute($stmt);
+                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>";  }
+                        else { _lua($func, "Project (ID: ". mysqli_insert_id($con) .", ". $prjct_name .") created."); }
                         mysqli_stmt_close($stmt); 
-                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
                     } // end of: binding successful
                 } // end of: stmt prepared successful
 			} // End of: add
@@ -747,8 +753,9 @@ function groenp_projects_meta_box_cb()
                     else {
                         // execute query 
                         $exec = mysqli_stmt_execute($stmt);
-                        mysqli_stmt_close($stmt); 
                         if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not update item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                        else { _lua($func, "Project (ID: ". $pk_prjct_id .", ". $prjct_name .") updated."); }
+                        mysqli_stmt_close($stmt); 
                     } // end of: binding successful
                 } // end of: stmt prepared successful
 			} // End of: edit
@@ -773,8 +780,9 @@ function groenp_projects_meta_box_cb()
             else {
                 $bind = mysqli_stmt_bind_param($stmt, "i", $delkey);
                 $exec = mysqli_stmt_execute($stmt);
+                if ($exec ===  FALSE) { echo "<p class='err-msg'>Proejct could not be deleted. Project may be assigned to subscriber. See below: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                else { _lua($func, "Project (ID: ". $delkey .") deleted."); }
                 mysqli_stmt_close($stmt); 
-                if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not delete item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
             } // end of: stmt prepared successful
 	    } // End of: deletion
     } // End of: checking for form submits
@@ -970,7 +978,7 @@ function groenp_subpro_pairing_meta_box_cb()
                 $query_string = "INSERT INTO gp_sbscrbr_prjct_pairings " .
                     "(fk_prjct_id, fk_sbscrbr_id) " . 
                     "VALUES (?, ?)";
-                _log("Add query for ". $func .": ". $query_string);                // DEBUG //
+                // _log("Add query for ". $func .": ". $query_string);                // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
@@ -981,8 +989,9 @@ function groenp_subpro_pairing_meta_box_cb()
                     else {
                         // execute query 
                         $exec = mysqli_stmt_execute($stmt);
-                        mysqli_stmt_close($stmt); 
                         if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                        else { _lua($func, "Sbscrbr/Prjct pairing (ID: ". mysqli_insert_id($con) .", Sbscrbr ID: ". $spp_sbscrbr_id .", Project ID: ". $spp_prjct_id .") created."); }
+                        mysqli_stmt_close($stmt); 
                     } // end of: binding successful
                 } // end of: stmt prepared successful
 			} // End of: add
@@ -1007,8 +1016,9 @@ function groenp_subpro_pairing_meta_box_cb()
                     else {
                         // execute query 
                         $exec = mysqli_stmt_execute($stmt);
-                        mysqli_stmt_close($stmt); 
                         if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not update item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                        else { _lua($func, "Sbscrbr/Prjct pairing (ID: ". $pk_sppair_id .", Sbscrbr ID: ". $spp_sbscrbr_id .", Project ID: ". $spp_prjct_id .") updated."); }
+                        mysqli_stmt_close($stmt); 
                     } // end of: binding successful
                 } // end of: stmt prepared successful
 			} // End of: edit
@@ -1033,8 +1043,9 @@ function groenp_subpro_pairing_meta_box_cb()
             else {
                 $bind = mysqli_stmt_bind_param($stmt, "i", $delkey);
                 $exec = mysqli_stmt_execute($stmt);
-                mysqli_stmt_close($stmt); 
                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not delete item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                else { _lua($func, "Sbscrbr/Prjct pairing (ID: ". $delkey .") deleted."); }
+                mysqli_stmt_close($stmt); 
             } // end of: stmt prepared successful
 	    } // End of: deletion
     } // End of: checking for form submits
