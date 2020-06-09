@@ -1,11 +1,13 @@
 <?php
 /*
-Plugin Name: Groen Productions Sites Management -  Mailing functionality
-Description: Any administration panel functionality that cannot be included in the theme: Multi-part MIME mailing functionality. Standard WP registration mail is rewritten for GroenProductions.com. Based on the CuscoNow! mailing plugin.
-Inactive for now:   'administrator' account U/I will be in English, the rest of the admin users will see the default language. Based on code by Nikolay Bachiyski; Admin in English.
-Version: 0.1
-Author: Groen Productions
-Author URI: http://www.linkedin.com/in/pietergroen/
+Plugin Name:        Groen Productions Sites Management -  Mailing functionality
+Description:        Any administration panel functionality that cannot be included in the theme: Multi-part MIME mailing functionality. Standard WP registration mail is rewritten for GroenProductions.com.  
+                    Based on the CuscoNow! mailing plugin.
+Inactive for now:   'administrator' account U/I will be in English, the rest of the admin users will see the default language. 
+                    Based on code by Nikolay Bachiyski; Admin in English.
+Version:            0.2
+Author:             Groen Productions
+Author URI:         http://www.linkedin.com/in/pietergroen/
 */
 //echo 'Current PHP version: ' . phpversion();
 
@@ -87,14 +89,14 @@ function groenp_multipart_mail($wp_user_id, $mail_content, $email_subject, $emai
 
     //Print html section
     $html_version = TRUE;
-    include( get_theme_root() . "/groenp/html-mail-header.php" );
-    include( get_theme_root() . "/groenp/" . $mail_content . ".php" );
-    include( get_theme_root() . "/groenp/html-mail-footer.php" );
+    include( get_theme_root() . "/groenp/mail/html-mail-header.php" );
+    include( get_theme_root() . "/groenp/mail/" . $mail_content . ".php" );
+    include( get_theme_root() . "/groenp/mail/html-mail-footer.php" );
     echo "--" . $boundary . "\r\nContent-type: text/plain; charset=utf-8\r\n\r\n"; 
 
     //Print  plain section
     $html_version = FALSE;
-    include( get_theme_root() . "/groenp/" . $mail_content . ".php" );
+    include( get_theme_root() . "/groenp/mail/" . $mail_content . ".php" );
     echo "--" . $boundary . "--";
 
     $message = ob_get_contents();
@@ -134,9 +136,9 @@ function groenp_html_mail($wp_user_id, $mail_content, $email_subject, $email_hea
 
     //Print html section
     $html_version = TRUE;
-    include( get_theme_root() . "/groenp/html-mail-header.php" );
-    include( get_theme_root() . "/groenp/" . $mail_content . ".php" );
-    include( get_theme_root() . "/groenp/html-mail-footer.php" );
+    include( get_theme_root() . "/groenp/mail/html-mail-header.php" );
+    include( get_theme_root() . "/groenp/mail/" . $mail_content . ".php" );
+    include( get_theme_root() . "/groenp/mail/html-mail-footer.php" );
 
     $message = ob_get_contents();
     ob_end_clean();
@@ -171,7 +173,7 @@ function groenp_plain_mail($wp_user_id, $mail_content, $email_subject, $email_he
 
     //Print  plain section
     $html_version = FALSE;
-    include( get_theme_root() . "/groenp/" . $mail_content . ".php" );
+    include( get_theme_root() . "/groenp/mail/" . $mail_content . ".php" );
 
     $message = ob_get_contents();
     ob_end_clean();
