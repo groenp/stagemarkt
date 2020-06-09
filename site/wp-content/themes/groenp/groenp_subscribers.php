@@ -75,10 +75,9 @@ function groenp_subscribers_page_cb() {
                     <div class='inside'>
                         <h3>This page supports the following tasks:</h3>
                         <ul>
-                            <li><a href='#Sbscbr'>Manage subscribers</a></li>
-                            <li><a href='#add_Sbscbr'>Add or edit subscriber</a></li>
-                            <li><a href='#Prjct'>Manage projects</a></li>
-                            <li><a href='#add_Prjct'>Add or edit project</a></li>
+                            <li><a href='#Sbscbr'>Manage subscribers</a>, <a href='#add_Sbscbr'>Add or edit subscriber</a></li>
+                            <li><a href='#Prjct'>Manage projects</a>, <a href='#add_Prjct'>Add or edit project</a></li>
+                            <li><a href='#SbsPrj'>Manage subscriber-project pairing</a>, <a href='#add_SbsPrj'>Add or edit pairing</a></li>
                         </ul>
                     </div>
 
@@ -113,10 +112,12 @@ function groenp_subscribers_page_cb() {
 
 function groenp_subscribers_meta_boxes_add() 
 {
-    //global $struct_screen;
+    //global $struct_screen; 
     $struct_screen = 'groenp_subscribers';
     add_meta_box( 'gp-subscribers-mb', 'Manage subscribers',    'groenp_subscribers_meta_box_cb', $struct_screen, 'normal' );
-    add_meta_box( 'gp-domains-mb', 'Manage projects', 'groenp_projects_meta_box_cb', $struct_screen, 'normal' );
+    add_meta_box( 'gp-projects-mb', 'Manage projects', 'groenp_projects_meta_box_cb', $struct_screen, 'normal' );
+    add_meta_box( 'gp-subpro-mb', 'Manage subscriber / project pairing', 'groenp_subpro_pairing_meta_box_cb', $struct_screen, 'normal' );
+
 }
 add_action('add_meta_boxes_' . $struct_screen, 'groenp_subscribers_meta_boxes_add');
 
@@ -445,14 +446,14 @@ function groenp_subscribers_meta_box_cb()
     $query_string .= " LEFT JOIN ".DB_NAME.".wp_usermeta wp_lst ON ( wp_lst.user_id = gp.fr_ID AND wp_lst.meta_key = 'last_name') ORDER BY gp.sbscrbr_login;";
 
     // store in different temp array
-    $rows = array();
+    $sbscrbrs = array();
     //echo "query string: " . $query_string;
     $result = mysqli_query($con, $query_string);
 
     // BUG: handle empty result first for ALL occurrences
     if ( $result ) { 
         while($r = mysqli_fetch_assoc($result)) {
-            $rows[] = $r;
+            $sbscrbrs[] = $r;
         }
         mysqli_free_result($result);
     }
@@ -460,20 +461,8 @@ function groenp_subscribers_meta_box_cb()
     // Create javascript Object: Sbscrbrs
     echo "<script type='text/javascript'>
 
-        var Sbscrbrs = "; echo json_encode($rows); echo ";
+        var Sbscrbrs = "; echo json_encode($sbscrbrs); echo ";
 
-        //  after page built, create these callbacks
-        // jQuery(document).ready(function($){
-
-        //     $('#gets_sub_mails').change(function () {
-        //         if(this.checked) {
-        //             $('#wrn_sub_mail').text('(mail will always be sent to registered address only)').removeClass('verf-err');
-        //         } else {
-        //             $('#wrn_sub_mail').text('Notify subscriber on subscription changes!').addClass('verf-err');
-        //         }
-        //     });
-
-        // });
     </script>";
 
     // ************************************************************
@@ -650,7 +639,7 @@ function groenp_subscribers_meta_box_cb()
 	unset($row);
 	unset($editrow);
     unset($wp_user);
-	unset($rows);
+	unset($sbscrbrs);
 
 }  // End: groenp_subscribers_meta_box_cb() 
 
@@ -658,8 +647,6 @@ function groenp_subscribers_meta_box_cb()
 // ****************************************************************
 // Callback for PROJECTS Meta Box
 // ****************************************************************
-// TODO: write domains mb
-
 function groenp_projects_meta_box_cb()  
 {  
     // open database
@@ -824,6 +811,7 @@ function groenp_projects_meta_box_cb()
 	// Start table build
     echo "<table class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'><thead style='text-align: left'>
             <tr style='text-align: left'>
+                <th class='numb'>ID</th>
                 <th>Project name</th>
                 <th>Base url</th>
                 <th>PHP filename</th>
@@ -838,54 +826,38 @@ function groenp_projects_meta_box_cb()
     unset($result); unset($row); // re-initialize
     if (isset($editkey))
     {
+        // prepare statement excluding item to be edited
         $stmt = mysqli_prepare($con, "SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url" .
                              " FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name, prjct_php");
         mysqli_stmt_bind_param($stmt, "i", $editkey);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name'], $row['prjct_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
-        //$result = mysqli_stmt_get_result($stmt);
-
-        // Retrieve row by row the project data in the DB
-        while ( mysqli_stmt_fetch($stmt) )
-        {
-            // Build row
-            echo "<tr>
-                    <td>" . dis($row['prjct_name'],"s") . "</td>
-                    <td>" . dis($row['base_url'],"s") . "</td>
-                    <td>" . dis($row['prjct_php'],"s") . "</td>
-                    <td>" . dis($row['upload_dir'],"s") . "</td>
-                    <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
-                    <td>" . dis($row['test_url'],"s") . "</td>";
-
-                    // Add final cell with button section and link to javascript pop-up
-                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
-                              <input type='submit' class='button-secondary' name='" . $row['pk_prjct_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
-                 </tr>";
-        } // End of: while result
-        mysqli_stmt_close($stmt);
-
     } else {
-        $result = mysqli_query($con, "SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url" .
-                                     " FROM gp_projects ORDER BY prjct_name, prjct_php;");
-
-        // Retrieve row by row the project data in the DB
-        while ( $row = mysqli_fetch_array($result) )
-        {
-            // Build row
-            echo "<tr>
-                    <td>" . dis($row['prjct_name'],"s") . "</td>
-                    <td>" . dis($row['base_url'],"s") . "</td>
-                    <td>" . dis($row['prjct_php'],"s") . "</td>
-                    <td>" . dis($row['upload_dir'],"s") . "</td>
-                    <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
-                    <td>" . dis($row['test_url'],"s") . "</td>";
-
-                    // Add final cell with button section and link to javascript pop-up
-                    echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
-                              <input type='submit' class='button-secondary' name='" . $row['pk_prjct_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
-                 </tr>";
-        } // End of: while result
+        // prepare statement in similar way as edit, but no parameters
+        $stmt = mysqli_prepare($con, "SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url" .
+                             " FROM gp_projects ORDER BY prjct_name, prjct_php");
     } // End of: not set editkey
+
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name'], $row['prjct_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
+
+    // Retrieve row by row the project data in the DB
+    while ( mysqli_stmt_fetch($stmt) )
+    {
+        // Build row
+        echo "<tr>
+                <td class='numb'>" . dis($row['pk_prjct_id'],"i") . "</td>
+                <td>" . dis($row['prjct_name'],"s") . "</td>
+                <td>" . dis($row['base_url'],"s") . "</td>
+                <td>" . dis($row['prjct_php'],"s") . "</td>
+                <td>" . dis($row['upload_dir'],"s") . "</td>
+                <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
+                <td>" . dis($row['test_url'],"s") . "</td>";
+
+                // Add final cell with button section and link to javascript pop-up
+                echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
+                            <input type='submit' class='button-secondary' name='" . $row['pk_prjct_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+                </tr>";
+    } // End of: while result
+    mysqli_stmt_close($stmt);
 
     // finalize table
     echo "</tbody></table>";
@@ -923,7 +895,7 @@ function groenp_projects_meta_box_cb()
         <label for='prjct_php'>PHP file *</label><span>(filename in themes directory)</span><input type='text' name='prjct_php' id='prjct_php' maxlength='50' value='" . dis($editrow['prjct_php'],"s") . "' />
         <label for='base_url'>Base url *</label><span>(without protocol)</span><input type='text' name='base_url' id='base_url' maxlength='100' value='" . dis($editrow['base_url'],"s") . "' />
         <label for='upload_dir'>Upload directory</label><span>(relative from public_html)</span><input type='text' name='upload_dir' id='upload_dir' maxlength='100' value='" . dis($editrow['upload_dir'],"s") . "' />
-        <label for='sponsorship'>Test version active?</label><input type='checkbox' name='is_test_active' id='is_test_active' " . dis($editrow['is_test_active'],"chk_ctrl") . "/><br />
+        <label for='is_test_active'>Test version active?</label><input type='checkbox' name='is_test_active' id='is_test_active' " . dis($editrow['is_test_active'],"chk_ctrl") . "/><br />
         <label for='test_url'>Test url †</label><span>(† mandatory if test version is active)</span><input type='text' name='test_url' id='test_url' maxlength='100' value='" . dis($editrow['test_url'],"s") . "' />
         <label for='test_upl_dir'>Test upload directory †</label><span>(† mandatory if upload directory filled out and test version is active)</span><input type='text' name='test_upl_dir' id='test_upl_dir' maxlength='100' value='" . dis($editrow['test_upl_dir'],"s") . "' />
     </p>
@@ -948,5 +920,321 @@ function groenp_projects_meta_box_cb()
 	unset($editrow);
 
 }  // End: groenp_projects_meta_box_cb() 
+
+
+// ****************************************************************
+// Callback for SBSCRBR/PRJCT PAIRING Meta Box
+// ****************************************************************
+function groenp_subpro_pairing_meta_box_cb()  
+{  
+    // open database
+    $con = groenp_open_database();
+
+    // ************************************************************
+    // 1. Process any form data
+    // ************************************************************
+
+    // Make this form unique
+    $func = 'SbsPrj';
+    
+    // If no Edit button pressed inside the table of this meta box
+    if ( !array_search('Edit', $_POST) ) echo "<a name=" . $func . "></a>";  // Set anchor
+
+    // default SSL port number; use https version, otherwise not
+    $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
+
+    // Create form url for this meta box
+	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "#" . $func;
+
+    
+    // ************************************************************
+	if ( isset($_POST[('add_'. $func)]) || isset($_POST[('edit_'. $func)]) )  // THIS form has been submitted
+    // ************************************************************
+    {
+		// Check if all mandatory fields have been entered
+		if ( empty($_POST['spp_prjct_id']) || empty($_POST['spp_sbscrbr_id'])  ) 
+		{
+            //_log("*** input error ***");
+    		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
+        }
+        else {
+                // define and sanitize vars
+                $spp_prjct_id   = prep($_POST['spp_prjct_id'], "i");
+                $spp_sbscrbr_id = prep($_POST['spp_sbscrbr_id'], "i");
+
+            // ************************************************************
+		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
+			// ************************************************************
+			{
+                // create a prepared statement 
+                $query_string = "INSERT INTO gp_sbscrbr_prjct_pairings " .
+                    "(fk_prjct_id, fk_sbscrbr_id) " . 
+                    "VALUES (?, ?)";
+                _log("Add query for ". $func .": ". $query_string);                // DEBUG //
+                $stmt = mysqli_prepare($con, $query_string);
+
+                if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
+                else {
+                    // bind stmt = i: integer, d: double, s: string
+                    $bind = mysqli_stmt_bind_param($stmt, "ii", $spp_prjct_id, $spp_sbscrbr_id);
+                    if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
+                    else {
+                        // execute query 
+                        $exec = mysqli_stmt_execute($stmt);
+                        mysqli_stmt_close($stmt); 
+                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                    } // end of: binding successful
+                } // end of: stmt prepared successful
+			} // End of: add
+			// ************************************************************
+			elseif ( isset($_POST[('edit_'. $func)]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]!=='no')  // update tables row with editkey 
+			// ************************************************************
+			{
+                // sanitize editkey
+                $pk_sppair_id= prep($_POST['editkey'], "i");
+
+                // create a prepared statement 
+                $query_string = "UPDATE LOW_PRIORITY gp_sbscrbr_prjct_pairings SET " .
+                    "fk_prjct_id = ?, fk_sbscrbr_id = ? WHERE pk_sppair_id = ?";
+                //_log("Edit query for ". $func .": ". $query_string);              // DEBUG //
+                $stmt = mysqli_prepare($con, $query_string);
+
+                if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
+                else {
+                    // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
+                    $bind = mysqli_stmt_bind_param($stmt, "iii", $spp_prjct_id, $spp_sbscrbr_id,  $pk_sppair_id);
+                    if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
+                    else {
+                        // execute query 
+                        $exec = mysqli_stmt_execute($stmt);
+                        mysqli_stmt_close($stmt); 
+                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not update item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                    } // end of: binding successful
+                } // end of: stmt prepared successful
+			} // End of: edit
+		} // End of: not missing mandatory fields
+    } // End of: add or edit (form submitted)
+
+    // ************************************************************
+    elseif (isset($_POST[('sure_'. $func)]))  // check for 'sure_'+function to see whether pushbutton used in THIS table or form
+    // ************************************************************
+    {
+        $delkey = intval(array_search('Delete', $_POST));   // Maybe it's a Delete; check for id on 'Delete' button (case sensitive) and store it
+        $editkey = intval(array_search('Edit', $_POST));    // Maybe it's an Edit; check for id on 'Edit' button (case sensitive) and store it
+        if ( empty($editkey) ) unset($editkey);             // It's not an Edit, so unset otherwise the form will load as an edit
+
+		// If there is a delete id and user answered 'Yes' on RUsure?
+        if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
+        {
+            // Create a prepared statement and delete row
+            $query_string = "DELETE LOW_PRIORITY FROM gp_sbscrbr_prjct_pairings WHERE pk_sppair_id = ?";
+            $stmt = mysqli_prepare($con, $query_string);
+            if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
+            else {
+                $bind = mysqli_stmt_bind_param($stmt, "i", $delkey);
+                $exec = mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt); 
+                if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not delete item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+            } // end of: stmt prepared successful
+	    } // End of: deletion
+    } // End of: checking for form submits
+    
+    // ************************************************************
+    // 2. Create jQuery object holding all Subscribers and Projects
+    // ************************************************************
+
+    // Sbscrbrs json object needed to fill out Add/Edit form:
+    // has already been created in groenp_subscribers_meta_box_cb
+
+    // Projects json object not necessary; only needed for droplist, so built inline 
+
+    
+    // ************************************************************
+    //  3. Build updated table with SBSCRBR/PRJCT PAIRING
+    // ************************************************************
+
+    // Meta box introduction
+    echo "<p>Subscribers are the representatives of the clients in this CMS. 
+    Subscribers need to be linked to one of more projects in order to give CMS access to that project. 
+    In order to create this link, the  subscriber and project need to be created first. 
+    This is done through the other meta boxes on this page. 
+    Only those subscribers with an email address will actually have access.</p>
+    
+    <p>All fields are mandatory.</p>";
+    
+    // Start of form
+	echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'><p>
+            <input type='hidden' name='sure_" . $func . "' id='sure_" . $func . "' value='maybe' /></p>"; // hidden input field to store RUsure? response
+			
+	// Start table build
+    echo "<table id='sppair_tbl' class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'>
+        <thead style='text-align: left'>
+            <tr style='text-align: left'>
+                <th>Project name</th>
+                <th class='chck'>Test enabled?</th>
+                <th>Subscriber ID</th>
+                <th class='chck'>Blocked?</th>
+                <th>Full name</th>
+                <th>Email</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>";
+
+
+    // Query table, and leave out 'edit' row depending on action selection, and filter 
+    unset($result); unset($row); // re-initialize
+    if (isset($editkey))
+    {
+        // prepare statement excluding item to be edited
+        $stmt = mysqli_prepare($con, "SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active" .
+                             " FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)" .
+                             " LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)" . 
+                             " WHERE spp.pk_sppair_id != ?".
+                             " ORDER BY prj.prjct_name, sub.sbscrbr_login");
+        mysqli_stmt_bind_param($stmt, "i", $editkey);
+    } 
+    else 
+    {
+        // prepare statement in similar way as edit, but no parameters
+        $stmt = mysqli_prepare($con, "SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active" .
+                             " FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)" .
+                             " LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)" . 
+                             " ORDER BY prj.prjct_name, sub.sbscrbr_login");
+    } // End of: not set editkey
+
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $row['pk_sppair_id'], $row['pk_sbscrbr_id'], $row['sbscrbr_login'], $row['is_usr_blocked'], $row['fk_prjct_id'], $row['prjct_name'], $row['is_test_active']);
+
+    // Retrieve row by row the project data in the DB
+    while ( mysqli_stmt_fetch($stmt) )
+    {
+        // Build row
+        echo "<tr>
+                <td>" . dis($row['prjct_name'],"s") . "</td>
+                <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
+                <td>" . dis($row['sbscrbr_login'],"s") . "</td>
+                <td class='chck'>" . dis($row['is_usr_blocked'],"chk") . "</td>
+                <td>" . dis($row['pk_sbscrbr_id'],"i") . "</td>
+                <td></td>
+                <td></td>";
+
+                // Add final cell with button section and link to javascript pop-up
+                echo "<td><input type='submit' class='button-primary' name='" . $row['pk_sppair_id'] . "' value='Edit'> 
+                            <input type='submit' class='button-secondary' name='" . $row['pk_sppair_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+                </tr>";
+    } // End of: while result
+    mysqli_stmt_close($stmt);
+
+    // finalize table
+    echo "</tbody>
+    </table>";
+
+
+    // ************************************************************
+    // 3. Build add/edit form
+    // ************************************************************
+
+    // Retrieve edit row, if edit version of form
+    if ( isset($editkey) )
+    {
+        unset($stmt);
+        $stmt = mysqli_prepare($con, "SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active" .
+                             " FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)" .
+                             " LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)" . 
+                             " WHERE spp.pk_sppair_id = ?");
+        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $editrow['pk_sppair_id'], $editrow['fk_sbscrbr_id'], $editrow['sbscrbr_login'], $editrow['is_usr_blocked'], $editrow['fk_prjct_id'], $editrow['prjct_name'], $editrow['is_test_active']);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt); 
+    }
+    
+    // If it is an Edit then we need to scroll till here.
+    if ( isset($editkey) ) echo "<a name=" . $func . "></a>";  // Set anchor
+
+    // Start rendering the form
+    echo "<h4><a name=add_" . $func . "></a>Add or edit subscriber/project pairing</h4>
+    <p class='hor-form'>";
+        // If edit form keep edit key in hidden field
+        if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > "; 
+        
+        // If Edit populate each field with the present values
+        echo "
+        <label for='spp_dis_prjct_id'>Project ID</label><span class='display-only' id='spp_dis_prjct_id' name='spp_dis_prjct_id' ></span>
+        <label for='spp_prjct_id'>Project name *</label><select class='prompt' name='spp_prjct_id' id='spp_prjct_id'>
+            <option value=''"; if( !isset($editkey) ) echo " selected "; echo ">Select project:</option>";
+
+        unset($result); unset($row); // re-initialize
+    
+        //  query all projects (projects can be assigned to several subscribers, so should always be available)
+        $result = mysqli_query($con, "SELECT pk_prjct_id, prjct_name, is_test_active FROM gp_projects ORDER BY prjct_name, pk_prjct_id;");
+        while($row = mysqli_fetch_array($result)) 
+        { 
+            echo "<option value='" . $row['pk_prjct_id'] . "' data-id='". $row['pk_prjct_id'] . "' data-active='" . $row['is_test_active']  . "'"; 
+            if(isset($editkey) && ($editrow['fk_prjct_id']==$row['pk_prjct_id'])) echo " selected "; 
+            echo ">" . $row['prjct_name'] ."</option>";
+        }
+        mysqli_free_result($result);
+
+        echo "</select>
+        <label for='spp_is_test_active'>Test version active?</label><span class='display-only' id='spp_is_test_active' name='spp_is_test_active' ></span>
+    </p>
+
+        <div id='sbscrbr_display'>
+            <p class='hor-form'>
+                <input type='hidden' id='spp_sbscrbr_id' name='spp_sbscrbr_id' value='"; if(isset($editkey)) echo  $editrow['fk_sbscrbr_id']; echo "' >
+                <label for='spp_sbscrbr_login'>Subscriber ID *</label><input type='button' class='button-primary' value='Change' onclick='show_sbscrbr_filter();' style='' />
+                <input type='text' id='spp_sbscrbr_login' name='spp_sbscrbr_login' value='"; if(isset($editkey)) echo  $editrow['sbscrbr_login']; echo "' readonly='readonly' />
+            </p>
+        </div>
+        <div id='sbscrbr_filter' style='display: none;'>
+            <p class='hor-form'>
+                <span id='err1_fltr_sbscrbr_login' class='err-msg' style='display:none;'>Please type at least 3 sequential characters (letters, digits, '_'s) of the ID</span>
+                <span id='err2_fltr_sbscrbr_login' class='err-msg' style='display:none;'>There are no Subscriber IDs with this text pattern</span>
+                <label for='test_spp_sbscrbr_login'>Type new Subscriber ID, then select Check (3 chars min.)</label>
+                <input type='button' class='button-secondary' name='check_subscbr' value='Check' onclick='filter_sbscrbrs();' />
+                <input type='text' id='test_spp_sbscrbr_login' name='test_spp_sbscrbr_login' maxlength='60' pattern='[a-zA-Z0-9_]{3}[a-zA-Z0-9_]+' />
+            </p>
+        </div>
+        <div id='fltr_sbscrbr_results' style='display: none;'>
+            <p class='hor-form'>
+                <label for='sbscrbr_logins'><span class='multi_res'>Select one subscriber ID from the list, then </span>Choose Select to set as Owner</label>
+                <input type='button' class='button-primary' name='select_subscbr' value='Select' onclick='select_sbscrbr();' />
+                <select class='multi_res' name='sbscrbr_logins[]' id='sbscrbr_logins' multiple='true' size='5' onchange='show_sbscrbr_det();'>
+                </select>
+            </p>
+        </div>
+        <div id='sbscrbr_details' style='display: none;'>
+            <p class='hor-form' >
+                <label class='wp_registered' for='spp_user_registered'>CMS access registered</label><span class='wp_registered display-only' id='spp_user_registered' name='spp_user_registered' ></span>
+                <label class='wp_registered' for='spp_sbscrbr_name'>Name</label><span class='wp_registered display-only' id='spp_sbscrbr_name' name='spp_sbscrbr_name' ></span>
+                <label class='wp_registered' for='spp_user_email'>Email</label><span class='wp_registered display-only' id='spp_user_email' name='spp_user_email' ></span>
+                <label for='spp_sbscrbr_notes'>Notes</label><span class='display-only' id='spp_sbscrbr_notes' name='spp_sbscrbr_notes' style='min-height:80px;'></span>
+            </p>
+        </div>
+
+    <p class='button-row'>";
+
+    if ( isset($editkey) )
+    {
+        // Edit form, so create Edit and Cancel buttons  
+        echo "<input type='submit'  class='button-primary' name='edit_" . $func . "' value='Edit pairing'> <input type='submit' class='button-secondary' name='cancel' value='Cancel'>";
+    } else {
+        // Normal (Add) form, so only Add button needed
+        echo "<input type='submit'  class='button-primary' name='add_" . $func . "' value='Add pairing'>";
+    }
+     echo "
+    </p>
+    </form>";
+
+    // 4. Clean up
+    mysqli_close($con);
+	unset($result);
+	unset($row);
+	unset($editrow);
+
+}  // End: groenp_subpro_pairing_meta_box_cb() 
 
 ?>

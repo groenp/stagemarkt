@@ -429,7 +429,8 @@ div.postbox textarea, div.postbox input[type="text"], div.postbox input[type="em
 	display: block;
 	width: 200px;
 	margin-bottom: 10px;
-    line-height: 18px;
+    /* line-height: 18px; */
+    /* creates problems in select control, is necessary? */
 }
 div.postbox input.dbl-lbl, div.postbox p span.display-only.dbl-lbl {
     margin-bottom: 20px;
@@ -484,7 +485,7 @@ div.postbox input.chk2lbl + label > img {
 } */
 
 /* show greyed prompt information in the <select> box's (first choice) */
-div.postbox select.prompt, div.postbox select.prompt option:first-child {
+div.postbox select.prompt option:first-child {
 	color:  #a0a0a0;
 }
 /* but show black when disabled (as readonly) */

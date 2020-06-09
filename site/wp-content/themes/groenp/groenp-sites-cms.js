@@ -9,25 +9,74 @@
 // We're only using jQuery here
 $ = jQuery;
 
-function confirm_deletion(inp) {
-   $('#'+inp).val( confirm("Select 'OK' to confirm deletion.") ? "yes" : "no" );
-}
+// after page rendered, create these callbacks:
+// - reset errors and form for sbscrbr_login (and ID)
+// - augment table with list of pairings: sppair_tbl 
 
-function confirm_attachment(inp) {
-   $('#'+inp).val( confirm("Select 'OK' to confirm attaching wp_user.") ? "yes" : "no" );
-}
 
-function msg_sub_deletion_not_implemented() {
-    alert("ONLY DO THIS WHEN SUBSCRIPTION WAS COMPLETELY WRONG AND REPAIR AFTER (LIKE USE A FREE SLOT, ADJUST CHARGES, PAYMENTS, ETC.)\n\nInstructions for database:\n" +
-        "1) delete all muts of this subscription (make sure any valid ones (payment) get added later)\n"+
-        "2) delete subscription (it is wrong and should not have been created in the first place)\n"+
-        "3) change establishment: is_subscribed = false, gets_usr_mails = NULL, is_sponsor = NULL.");
-}
+$(document).ready(function () {
 
-function clear_filter(tbl) {
-    $('#'+tbl+' td.fltr>input[type="text"], #'+tbl+' td.fltr>select').val("");
-    $('#'+tbl+' td.head>input[type="text"], #'+tbl+' td.head>select').val("");
-}
+    // **************************************************************************
+    // Subscriber / Project Pairings MB
+    // **************************************************************************
+
+
+    // Subscriber select list: on blur; disable Select button when no item selected 
+    $('#sbscrbr_logins').blur(function () {
+        if ($('#sbscrbr_logins')[0].selectedIndex == -1) {
+            $('#fltr_sbscrbr_results input[type=\"button\"]').attr('disabled', 'disabled');
+        }
+    });
+
+
+    // Project name dropdown list: on change (and load by triggering a select)
+    $('#spp_prjct_id').change(function () {
+
+        // populate read-only below Project name select with test available information
+        var active =  ( $("#spp_prjct_id option:selected").attr("data-active") == "1" )? "Yes": "No";
+        $('#spp_is_test_active').html(active);
+        $('#spp_dis_prjct_id').html($("#spp_prjct_id option:selected").attr("data-id"));
+
+        // when first item is selected (value=''), then grey and empty read-only below
+        if ( $(this).val() ) { 
+            $(this).css("color", '#000')
+        } else { 
+            $(this).css("color", '#a0a0a0');
+            $('#spp_is_test_active').html("");
+            $('#spp_dis_prjct_id').html("");
+        };
+    });
+    $('#spp_prjct_id').trigger('change');
+
+    // when user selects the filter input field, remove all feedback
+    $('#test_spp_sbscrbr_login').focus(function () {
+        $(this).removeClass('verf-err verf-ok');
+    });
+
+
+    // Augment table  list of pairings: sppair_tbl with subscriber details
+
+    // This is normally done by LEFT JOIN the user table
+    // The only reason to use the Sbscrbrs json is to minimize contact with wp tables
+
+    $('#sppair_tbl tbody tr').each(function () {
+        var sbscrbr_id = $(this).find('td:eq(4)').text();
+        if (sbscrbr_id) {
+
+            // find index in array by mapping pk_sbscrbr_id to parsed sbscrbr_id
+            var ndx = Sbscrbrs.map(function (o) { return o.pk_sbscrbr_id; }).indexOf(sbscrbr_id);
+
+            // only if the right Sbscrbrs item has been found
+            if (typeof Sbscrbrs[ndx] !== "undefined") {
+                $(this).find('td:eq(4)').html(Sbscrbrs[ndx].first + " " + Sbscrbrs[ndx].last);  // Full name
+                $(this).find('td:eq(5)').html(Sbscrbrs[ndx].user_email);                        // Email
+                $(this).find('td:eq(6)').html(Sbscrbrs[ndx].sbscrbr_notes);                     // Notes
+            }
+        }
+    });
+    
+    
+});  // end of document.ready()
 
 
 // **************************************************************************
@@ -109,7 +158,7 @@ function build_fltrd_sbscrbrs_table(func) {
              ( !fltr9 || (Sbscrbrs[i].sbscrbr_notes && ((fltr9=='*' && Sbscrbrs[i].sbscrbr_notes) || (fltr9 && Sbscrbrs[i].sbscrbr_notes.toLowerCase().indexOf(fltr9.toLowerCase()) >= 0))) )
            ) {
 
-            // compile full sbscrbr name
+            // compile full sbscrbr name as "last, first"
             var sbscrbr_name = (Sbscrbrs[i].last == undefined || Sbscrbrs[i].last == "" ) ? "" : Sbscrbrs[i].last + ", ";
             sbscrbr_name += (Sbscrbrs[i].first == undefined) ? "" : Sbscrbrs[i].first;
 
@@ -144,10 +193,125 @@ function build_fltrd_sbscrbrs_table(func) {
 } // end: build_fltrd_sbscrbrs_table();
 
 
+// **************************************************************************
+// Subscriber - Project Pairing  MB
+// **************************************************************************
+
+// Change button: to change selected subscriber, 
+// shows the inline selection form elements
+function show_sbscrbr_filter() {
+    $('#test_spp_sbscrbr_login').val($('#spp_sbscrbr_login').val());
+    $('#sbscrbr_display input[type="button"]').hide();
+    $('#sbscrbr_filter').show();
+}
+
+// Select button: places the selected subscriber in the mandatory form field
+function select_sbscrbr() {
+    $('#spp_sbscrbr_id').val(Sbscrbrs[$('#sbscrbr_logins option:selected').val()].pk_sbscrbr_id);
+    $('#spp_sbscrbr_login').val($('#sbscrbr_logins option:selected').text());
+    $('#sbscrbr_display').show();
+    $('#sbscrbr_display input[type="button"]').show();
+    $('#sbscrbr_filter').hide();
+    $('#fltr_sbscrbr_results').hide();
+    $('input[type="submit"]').removeAttr('disabled');
+}
+
+// Check button: filters the list of subscribers according pattern,
+// and places the list in the multiple select field
+function filter_sbscrbrs() {
+    var snippet = $('#test_spp_sbscrbr_login').val();
+    var res = 0;
+
+    // reset
+    $('#test_spp_sbscrbr_login').removeClass("verf-ok verf-err");
+    $('#sbscrbr_logins option').remove();
+    $('#fltr_sbscrbr_results').hide();
+    $('#sbscrbr_details').hide();
+    $('#sbscrbr_display').show();
+    $('#sbscrbr_display input[type="button"]').hide();
+
+    $('#fltr_sbscrbr_results .multi_res').show();
+    // reset all errors
+    $('#err1_fltr_sbscrbr_login').hide();
+    $('#err2_fltr_sbscrbr_login').hide();
+
+    if (snippet.length < 3) {
+        $('#err1_fltr_sbscrbr_login').show();
+        $('#test_spp_sbscrbr_login').addClass("verf-err");
+        return false;
+    }
+
+    // filter list and create options in select
+    for (var i = 0; i < Sbscrbrs.length; i++) {
+        if (Sbscrbrs[i].sbscrbr_login.indexOf(snippet) != -1) {
+            $('#sbscrbr_logins').append("<option value=" + i + ">" + Sbscrbrs[i].sbscrbr_login + "</option>");
+            res++;
+        }
+    }
+
+    // validate results
+    if (res >= 2) {
+        $('#fltr_sbscrbr_results input[type="button"]').attr('disabled', 'disabled');
+        $('#fltr_sbscrbr_results').show();
+    } else if (res == 1) {
+        $('#test_spp_sbscrbr_login').val($('#sbscrbr_logins option:selected').text());
+        $('#test_spp_sbscrbr_login').addClass("verf-ok");
+        $('#fltr_sbscrbr_results').show();
+        $('#sbscrbr_logins').val($('#sbscrbr_logins option:eq(0)').val());
+        $('#fltr_sbscrbr_results .multi_res').hide();
+        show_sbscrbr_det();
+    } else if (res == 0) {
+        $('#err2_fltr_sbscrbr_login').show();
+        $('#test_spp_sbscrbr_login').addClass("verf-err");
+        $('#fltr_sbscrbr_results').hide();
+    }
+}
+
+// On selection of subscriber in list: shows subscriber details
+function show_sbscrbr_det() {
+    var id = 0;
+    if ($('#sbscrbr_logins')[0].selectedIndex != -1) {
+        id = $('#sbscrbr_logins option:selected').val();
+        $('#test_spp_sbscrbr_login').val(Sbscrbrs[id].sbscrbr_login);
+        $('#spp_user_registered').text(loc(Sbscrbrs[id].user_registered));
+        $('#spp_sbscrbr_name').html(escapeSpecialChars(Sbscrbrs[id].first) + "&nbsp;" + escapeSpecialChars(Sbscrbrs[id].last));
+        $('#spp_user_email').text(Sbscrbrs[id].user_email);
+        $('#spp_sbscrbr_notes').html(escapeSpecialChars(Sbscrbrs[id].sbscrbr_notes));
+
+        // if 'first' key exists, then wp_user section created
+        if ("first" in Sbscrbrs[id]) { $('.wp_registered').show(); } else { $('.wp_registered').hide(); };
+        $('#fltr_sbscrbr_results input[type="button"]').removeAttr('disabled');
+        $('#sbscrbr_details').show();
+    } else {
+        $('#sbscrbr_details').hide();
+    }
+}
+
+
 
 // **************************************************************************
 // Helper functions
 // **************************************************************************
+
+function confirm_deletion(inp) {
+    $('#' + inp).val(confirm("Select 'OK' to confirm deletion.") ? "yes" : "no");
+}
+
+function confirm_attachment(inp) {
+    $('#' + inp).val(confirm("Select 'OK' to confirm attaching wp_user.") ? "yes" : "no");
+}
+
+function msg_sub_deletion_not_implemented() {
+    alert("ONLY DO THIS WHEN SUBSCRIPTION WAS COMPLETELY WRONG AND REPAIR AFTER (LIKE USE A FREE SLOT, ADJUST CHARGES, PAYMENTS, ETC.)\n\nInstructions for database:\n" +
+        "1) delete all muts of this subscription (make sure any valid ones (payment) get added later)\n" +
+        "2) delete subscription (it is wrong and should not have been created in the first place)\n" +
+        "3) change establishment: is_subscribed = false, gets_usr_mails = NULL, is_sponsor = NULL.");
+}
+
+function clear_filter(tbl) {
+    $('#' + tbl + ' td.fltr>input[type="text"], #' + tbl + ' td.fltr>select').val("");
+    $('#' + tbl + ' td.head>input[type="text"], #' + tbl + ' td.head>select').val("");
+}
 
 function srt_by(propA, propB, propC) {
     return function(a,b){

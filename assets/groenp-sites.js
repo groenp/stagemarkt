@@ -31,6 +31,7 @@ $(document).ready(function () {
         $('#pg-GroenP').addClass('conceal');
     });
 
+    // groen productions: there's no hover on phones, use end of page
     $(window).scroll(function () {
         // console.log("scrollTop + window: " + parseInt($(window).scrollTop() + $(window).height()));                          // DEBUG //
         // console.log("document h: " + $(document).height());                                                                  // DEBUG //
