@@ -322,7 +322,7 @@ function groenp_redirect_blocked_users() {
 // Define custom message for the force-out situation
 if(!empty($_GET['custom-logout']) && strtolower($_GET['custom-logout']) == 'yes'){
     function groenp_force_out_message() {
-        $message = "<p class='message'>Your username has been blocked. <br />Please contact <a href='mailto:admin@groenproductions.com'>administration at Groen Productions</a> to obtain more information.</p>";
+        $message = "<p class='message'>Your username has been blocked. <br />Please contact <a href='mailto:admin@groenproductions.com'>administration at Groen Productions</a> for more information.</p>";
         return $message;
     }
     add_filter('login_message', 'groenp_force_out_message');
@@ -519,7 +519,7 @@ function groenp_log_logout()
 function groenp_script_enqueuer() 
 {
     // default SSL port number OR http: port number; use minimized version, otherwise not
-    $min_url = ($_SERVER['SERVER_PORT'] == "443" || $_SERVER['SERVER_PORT'] == "80") ? ".min" : "";
+    $min_url = ($_SERVER['SERVER_PORT'] == '443' || $_SERVER['SERVER_PORT'] == '80') ? '.min' : '';
     
     wp_register_script( 'groenp-sbscrbr', trailingslashit( get_stylesheet_directory_uri() ) .'assets/groenp-sbscrbr' . $min_url . '.js', array('jquery') );
     if ( current_user_can('list_users') ) wp_register_script( 'groenp-sites-cms',  trailingslashit( get_stylesheet_directory_uri() ) . 'assets/groenp-sites-cms' . $min_url . '.js', array('jquery') );
@@ -545,10 +545,11 @@ function groenp_include_in_head()
     // </script>";
 
     // default SSL port number OR http: port number; use minimized version, otherwise not
-    $min_url = ($_SERVER['SERVER_PORT'] == "443" || $_SERVER['SERVER_PORT'] == "80") ? ".min" : "";
+    $min_url = ($_SERVER['SERVER_PORT'] == '443' || $_SERVER['SERVER_PORT'] == '80') ? '.min' : '';
 
     // include style sheets
-    echo "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "assets/groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
+    echo "<link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' rel='stylesheet' />" .
+     "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "assets/groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
 } 
 add_action('admin_head','groenp_include_in_head');
 add_action('login_head','groenp_include_in_head');

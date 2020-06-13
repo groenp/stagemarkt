@@ -563,16 +563,15 @@ function groenp_subscribers_meta_box_cb()
         //_log("wp_user: "); _log($wp_user);      // DEBUG // 
     }
     
-    // If it is an Edit then we need to scroll till here.
-    if ( isset($editkey) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
-
     // Start rendering the form
-    echo "<a class='anchr' name=add_" . $func . "></a>
-    <h4>Add or edit subscriber</h4>
-    <p class='hor-form'>";
-        // If Edit form keep edit key in hidden field
-        if(isset($editkey)) echo "<input type='hidden' name='edit_id' value=". $editkey . " > "; 
-        
+    echo "<h4></a>Add or edit subscriber</h4>
+    <p class='hor-form'>
+        <a class='anchr' name=add_" . $func . "></a>";
+    
+        // If edit form keep edit key in hidden field and insert anchor: we need to scroll till here
+        if(isset($editkey)) echo "<input type='hidden' name='edit_id' value=". $editkey . " > 
+        <a class='anchr' name=" . $func . "></a>"; 
+                
         // If Edit populate each field with the present values
         if (isset($editkey)) echo "<label for='pk_sbscrbr_id'>ID</label><span id='pk_sbscrbr_id' name='pk_sbscrbr_id' class='display-only' >". dis($editrow['pk_sbscrbr_id'],'i') ."</span>";
         echo "<label for='user_login'>Subscriber ID (user_login) *</label><span>(use letters, digits, '_'s, has to be unique)</span><input type='text' name='user_login' id='user_login' maxlength='60' "; if(isset($editkey)) echo "value='" . dis($editrow['sbscrbr_login'],'a') . "' readonly='readonly' "; echo "/>
@@ -647,7 +646,8 @@ function groenp_subscribers_meta_box_cb()
     }
      echo "
     </p>
-    </form>";
+    </form>
+    <p class='btt'><a href='#'>back to top</a></p>";
 
     // 5. Clean up
     mysqli_close($con);
@@ -804,7 +804,8 @@ function groenp_projects_meta_box_cb()
     // ************************************************************
 
     // Meta box introduction
-    echo "<p>Projects are the products (websites) that can be managed in this Sites Management tool. 
+    echo "<p class='btt'><a href='#'>back to top</a></p>
+    <p>Projects are the products (websites) that can be managed in this Sites Management tool. 
     The project name is only used as a label in this tool. The url is the domain link used by the users/customers of the subscriber. 
     It typically resides under the public_html directory on GoDaddy. Some products allow the upload of files into the cms. 
     For this purpose the directory path relative to the public_html can be stored.</p>
@@ -900,14 +901,14 @@ function groenp_projects_meta_box_cb()
         mysqli_stmt_close($stmt); 
     }
     
-    // If it is an Edit then we need to scroll till here.
-    if ( isset($editkey) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
-
     // Start rendering the form
-    echo "<h4><a class='anchr' name=add_" . $func . "></a>Add or edit domain</h4>
-    <p class='hor-form'>";
-        // If edit form keep edit key in hidden field
-        if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > "; 
+    echo "<h4>Add or edit project</h4>
+    <p class='hor-form'>
+        <a class='anchr' name=add_" . $func . "></a>";
+    
+        // If edit form keep edit key in hidden field and insert anchor: we need to scroll till here
+        if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > 
+        <a class='anchr' name=" . $func . "></a>"; 
         
         // If Edit populate each field with the present values
         echo "
@@ -931,7 +932,8 @@ function groenp_projects_meta_box_cb()
     }
      echo "
     </p>
-    </form>";
+    </form>
+    <p class='btt'><a href='#'>back to top</a></p>";
 
     // 4. Clean up
     mysqli_close($con);
@@ -1077,7 +1079,8 @@ function groenp_subpro_pairing_meta_box_cb()
     // ************************************************************
 
     // Meta box introduction
-    echo "<p>Subscribers are the representatives of the clients in this CMS. 
+    echo "<p class='btt'><a href='#'>back to top</a></p>
+    <p>Subscribers are the representatives of the clients in this CMS. 
     Subscribers need to be linked to one of more projects in order to give CMS access to that project. 
     In order to create this link, the  subscriber and project need to be created first. 
     This is done through the other meta boxes on this page. 
@@ -1174,14 +1177,14 @@ function groenp_subpro_pairing_meta_box_cb()
         mysqli_stmt_close($stmt); 
     }
     
-    // If it is an Edit then we need to scroll till here.
-    if ( isset($editkey) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
-
     // Start rendering the form
-    echo "<h4><a class='anchr' name=add_" . $func . "></a>Add or edit subscriber/project pairing</h4>
-    <p class='hor-form'>";
-        // If edit form keep edit key in hidden field
-        if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > "; 
+    echo "<h4></a>Add or edit subscriber/project pairing</h4>
+    <p class='hor-form'>
+        <a class='anchr' name=add_" . $func . "></a>";
+    
+        // If edit form keep edit key in hidden field and insert anchor: we need to scroll till here
+        if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > 
+        <a class='anchr' name=" . $func . "></a>"; 
         
         // If Edit populate each field with the present values
         echo "
@@ -1250,7 +1253,8 @@ function groenp_subpro_pairing_meta_box_cb()
     }
      echo "
     </p>
-    </form>";
+    </form>
+    <p class='btt'><a href='#'>back to top</a></p>";
 
     // 4. Clean up
     mysqli_close($con);

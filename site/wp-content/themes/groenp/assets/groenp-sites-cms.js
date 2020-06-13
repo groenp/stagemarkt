@@ -1,20 +1,46 @@
 /******************************************************************************/
 /*                                                              Pieter Groen  */
-/*  Version 0.1 - May 26, 2020                                                */
+/*  Version 0.1 - June 13, 2020                                               */
 /*                                                                            */
-/*  JS for Groen Productions - Sites Mgmt website CMS in WordPress            */
+/*  JS for Groen Productions - Sites Mgmt Tool for ADMINISTRATORS ONLY        */
+/*   - GP: Subscribers page                                                   */
 /*                                                                            */
 /******************************************************************************/
 
 // We're only using jQuery here
 $ = jQuery;
 
-// after page rendered, create these callbacks:
-// - reset errors and form for sbscrbr_login (and ID)
-// - augment table with list of pairings: sppair_tbl 
-
 
 $(document).ready(function () {
+
+
+    // **************************************************************************
+    // All administrator access pages
+    //
+    // Only calls in here that couldn't be resolved with WordPress hooks in PHP
+    // collect here all jQuery that needs to load with the page
+    //
+    // always check after each update to WordPress 
+    // **************************************************************************
+
+    // contains the ref url cookie like 'index.php?page=pagename.php' in WordPress
+    var ref = $('input[name ="_wp_http_referer"]').val();
+
+    // switch on page like is done in the admin php page with: $struct_screen 
+    // var struct_screen = 'groenp_subscribers';
+
+    // if this is page 'struct_screen'
+    if (typeof ref !== 'undefined' && ref.indexOf('groenp_subscribers') != -1) {
+
+        // initialize meta box handling
+        postboxes.add_postbox_toggles(pagenow); 
+
+    }
+
+    // **************************************************************************
+    // Projects MB
+    // **************************************************************************
+
 
     // **************************************************************************
     // Subscriber / Project Pairings MB

@@ -18,3 +18,5 @@ site/logs/*.txt
 *).js
 *).css
 *).php
+*.json
+*.mo
