@@ -8,6 +8,16 @@
 html {
   scroll-behavior: smooth;
 }
+/* created space at the bottom of the page to scroll properly to last form */
+/* padding is 100% of the screen height */
+#wpbody-content {
+    padding-bottom: 100vh;
+}
+/* place footer tagline right at the top, so users see it */
+#wpfooter {
+    min-height: 100vh;
+}
+
 
 /* removal of superfluous postbox containers; need entire width */
 /* #postbox-container-2, #postbox-container-3, #postbox-container-4 {

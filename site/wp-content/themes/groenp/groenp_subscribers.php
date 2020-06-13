@@ -155,10 +155,10 @@ function groenp_subscribers_meta_box_cb()
     if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // default SSL port number; use https version, otherwise not
-    $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
+    $protocol = ($_SERVER['SERVER_PORT'] == '443') ? 'https://' : 'http://';
 
     // Create form url for this meta box
-	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "#" . $func;
+	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '#' . $func;
 
     // DEBUG section
 	// All form fields (name and id) have the same name as the column name of their counterpart in the database
@@ -180,19 +180,19 @@ function groenp_subscribers_meta_box_cb()
 		}
         else {
             // define and sanitize vars
-            $user_login     = prep($_POST['user_login'], "a");
-            $sbscrbr_notes  = prep($_POST['sbscrbr_notes'], "s");
-            $is_usr_blocked = prep($_POST['is_usr_blocked'], "chk");
-            $gets_html_mail = prep($_POST['gets_html_mail'], "chk");
-            $pk_sbscrbr_id  = prep($_POST['edit_id'],"i");
+            $user_login     = prep($_POST['user_login'], 'a');
+            $sbscrbr_notes  = prep($_POST['sbscrbr_notes'], 's');
+            $is_usr_blocked = prep($_POST['is_usr_blocked'], 'chk');
+            $gets_html_mail = prep($_POST['gets_html_mail'], 'chk');
+            $pk_sbscrbr_id  = prep($_POST['edit_id'],'i');
 
 			// ************************************************************
 		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
 			// ************************************************************
 			{
                 // Subscriber ID (user_login) has to be unique
-                $stmt = mysqli_prepare($con, "SELECT sbscrbr_login FROM gp_subscribers WHERE sbscrbr_login=?");
-                mysqli_stmt_bind_param($stmt, "s", $user_login);
+                $stmt = mysqli_prepare($con, 'SELECT sbscrbr_login FROM gp_subscribers WHERE sbscrbr_login=?');
+                mysqli_stmt_bind_param($stmt, 's', $user_login);
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_store_result($stmt);
                 $result =  mysqli_stmt_num_rows($stmt);                         // check number of rows as proof of result
@@ -219,24 +219,24 @@ function groenp_subscribers_meta_box_cb()
                         // Cannot create the reset key immediately afterwards, it expires
 
                         // Mail the user with the new ID and pwd, this is a safer bet (need to understand hashing)
-                        // groenp_plain_mail(    $user_id, "new_user_notification", "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
-                        // groenp_html_mail(     $user_id, "new_user_notification", "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
-                        groenp_multipart_mail($user_id, "new_user_notification", "Welcome to Groen Productions - Sites Management", "Registration details", NULL, $password);
+                        // groenp_plain_mail(    $user_id, 'new_user_notification', "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
+                        // groenp_html_mail(     $user_id, 'new_user_notification', "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
+                        groenp_multipart_mail($user_id, 'new_user_notification', "Welcome to Groen Productions - Sites Management", "Registration details", NULL, $password);
                         //wp_mail( $_POST['user_email'], 'Bienvenido a CuscoNow!', 'Your loginID: '. $_POST['user_login'] . ', Your Password: ' . $password );
 
                         if ( is_wp_error( $user_id ) ) { // There was an error updating the wp_user table...
                             echo "<p class='err-msg'>Created a new wp_user, but could not update that user with all form data. Try to edit the subscriber from the list.</p>";
                         };
                         // We're doing swell, now create subscriber and link to wp_user
-                        $query_string = "INSERT INTO gp_subscribers " .
-                            "(fr_ID, sbscrbr_login, is_usr_blocked, gets_html_mail, sbscrbr_notes) " . 
-                            "VALUES (?, ?, 0, 1, ?)";
+                        $query_string = 'INSERT INTO gp_subscribers ' .
+                            '(fr_ID, sbscrbr_login, is_usr_blocked, gets_html_mail, sbscrbr_notes) ' . 
+                            'VALUES (?, ?, 0, 1, ?)';
                         $stmt = mysqli_prepare($con, $query_string);
 
                         if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
                         else {
                             // bind stmt = i: integer, d: double, s: string
-                            $bind = mysqli_stmt_bind_param($stmt, "iss", $user_id, $user_login, $sbscrbr_notes);
+                            $bind = mysqli_stmt_bind_param($stmt, 'iss', $user_id, $user_login, $sbscrbr_notes);
                             if ($bind ===  FALSE) { _log("Bind parameters failed for add query (".$lng.") in " . $func); }
                             else {
                                 // execute query 
@@ -256,15 +256,15 @@ function groenp_subscribers_meta_box_cb()
                         echo "<p class='err-msg'>The Subscriber ID is already in use. You can create a new subscriber (without email) and then attach it to that account. 
                         Also, it is possible to add a new subscription to an existing subscriber.</p>";
                     } else {
-                        $query_string = "INSERT INTO gp_subscribers " .
-                            "(fr_ID, sbscrbr_login, is_usr_blocked, gets_html_mail, sbscrbr_notes) " . 
-                            "VALUES (NULL, ?, 0, NULL, ?)";
+                        $query_string = 'INSERT INTO gp_subscribers ' .
+                            '(fr_ID, sbscrbr_login, is_usr_blocked, gets_html_mail, sbscrbr_notes) ' . 
+                            'VALUES (NULL, ?, 0, NULL, ?)';
                         $stmt = mysqli_prepare($con, $query_string);
 
                         if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
                         else {
                             // bind stmt = i: integer, d: double, s: string
-                            $bind = mysqli_stmt_bind_param($stmt, "ss", $user_login, $sbscrbr_notes);
+                            $bind = mysqli_stmt_bind_param($stmt, 'ss', $user_login, $sbscrbr_notes);
                             if ($bind ===  FALSE) { _log("Bind parameters failed for add query (".$lng.") in " . $func); }
                             else {
                                 // execute query 
@@ -282,16 +282,16 @@ function groenp_subscribers_meta_box_cb()
 			// ************************************************************
 			{
                 // create a prepared statement, Update subscriber table
-                $query_string = "UPDATE LOW_PRIORITY gp_subscribers SET " .
-                    "is_usr_blocked = ?, gets_html_mail = ?, sbscrbr_notes = ? " . 
-                    "WHERE pk_sbscrbr_id = ?";
+                $query_string = 'UPDATE LOW_PRIORITY gp_subscribers SET ' .
+                    'is_usr_blocked = ?, gets_html_mail = ?, sbscrbr_notes = ? ' . 
+                    'WHERE pk_sbscrbr_id = ?';
                 //_log("Edit query for ". $func .": ". $query_string);              // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); } 
                 else { 
                     // bind stmt = i: integer, d: double, s: string
-                    $bind = mysqli_stmt_bind_param($stmt, "iisi", $is_usr_blocked, $gets_html_mail, $sbscrbr_notes, $pk_sbscrbr_id);
+                    $bind = mysqli_stmt_bind_param($stmt, 'iisi', $is_usr_blocked, $gets_html_mail, $sbscrbr_notes, $pk_sbscrbr_id);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -303,8 +303,8 @@ function groenp_subscribers_meta_box_cb()
                 } // end of: stmt prepared successful
 
                 // Update wp_user if present
-                $stmt = mysqli_prepare($con, "SELECT fr_ID FROM gp_subscribers WHERE pk_sbscrbr_id=?");
-                mysqli_stmt_bind_param($stmt, "s", $pk_sbscrbr_id);
+                $stmt = mysqli_prepare($con, 'SELECT fr_ID FROM gp_subscribers WHERE pk_sbscrbr_id=?');
+                mysqli_stmt_bind_param($stmt, 's', $pk_sbscrbr_id);
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $row['fr_ID']);
                 mysqli_stmt_fetch($stmt);
@@ -344,8 +344,8 @@ function groenp_subscribers_meta_box_cb()
         if ( !empty($sbscrbr_id) )
         {
             // Use $sbscrbr_id to find corresponding wp_user part if any
-            $stmt = mysqli_prepare($con, "SELECT fr_ID, sbscrbr_login FROM gp_subscribers WHERE pk_sbscrbr_id=?");
-            mysqli_stmt_bind_param($stmt, "i", $sbscrbr_id);
+            $stmt = mysqli_prepare($con, 'SELECT fr_ID, sbscrbr_login FROM gp_subscribers WHERE pk_sbscrbr_id=?');
+            mysqli_stmt_bind_param($stmt, 'i', $sbscrbr_id);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $row['fr_ID'], $row['sbscrbr_login']);
             mysqli_stmt_fetch($stmt);
@@ -357,7 +357,7 @@ function groenp_subscribers_meta_box_cb()
 
         } else { 
             // No result through fr_ID (must be action to attach then), let's go through user_login and edit_id
-            if ( !empty($_POST['edit_id']) ) $sbscrbr_id = prep($_POST['edit_id'],"i");
+            if ( !empty($_POST['edit_id']) ) $sbscrbr_id = prep($_POST['edit_id'],'i');
             $user_id = username_exists( $_POST['user_login'] );
             // _log("UserID in wp: " . $user_id);
             if ( $user_id ) $wp_user = get_userdata($user_id);
@@ -376,16 +376,16 @@ function groenp_subscribers_meta_box_cb()
             if ( $wp_user ) 
             {
                 // Update subscriber table
-                $query_string = "UPDATE LOW_PRIORITY gp_subscribers SET fr_ID = NULL, gets_html_mail = NULL WHERE pk_sbscrbr_id = ?";
+                $query_string = 'UPDATE LOW_PRIORITY gp_subscribers SET fr_ID = NULL, gets_html_mail = NULL WHERE pk_sbscrbr_id = ?';
 				//_log("Remove wp_user query string for " . $func . ": " . $query_string);			// DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
-                $bind = mysqli_stmt_bind_param($stmt, "i", $sbscrbr_id);
+                $bind = mysqli_stmt_bind_param($stmt, 'i', $sbscrbr_id);
                 $exec = mysqli_stmt_execute($stmt);
                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Invalid remove wp_user query for " . $func . ": " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
                 else { _lua($func, "Subscriber (ID: ". $sbscrbr_id .", ". $row['sbscrbr_login'] .") wp_user section removed."); }
                 mysqli_stmt_close($stmt); 
 
-                if ( $wp_user->roles[0] == "subscriber")
+                if ( $wp_user->roles[0] == 'subscriber')
                 {
                     wp_delete_user($wp_user->ID);
                    _log("wp_user (ID: " . $wp_user->ID . ") deleted.");						// DEBUG //
@@ -407,7 +407,7 @@ function groenp_subscribers_meta_box_cb()
                 $query_string = "UPDATE LOW_PRIORITY gp_subscribers SET fr_ID = ?, gets_html_mail = 1 WHERE pk_sbscrbr_id = ?";
 				//_log("Attach wp_user query string for " . $func . ": " . $query_string);			// DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
-                mysqli_stmt_bind_param($stmt, "ii", $wp_user->ID, $sbscrbr_id);
+                mysqli_stmt_bind_param($stmt, 'ii', $wp_user->ID, $sbscrbr_id);
                 $exec = mysqli_stmt_execute($stmt);
                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Invalid attach wp_user query for " . $func . ": " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
                 else { _lua($func, "Subscriber (ID: ". $sbscrbr_id .", ". $wp_user->user_login .") wp_user section added."); }
@@ -421,15 +421,15 @@ function groenp_subscribers_meta_box_cb()
         elseif ( isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
         {
             // Delete all rows in table with id= delkey
-            $query_string = "DELETE LOW_PRIORITY FROM gp_subscribers WHERE pk_sbscrbr_id = ?";
+            $query_string = 'DELETE LOW_PRIORITY FROM gp_subscribers WHERE pk_sbscrbr_id = ?';
             $stmt = mysqli_prepare($con, $query_string);
-            mysqli_stmt_bind_param($stmt, "i", $delkey);
+            mysqli_stmt_bind_param($stmt, 'i', $delkey);
             $exec = mysqli_stmt_execute($stmt);
             if ($exec === FALSE) { echo "<p class='err-msg'>Subscriber could not be deleted: Subscriber may be linked to a project, see below. " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
             elseif ( $wp_user ) 
             {
-                // delete wp_user only if user role is "subscriber" when wp_user exists
-                if ( $wp_user->roles[0] == "subscriber" ) 
+                // delete wp_user only if user role is 'subscriber' when wp_user exists
+                if ( $wp_user->roles[0] == 'subscriber' ) 
                 {
                     wp_delete_user($wp_user->ID );
                     _lua($func, "Subscriber (ID: ". $delkey .", ". $wp_user->user_login .") deleted, and corresponding wp_user deleted.");
@@ -448,16 +448,16 @@ function groenp_subscribers_meta_box_cb()
     // ************************************************************
 
     // Select correct database depending on server
-    // $db = ( strpos($_SERVER['SERVER_NAME'], "test.") === false )? "cusconow_cms" : "cn_test_cms";
-    $db = "groenp_sites_cms";
+    // $db = ( strpos($_SERVER['SERVER_NAME'], 'test.') === false )? 'cusconow_cms' : 'cn_test_cms';
+    $db = 'groenp_sites_cms';
 
     // Create query to get all gp_subscribers that DON'T have admin panel access AND those that DO have admin panel access
 
-    $query_string = "SELECT gp.pk_sbscrbr_id, gp.sbscrbr_login, gp.is_usr_blocked, gp.gets_html_mail,";
-    $query_string .= " wp_fst.meta_value first, wp_lst.meta_value last, wp.user_registered, wp.user_email, gp.sbscrbr_notes"; 
-    $query_string .= " FROM ". $db .".gp_subscribers gp LEFT JOIN ".DB_NAME.".wp_users wp ON ( wp.ID = gp.fr_ID )";
-    $query_string .= " LEFT JOIN ".DB_NAME.".wp_usermeta wp_fst ON ( wp_fst.user_id = gp.fr_ID AND wp_fst.meta_key = 'first_name')";
-    $query_string .= " LEFT JOIN ".DB_NAME.".wp_usermeta wp_lst ON ( wp_lst.user_id = gp.fr_ID AND wp_lst.meta_key = 'last_name') ORDER BY gp.sbscrbr_login;";
+    $query_string = 'SELECT gp.pk_sbscrbr_id, gp.sbscrbr_login, gp.is_usr_blocked, gp.gets_html_mail,';
+    $query_string .= ' wp_fst.meta_value first, wp_lst.meta_value last, wp.user_registered, wp.user_email, gp.sbscrbr_notes'; 
+    $query_string .= ' FROM '. $db .'.gp_subscribers gp LEFT JOIN '.DB_NAME.'.wp_users wp ON ( wp.ID = gp.fr_ID )';
+    $query_string .= ' LEFT JOIN '.DB_NAME.'.wp_usermeta wp_fst ON ( wp_fst.user_id = gp.fr_ID AND wp_fst.meta_key = \'first_name\')';
+    $query_string .= ' LEFT JOIN '.DB_NAME.'.wp_usermeta wp_lst ON ( wp_lst.user_id = gp.fr_ID AND wp_lst.meta_key = \'last_name\') ORDER BY gp.sbscrbr_login;';
 
     // store in different temp array
     $sbscrbrs = array();
@@ -519,14 +519,14 @@ function groenp_subscribers_meta_box_cb()
 
     // Build filter 
     echo "<tr>
-        <td class='head'><input class='numb' type='text' value='" . dis($_POST['fltr_pk_sbscrbr_id'],"i") . "' name='fltr_pk_sbscrbr_id' id='fltr_pk_sbscrbr_id' pattern='\d*|\*' /></td>
-        <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_login'],"a") . "' name='fltr_sbscrbr_login' id='fltr_sbscrbr_login' pattern='[a-zA-Z0-9_]+|\*' maxlength='60' /></td>
-        <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_name'],"s%") . "' name='fltr_sbscrbr_name' id='fltr_sbscrbr_name' maxlength='200' /></td>
-        <td class='head'><input type='text' value='" . dis($_POST['fltr_user_email'],"a") . "' name='fltr_user_email' id='fltr_user_email' maxlength='100' /></td>
-        <td class='head'><input type='text' value='" . dis($_POST['fltr_user_registered'],"a") . "' name='fltr_user_registered' id='fltr_user_registered' maxlength='30' /></td>
-        <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_gets_html_mail'],"chk") . "' name='fltr_gets_html_mail' id='fltr_gets_html_mail' pattern='[YyNn\*]' maxlength='1' /></td>
-        <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_is_usr_blocked'],"chk") . "' name='fltr_is_usr_blocked' id='fltr_is_usr_blocked' pattern='[YyNn\*]' maxlength='1' /></td>
-        <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_notes'],"s%") . "' name='fltr_sbscrbr_notes' id='fltr_sbscrbr_notes' maxlength='200' /></td>
+        <td class='head'><input class='numb' type='text' value='" . dis($_POST['fltr_pk_sbscrbr_id'],'i') . "' name='fltr_pk_sbscrbr_id' id='fltr_pk_sbscrbr_id' pattern='\d*|\*' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_login'],'a') . "' name='fltr_sbscrbr_login' id='fltr_sbscrbr_login' pattern='[a-zA-Z0-9_]+|\*' maxlength='60' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_name'],'s%') . "' name='fltr_sbscrbr_name' id='fltr_sbscrbr_name' maxlength='200' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_user_email'],'a') . "' name='fltr_user_email' id='fltr_user_email' maxlength='100' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_user_registered'],'a') . "' name='fltr_user_registered' id='fltr_user_registered' maxlength='30' /></td>
+        <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_gets_html_mail'],'chk') . "' name='fltr_gets_html_mail' id='fltr_gets_html_mail' pattern='[YyNn\*]' maxlength='1' /></td>
+        <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_is_usr_blocked'],'chk') . "' name='fltr_is_usr_blocked' id='fltr_is_usr_blocked' pattern='[YyNn\*]' maxlength='1' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_notes'],'s%') . "' name='fltr_sbscrbr_notes' id='fltr_sbscrbr_notes' maxlength='200' /></td>
         <td class='head'>
             <input type='button' class='button-primary' name='srch_". $func ."' value='Filter' onclick='build_fltrd_sbscrbrs_table(\"". $func ."\");'>
             <input type='button' class='button-secondary' name='clr_" . $func . "' value='Clear' onclick='clear_filter(\"sbscrbr_table\");'>
@@ -546,8 +546,8 @@ function groenp_subscribers_meta_box_cb()
     // Retrieve edit row, if edit version of form
     if (isset($editkey))
     {
-        $stmt = mysqli_prepare($con, "SELECT fr_ID, sbscrbr_login, pk_sbscrbr_id, is_usr_blocked, gets_html_mail, sbscrbr_notes FROM gp_subscribers WHERE pk_sbscrbr_id=?");
-        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        $stmt = mysqli_prepare($con, 'SELECT fr_ID, sbscrbr_login, pk_sbscrbr_id, is_usr_blocked, gets_html_mail, sbscrbr_notes FROM gp_subscribers WHERE pk_sbscrbr_id=?');
+        mysqli_stmt_bind_param($stmt, 'i', $editkey);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $editrow['fr_ID'], $editrow['sbscrbr_login'], $editrow['pk_sbscrbr_id'], $editrow['is_usr_blocked'], $editrow['gets_html_mail'], $editrow['sbscrbr_notes']);
 
@@ -574,8 +574,8 @@ function groenp_subscribers_meta_box_cb()
         if(isset($editkey)) echo "<input type='hidden' name='edit_id' value=". $editkey . " > "; 
         
         // If Edit populate each field with the present values
-        if (isset($editkey)) echo "<label for='pk_sbscrbr_id'>ID</label><span id='pk_sbscrbr_id' name='pk_sbscrbr_id' class='display-only' >". dis($editrow['pk_sbscrbr_id'],"i") ."</span>";
-        echo "<label for='user_login'>Subscriber ID (user_login) *</label><span>(use letters, digits, '_'s, has to be unique)</span><input type='text' name='user_login' id='user_login' maxlength='60' "; if(isset($editkey)) echo "value='" . dis($editrow['sbscrbr_login'],"a") . "' readonly='readonly' "; echo "/>
+        if (isset($editkey)) echo "<label for='pk_sbscrbr_id'>ID</label><span id='pk_sbscrbr_id' name='pk_sbscrbr_id' class='display-only' >". dis($editrow['pk_sbscrbr_id'],'i') ."</span>";
+        echo "<label for='user_login'>Subscriber ID (user_login) *</label><span>(use letters, digits, '_'s, has to be unique)</span><input type='text' name='user_login' id='user_login' maxlength='60' "; if(isset($editkey)) echo "value='" . dis($editrow['sbscrbr_login'],'a') . "' readonly='readonly' "; echo "/>
         <label for='user_email'>Email address</label><span>(leave empty for no panel access)</span><input type='email' name='user_email' id='user_email' maxlength='100' "; if(isset($editkey) && $wp_user) echo "value='" . $wp_user->user_email . "'"; if(isset($editkey)) echo " readonly='readonly' "; echo "/>";
         
         // If Edit place field with registration date and time if wp_user has been created as well (have to javascript:loc, so some inline script)
@@ -594,9 +594,9 @@ function groenp_subscribers_meta_box_cb()
                 if ( !$wp_user ) // there is no wp_user part but reference still there (deleted outside cusconow U/I)
                 {
                     // Remove fr_ID reference
-                    $editrow['pk_sbscrbr_id'] = prep($editrow['pk_sbscrbr_id'],"i");
-                    $stmt = mysqli_prepare($con, "UPDATE LOW_PRIORITY gp_subscribers SET fr_ID = NULL WHERE pk_sbscrbr_id = ?");
-                    mysqli_stmt_bind_param($stmt, "i",$editrow['pk_sbscrbr_id']);
+                    $editrow['pk_sbscrbr_id'] = prep($editrow['pk_sbscrbr_id'],'i');
+                    $stmt = mysqli_prepare($con, 'UPDATE LOW_PRIORITY gp_subscribers SET fr_ID = NULL WHERE pk_sbscrbr_id = ?');
+                    mysqli_stmt_bind_param($stmt, 'i',$editrow['pk_sbscrbr_id']);
                     $exec = mysqli_stmt_execute($stmt);
                     if ($exec ===  FALSE) { echo "<span class='inline err-msg'>Invalid remove wp_user reference query for " . $func . ": " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</span>"; } 
                     else { 
@@ -617,9 +617,9 @@ function groenp_subscribers_meta_box_cb()
             }
             if($wp_user) 
             {
-                echo "<label for='gets_html_mail'>Receive in HTML format? *</label><span>(if user cannot read the mail, uncheck and mail will be sent in plain text)</span><input type='checkbox' name='gets_html_mail' id='gets_html_mail' ". dis($editrow['gets_html_mail'],"chk_ctrl") ."/><br />";
+                echo "<label for='gets_html_mail'>Receive in HTML format? *</label><span>(if user cannot read the mail, uncheck and mail will be sent in plain text)</span><input type='checkbox' name='gets_html_mail' id='gets_html_mail' ". dis($editrow['gets_html_mail'],'chk_ctrl') ."/><br />";
             }
-            echo "<label for='is_usr_blocked'>Block subscriber temporarily?</label><input type='checkbox' name='is_usr_blocked' id='is_usr_blocked' ". dis($editrow['is_usr_blocked'],"chk_ctrl") ."/><br />";
+            echo "<label for='is_usr_blocked'>Block subscriber temporarily?</label><input type='checkbox' name='is_usr_blocked' id='is_usr_blocked' ". dis($editrow['is_usr_blocked'],'chk_ctrl') ."/><br />";
         } 
         if ( !isset($editkey) ) 
         {
@@ -630,10 +630,10 @@ function groenp_subscribers_meta_box_cb()
         {
             $first = $wp_user->first_name;
             $last = $wp_user->last_name;
-            echo "<label for='first_name'>First name</label><input type='text' name='first_name' id='first_name' maxlength='200' value='" . dis($first,"s") . "' />
-            <label for='last_name'>Last name</label><input type='text' name='last_name' id='last_name' maxlength='200' value='" . dis($last,"s") . "' />";
+            echo "<label for='first_name'>First name</label><input type='text' name='first_name' id='first_name' maxlength='200' value='" . dis($first,'s') . "' />
+            <label for='last_name'>Last name</label><input type='text' name='last_name' id='last_name' maxlength='200' value='" . dis($last,'s') . "' />";
         }
-        echo "<label for='sbscrbr_notes'>Notes</label><span>(max. 200 chars, only visible to administrator and managers, enter first and last name when no email)</span><textarea name='sbscrbr_notes' rows='4' cols='50'>". dis($editrow['sbscrbr_notes'],"s") ."</textarea>
+        echo "<label for='sbscrbr_notes'>Notes</label><span>(max. 200 chars, only visible to administrator and managers, enter first and last name when no email)</span><textarea name='sbscrbr_notes' rows='4' cols='50'>". dis($editrow['sbscrbr_notes'],'s') ."</textarea>
     </p>
 
     <p class='button-row'>";
@@ -680,10 +680,10 @@ function groenp_projects_meta_box_cb()
     if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // default SSL port number; use https version, otherwise not
-    $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
+    $protocol = ($_SERVER['SERVER_PORT'] == '443') ? 'https://' : 'http://';
 
     // Create form url for this meta box
-	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "#" . $func;
+	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '#' . $func;
 
     
     // ************************************************************
@@ -709,30 +709,30 @@ function groenp_projects_meta_box_cb()
         }
         else {
                 // define and sanitize vars
-                $prjct_name       = prep($_POST['prjct_name'], "s");
-                $prjct_php        = prep($_POST['prjct_php'], "s");
-                $base_url       = prep($_POST['base_url'], "s");
-                $upload_dir     = prep($_POST['upload_dir'], "s");
-                // $upload_dir     = ( isset($_POST['upload_dir']) )? prep($_POST['upload_dir'], "s") : "NULL";
-                $is_test_active = prep($_POST['is_test_active'], "chk");
-                $test_url       = prep($_POST['test_url'], "s");
-                $test_upl_dir   = prep($_POST['test_upl_dir'], "s");
+                $prjct_name       = prep($_POST['prjct_name'], 's');
+                $prjct_php        = prep($_POST['prjct_php'], 's');
+                $base_url       = prep($_POST['base_url'], 's');
+                $upload_dir     = prep($_POST['upload_dir'], 's');
+                // $upload_dir     = ( isset($_POST['upload_dir']) )? prep($_POST['upload_dir'], 's') : 'NULL';
+                $is_test_active = prep($_POST['is_test_active'], 'chk');
+                $test_url       = prep($_POST['test_url'], 's');
+                $test_upl_dir   = prep($_POST['test_upl_dir'], 's');
 
             // ************************************************************
 		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
 			// ************************************************************
 			{
                 // create a prepared statement 
-                $query_string = "INSERT INTO gp_projects " .
-                    "(prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) " . 
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $query_string = 'INSERT INTO gp_projects ' .
+                    '(prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) ' . 
+                    'VALUES (?, ?, ?, ?, ?, ?, ?)';
                 // _log("Add query for ". $func .": ". $query_string);                // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string
-                    $bind = mysqli_stmt_bind_param($stmt, "ssssiss", $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir);
+                    $bind = mysqli_stmt_bind_param($stmt, 'ssssiss', $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -748,19 +748,19 @@ function groenp_projects_meta_box_cb()
 			// ************************************************************
 			{
                 // sanitize editkey
-                $pk_prjct_id= prep($_POST['editkey'], "i");
+                $pk_prjct_id= prep($_POST['editkey'], 'i');
 
                 // create a prepared statement 
-                $query_string = "UPDATE LOW_PRIORITY gp_projects SET " .
-                    "prjct_name = ?, prjct_php = ?, base_url = ?, upload_dir = ?, is_test_active = ?, test_url = ?, test_upl_dir = ? " . 
-                    "WHERE pk_prjct_id = ?";
+                $query_string = 'UPDATE LOW_PRIORITY gp_projects SET ' .
+                    'prjct_name = ?, prjct_php = ?, base_url = ?, upload_dir = ?, is_test_active = ?, test_url = ?, test_upl_dir = ? ' . 
+                    'WHERE pk_prjct_id = ?';
                 //_log("Edit query for ". $func .": ". $query_string);              // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
-                    $bind = mysqli_stmt_bind_param($stmt, "ssssissi", $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir, $pk_prjct_id);
+                    $bind = mysqli_stmt_bind_param($stmt, 'ssssissi', $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir, $pk_prjct_id);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -786,11 +786,11 @@ function groenp_projects_meta_box_cb()
         if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
         {
             // Create a prepared statement and delete row
-            $query_string = "DELETE LOW_PRIORITY FROM gp_projects WHERE pk_prjct_id = ?";
+            $query_string = 'DELETE LOW_PRIORITY FROM gp_projects WHERE pk_prjct_id = ?';
             $stmt = mysqli_prepare($con, $query_string);
             if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
             else {
-                $bind = mysqli_stmt_bind_param($stmt, "i", $delkey);
+                $bind = mysqli_stmt_bind_param($stmt, 'i', $delkey);
                 $exec = mysqli_stmt_execute($stmt);
                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Proejct could not be deleted. Project may be assigned to subscriber. See below: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
                 else { _lua($func, "Project (ID: ". $delkey .") deleted."); }
@@ -847,13 +847,13 @@ function groenp_projects_meta_box_cb()
     if (isset($editkey))
     {
         // prepare statement excluding item to be edited
-        $stmt = mysqli_prepare($con, "SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url" .
-                             " FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name, prjct_php");
-        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url' .
+                             ' FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name, prjct_php');
+        mysqli_stmt_bind_param($stmt, 'i', $editkey);
     } else {
         // prepare statement in similar way as edit, but no parameters
-        $stmt = mysqli_prepare($con, "SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url" .
-                             " FROM gp_projects ORDER BY prjct_name, prjct_php");
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url' .
+                             ' FROM gp_projects ORDER BY prjct_name, prjct_php');
     } // End of: not set editkey
 
     mysqli_stmt_execute($stmt);
@@ -864,13 +864,13 @@ function groenp_projects_meta_box_cb()
     {
         // Build row
         echo "<tr>
-                <td class='numb'>" . dis($row['pk_prjct_id'],"i") . "</td>
-                <td>" . dis($row['prjct_name'],"s") . "</td>
-                <td>" . dis($row['base_url'],"s") . "</td>
-                <td>" . dis($row['prjct_php'],"s") . "</td>
-                <td>" . dis($row['upload_dir'],"s") . "</td>
-                <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
-                <td>" . dis($row['test_url'],"s") . "</td>";
+                <td class='numb'>" . dis($row['pk_prjct_id'],'i') . "</td>
+                <td>" . dis($row['prjct_name'],'s') . "</td>
+                <td>" . dis($row['base_url'],'s') . "</td>
+                <td>" . dis($row['prjct_php'],'s') . "</td>
+                <td>" . dis($row['upload_dir'],'s') . "</td>
+                <td class='chck'>" . dis($row['is_test_active'],'chk') . "</td>
+                <td>" . dis($row['test_url'],'s') . "</td>";
 
                 // Add final cell with button section and link to javascript pop-up
                 echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
@@ -891,9 +891,9 @@ function groenp_projects_meta_box_cb()
     if ( isset($editkey) )
     {
         unset($stmt);
-        $stmt = mysqli_prepare($con, "SELECT prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir" .
-                             " FROM gp_projects WHERE pk_prjct_id = ?");
-        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        $stmt = mysqli_prepare($con, 'SELECT prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
+                             ' FROM gp_projects WHERE pk_prjct_id = ?');
+        mysqli_stmt_bind_param($stmt, 'i', $editkey);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $editrow['prjct_name'], $editrow['prjct_php'], $editrow['base_url'], $editrow['upload_dir'], $editrow['is_test_active'], $editrow['test_url'], $editrow['test_upl_dir']);
         mysqli_stmt_fetch($stmt);
@@ -961,10 +961,10 @@ function groenp_subpro_pairing_meta_box_cb()
     if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // default SSL port number; use https version, otherwise not
-    $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
+    $protocol = ($_SERVER['SERVER_PORT'] == '443') ? 'https://' : 'http://';
 
     // Create form url for this meta box
-	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "#" . $func;
+	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '#' . $func;
 
     
     // ************************************************************
@@ -979,24 +979,24 @@ function groenp_subpro_pairing_meta_box_cb()
         }
         else {
                 // define and sanitize vars
-                $spp_prjct_id   = prep($_POST['spp_prjct_id'], "i");
-                $spp_sbscrbr_id = prep($_POST['spp_sbscrbr_id'], "i");
+                $spp_prjct_id   = prep($_POST['spp_prjct_id'], 'i');
+                $spp_sbscrbr_id = prep($_POST['spp_sbscrbr_id'], 'i');
 
             // ************************************************************
 		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
 			// ************************************************************
 			{
                 // create a prepared statement 
-                $query_string = "INSERT INTO gp_sbscrbr_prjct_pairings " .
-                    "(fk_prjct_id, fk_sbscrbr_id) " . 
-                    "VALUES (?, ?)";
+                $query_string = 'INSERT INTO gp_sbscrbr_prjct_pairings ' .
+                    '(fk_prjct_id, fk_sbscrbr_id) ' . 
+                    'VALUES (?, ?)';
                 // _log("Add query for ". $func .": ". $query_string);                // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string
-                    $bind = mysqli_stmt_bind_param($stmt, "ii", $spp_prjct_id, $spp_sbscrbr_id);
+                    $bind = mysqli_stmt_bind_param($stmt, 'ii', $spp_prjct_id, $spp_sbscrbr_id);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -1012,18 +1012,18 @@ function groenp_subpro_pairing_meta_box_cb()
 			// ************************************************************
 			{
                 // sanitize editkey
-                $pk_sppair_id= prep($_POST['editkey'], "i");
+                $pk_sppair_id= prep($_POST['editkey'], 'i');
 
                 // create a prepared statement 
-                $query_string = "UPDATE LOW_PRIORITY gp_sbscrbr_prjct_pairings SET " .
-                    "fk_prjct_id = ?, fk_sbscrbr_id = ? WHERE pk_sppair_id = ?";
+                $query_string = 'UPDATE LOW_PRIORITY gp_sbscrbr_prjct_pairings SET ' .
+                    'fk_prjct_id = ?, fk_sbscrbr_id = ? WHERE pk_sppair_id = ?';
                 //_log("Edit query for ". $func .": ". $query_string);              // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
-                    $bind = mysqli_stmt_bind_param($stmt, "iii", $spp_prjct_id, $spp_sbscrbr_id,  $pk_sppair_id);
+                    $bind = mysqli_stmt_bind_param($stmt, 'iii', $spp_prjct_id, $spp_sbscrbr_id,  $pk_sppair_id);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -1049,11 +1049,11 @@ function groenp_subpro_pairing_meta_box_cb()
         if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
         {
             // Create a prepared statement and delete row
-            $query_string = "DELETE LOW_PRIORITY FROM gp_sbscrbr_prjct_pairings WHERE pk_sppair_id = ?";
+            $query_string = 'DELETE LOW_PRIORITY FROM gp_sbscrbr_prjct_pairings WHERE pk_sppair_id = ?';
             $stmt = mysqli_prepare($con, $query_string);
             if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
             else {
-                $bind = mysqli_stmt_bind_param($stmt, "i", $delkey);
+                $bind = mysqli_stmt_bind_param($stmt, 'i', $delkey);
                 $exec = mysqli_stmt_execute($stmt);
                 if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not delete item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
                 else { _lua($func, "Sbscrbr/Prjct pairing (ID: ". $delkey .") deleted."); }
@@ -1111,20 +1111,20 @@ function groenp_subpro_pairing_meta_box_cb()
     if (isset($editkey))
     {
         // prepare statement excluding item to be edited
-        $stmt = mysqli_prepare($con, "SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active" .
-                             " FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)" .
-                             " LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)" . 
-                             " WHERE spp.pk_sppair_id != ?".
-                             " ORDER BY prj.prjct_name, sub.sbscrbr_login");
-        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active' .
+                             ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
+                             ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
+                             ' WHERE spp.pk_sppair_id != ?'.
+                             ' ORDER BY prj.prjct_name, sub.sbscrbr_login');
+        mysqli_stmt_bind_param($stmt, 'i', $editkey);
     } 
     else 
     {
         // prepare statement in similar way as edit, but no parameters
-        $stmt = mysqli_prepare($con, "SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active" .
-                             " FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)" .
-                             " LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)" . 
-                             " ORDER BY prj.prjct_name, sub.sbscrbr_login");
+        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active' .
+                             ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
+                             ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
+                             ' ORDER BY prj.prjct_name, sub.sbscrbr_login');
     } // End of: not set editkey
 
     mysqli_stmt_execute($stmt);
@@ -1135,11 +1135,11 @@ function groenp_subpro_pairing_meta_box_cb()
     {
         // Build row
         echo "<tr>
-                <td>" . dis($row['prjct_name'],"s") . "</td>
-                <td class='chck'>" . dis($row['is_test_active'],"chk") . "</td>
-                <td>" . dis($row['sbscrbr_login'],"s") . "</td>
-                <td class='chck'>" . dis($row['is_usr_blocked'],"chk") . "</td>
-                <td>" . dis($row['pk_sbscrbr_id'],"i") . "</td>
+                <td>" . dis($row['prjct_name'],'s') . "</td>
+                <td class='chck'>" . dis($row['is_test_active'],'chk') . "</td>
+                <td>" . dis($row['sbscrbr_login'],'s') . "</td>
+                <td class='chck'>" . dis($row['is_usr_blocked'],'chk') . "</td>
+                <td>" . dis($row['pk_sbscrbr_id'],'i') . "</td>
                 <td></td>
                 <td></td>";
 
@@ -1163,11 +1163,11 @@ function groenp_subpro_pairing_meta_box_cb()
     if ( isset($editkey) )
     {
         unset($stmt);
-        $stmt = mysqli_prepare($con, "SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active" .
-                             " FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)" .
-                             " LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)" . 
-                             " WHERE spp.pk_sppair_id = ?");
-        mysqli_stmt_bind_param($stmt, "i", $editkey);
+        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active' .
+                             ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
+                             ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
+                             ' WHERE spp.pk_sppair_id = ?');
+        mysqli_stmt_bind_param($stmt, 'i', $editkey);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $editrow['pk_sppair_id'], $editrow['fk_sbscrbr_id'], $editrow['sbscrbr_login'], $editrow['is_usr_blocked'], $editrow['fk_prjct_id'], $editrow['prjct_name'], $editrow['is_test_active']);
         mysqli_stmt_fetch($stmt);
@@ -1192,7 +1192,7 @@ function groenp_subpro_pairing_meta_box_cb()
         unset($result); unset($row); // re-initialize
     
         //  query all projects (projects can be assigned to several subscribers, so should always be available)
-        $result = mysqli_query($con, "SELECT pk_prjct_id, prjct_name, is_test_active FROM gp_projects ORDER BY prjct_name, pk_prjct_id;");
+        $result = mysqli_query($con, 'SELECT pk_prjct_id, prjct_name, is_test_active FROM gp_projects ORDER BY prjct_name, pk_prjct_id;');
         while($row = mysqli_fetch_array($result)) 
         { 
             echo "<option value='" . $row['pk_prjct_id'] . "' data-id='". $row['pk_prjct_id'] . "' data-active='" . $row['is_test_active']  . "'"; 

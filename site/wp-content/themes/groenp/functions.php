@@ -92,10 +92,10 @@ if(!function_exists('_lua')){
 // ****************************************************************
 add_filter('login_message', 'groenp_cookie_warning_login');
 function groenp_cookie_warning_login() {
-    return '<p class="message lowlight">
+    return "<p class='message lowlight'>
     This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>
     By logging in you accept the use of these cookies. 
-    Please review the <a href="privacy_and_terms_of_use.php">Privacy Statement and Terms of Use</a> for more detail.</p>';
+    Please review the <a href='privacy_and_terms_of_use.php'>Privacy Statement and Terms of Use</a> for more detail.</p>";
 }
 
 
@@ -190,7 +190,7 @@ function groenp_user_profile_fields_disable_js() {
                 }
             }
 
-            // remove "About Yourself" section
+            // remove 'About Yourself' section
             $('#your-profile .user-description-wrap').parent().parent().prev().hide();  // <h2>About Yourself</h2>
             $('#your-profile .user-description-wrap').parent().parent().hide();         // entire table
 
@@ -304,7 +304,7 @@ function groenp_redirect_blocked_users() {
 
     // Get user status
     $wp_userID = get_current_user_id();
-    $result = mysqli_query($con, "SELECT is_usr_blocked FROM gp_subscribers WHERE fr_ID='" . $wp_userID . "';");
+    $result = mysqli_query($con, 'SELECT is_usr_blocked FROM gp_subscribers WHERE fr_ID="' . $wp_userID . '";');
     if ( $result ) $row = mysqli_fetch_array($result);
 
     // Close database
@@ -320,9 +320,9 @@ function groenp_redirect_blocked_users() {
 }
 
 // Define custom message for the force-out situation
-if(!empty($_GET['custom-logout']) && strtolower($_GET['custom-logout']) == "yes"){
+if(!empty($_GET['custom-logout']) && strtolower($_GET['custom-logout']) == 'yes'){
     function groenp_force_out_message() {
-        $message = '<p class="message">Su nombre de usuario ha sido bloqueada. <br />Por favor, póngase en contacto con la <a href="mailto:admin@groenproductions.com">administración de Groen Productions</a> para obtener más información.</p>';
+        $message = "<p class='message'>Your username has been blocked. <br />Please contact <a href='mailto:admin@groenproductions.com'>administration at Groen Productions</a> to obtain more information.</p>";
         return $message;
     }
     add_filter('login_message', 'groenp_force_out_message');
@@ -478,7 +478,7 @@ function groenp_log_user_forgot( $user_login )
 add_action( 'wp_login' , 'groenp_log_login', 10, 2);
 function groenp_log_login($user_login, $user) 
 {
-    if ( $user->roles[0] == "subscriber")
+    if ( $user->roles[0] == 'subscriber')
     {
         _lua("WPuser", "Subscriber (wpID:". $user->ID .", ". $user_login .") logged in.");
     } else {
@@ -492,9 +492,9 @@ function groenp_log_logout()
 {
     // global $wpdb;
     $user = wp_get_current_user();
-    if ( isset($user) && ($user->ID != "0") )
+    if ( isset($user) && ($user->ID != '0') )
     {
-        if ( $user->roles[0] == "subscriber")
+        if ( $user->roles[0] == 'subscriber')
         {
             _lua("WPuser", "Subscriber (wpID:". $user->ID .", ". $user->user_login .") logged out.");
         } else {
@@ -617,7 +617,7 @@ function groenp_welcome_meta_box_cb()
 function groenp_open_database() 
 {
     // connect with correct user and select correct db
-    $db = "groenp_sites_cms";
+    $db = 'groenp_sites_cms';
 
     if (current_user_can('list_users'))
     {
@@ -634,7 +634,7 @@ function groenp_open_database()
     }
     
     // change character set to utf8 
-    if (mysqli_set_charset($connect, "utf8")) {
+    if (mysqli_set_charset($connect, 'utf8')) {
         return $connect;
     } else {
         _log("Error loading character set utf8: " . mysqli_error($connect));
@@ -823,51 +823,51 @@ function san(&$input, $m = "s")
 //
 // $input		    = user input
 // $m			    = mode (string):
-//   "wp"			    = string for wp_user, san handled by wp
-//   "chk"			    = checkbox ("1" or "0")
-//   "a"			    = only alpha-numeric plus "_" (everything else stripped)
-//   "b"			    = boolean (true or false)
-//   "i"			    = integer
-//   "f"			    = float
-//   "m"			    = monetary amount
-//   "tr"			    = bookkeeping transaction, needs amount + crd/deb/bal indicator
-//   "d"			    = numerical date (no time): dd-mm-yyyy
-//   "dh"			    = date from hidden field: yyyy-mm-dd (MySQL format)
-//   "t"			    = time in hh:mm format
-//   "tel"			    = telephone number as 9-digit integer (INT(9))
-//   "s"			    = string (default, escape slashes stripped)
+//   'wp'			    = string for wp_user, san handled by wp
+//   'chk'			    = checkbox ('1' or '0')
+//   'a'			    = only alpha-numeric plus '_' (everything else stripped)
+//   'b'			    = boolean (true or false)
+//   'i'			    = integer
+//   'f'			    = float
+//   'm'			    = monetary amount
+//   'tr'			    = bookkeeping transaction, needs amount + crd/deb/bal indicator
+//   'd'			    = numerical date (no time): dd-mm-yyyy
+//   'dh'			    = date from hidden field: yyyy-mm-dd (MySQL format)
+//   't'			    = time in hh:mm format
+//   'tel'			    = telephone number as 9-digit integer (INT(9))
+//   's'			    = string (default, escape slashes stripped)
 //
 // ****************************************************************
-function prep(&$input, $m = "s", $acc = "")
+function prep(&$input, $m = 's', $acc = '')
 {
-    if( $m=="wp" ) return $input; // don't do anything, wp will take care of san
+    if( $m=='wp' ) return $input; // don't do anything, wp will take care of san
     
     // php with checkboxes needs special handling
-    if( $m=="chk" ) if ( empty($input) ) { return "0"; } else { return "1"; };
+    if( $m=='chk' ) if ( empty($input) ) { return '0'; } else { return '1'; };
     
     // when empty make sure the word NULL is returned for query string building
-    if( empty($input) && $input!== "0") return NULL;
+    if( empty($input) && $input!== '0') return NULL;
 
     switch(strtolower($m)) // the real sanitization starts here
     {
-        case "a":
+        case 'a':
         return preg_replace( '/[^a-zA-Z0-9_]/', '', $input);
 
-        case "b":
+        case 'b':
         return ($input)? TRUE : FALSE;
 
-        case "i":
+        case 'i':
         return intval($input);
 
-        case "f":
+        case 'f':
         return floatval($input);
 
-        case "m":
-        case "tr":
+        case 'm':
+        case 'tr':
         $amt = preg_replace( '/[^0-9\.,]/', '', $input );                           // strip off anything that's not a digit or potential delimiter
-        $posp = strrpos( $amt, ".");                                                // last occurrence of .
+        $posp = strrpos( $amt, '.');                                                // last occurrence of .
         //_log("posp: " . $posp);                                                     // DEBUG //
-        $posc = strrpos( $amt, ",");                                                // last occurrence of ,
+        $posc = strrpos( $amt, ',');                                                // last occurrence of ,
         //_log("posc: " . $posc);                                                     // DEBUG //
         if($posp === false && $posc === false ) return floatval($amt);              // if no delimeters found, then return number
         $dec = ($posc > $posp)? substr($amt,$posc + 1) : substr($amt,$posp + 1);    // get decimal section (. or , used as decimal?)
@@ -877,44 +877,44 @@ function prep(&$input, $m = "s", $acc = "")
         //_log("amt: " . $amt);                                                       // DEBUG //
         $amt = preg_replace('/'.$dec.'$/', '', $amt);                               // strip off $dec part
         //_log("amt: " . $amt);                                                       // DEBUG //
-        $amt = round( floatval($amt.".".$dec), 2);                                  // create float and round it to 2 decimals
+        $amt = round( floatval($amt . '.' . $dec), 2);                                  // create float and round it to 2 decimals
         //_log("amt: " . $amt);                                                       // DEBUG //
-        if (strtolower($m) == "m") return $amt;
+        if (strtolower($m) == 'm') return $amt;
 
         // case "tr" only:
-        if      ( $acc == "deb" ) { return (-1 * $amt); }
-        elseif  ( $acc == "crd" ) { return ($amt); }
-        elseif  ( $acc == "bal" ) { return (0); }
+        if      ( $acc == 'deb' ) { return (-1 * $amt); }
+        elseif  ( $acc == 'crd' ) { return ($amt); }
+        elseif  ( $acc == 'bal' ) { return (0); }
         else { 
             _log("prep(): error in transaction conversion with amount: " . $input . ", and accounting type: " . $acc . "."); 
             return 0;
         }
 
-        case "d":
+        case 'd':
         $date = date_create_from_format('d-m-Y',$input, new DateTimeZone('America/Lima'));
         if (!$date) return "input_error";
         date_time_set($date, 8,00,00); // yyyy-mm-dd 08:00:00
         return date_format($date, 'Y-m-d H:i:s');
 
-        case "dh":
+        case 'dh':
         $date = date_create_from_format('Y-m-d',$input, new DateTimeZone('America/Lima'));
         if (!$date) return "input_error";
         return date_format($date, 'Y-m-d');
 
-        case"t":
-        if ( strpos($input, ":") === FALSE ) return "input_error";
-        $time = explode(":",$input);
+        case't':
+        if ( strpos($input, ':') === FALSE ) return "input_error";
+        $time = explode(':',$input);
         $time[0] = (strlen( (string)intval($time[0])) == 0 )? "00" : (string)intval($time[0]);
         $time[0] = str_pad(substr($time[0],0,2), 2, '0', STR_PAD_LEFT);
         $time[1] = (strlen( (string)intval($time[1])) == 0 )? "00" : (string)intval($time[1]);
         $time[1] = str_pad(substr($time[1],0,2), 2, '0', STR_PAD_LEFT);
-        return gmdate("H:i", mktime($time[0], $time[1]));
+        return gmdate('H:i', mktime($time[0], $time[1]));
 
-        case "tel":
+        case 'tel':
         return intval( preg_replace( '/[^0-9]/', '', $input ) );
 
-        case "s":
-//        return htmlspecialchars(stripslashes($input), ENT_QUOTES, "UTF-8");
+        case 's':
+//        return htmlspecialchars(stripslashes($input), ENT_QUOTES, 'UTF-8');
 
         default:
         return stripslashes($input);
@@ -929,84 +929,84 @@ function prep(&$input, $m = "s", $acc = "")
 //
 // $output		    = output from database or straight from $_POST
 // $f			    = format (string):
-//   "s"			    =  string (spec. chars escaped, straight from $_POST)
-//   "a"			    =  display of alpha-numeric (no escaping, default)
-//   "chk"			    =  checkbox ("Y" or "")
-//   "chk_ctrl"		    =  checkbox control 
-//   "rad_ctrl"		    =  radio control, also needs rad to be 0 or 1 to be set
-//   "b"			    =  boolean (true or false)
-//   "i"			    =  integer
-//   "f"			    =  float/double
-//   "fr"			    =  rounded float/double (+/-####.##) (used in compare of mut comment text)
-//   "m"			    =  monetary amount (#,###.##)
-//   "ms"			    =  signed monetary amount (+/-#,###.##)
-//   "d"			    =  date (dd-mm-yyyy), used for input controls, etc.
-//   "dl"			    =  date in language (dd-MMM-yyyy)
+//   's'			    =  string (spec. chars escaped, straight from $_POST)
+//   'a'			    =  display of alpha-numeric (no escaping, default)
+//   'chk'			    =  checkbox ('Y' or '')
+//   'chk_ctrl'		    =  checkbox control 
+//   'rad_ctrl'		    =  radio control, also needs rad to be 0 or 1 to be set
+//   'b'			    =  boolean (true or false)
+//   'i'			    =  integer
+//   'f'			    =  float/double
+//   'fr'			    =  rounded float/double (+/-####.##) (used in compare of mut comment text)
+//   'm'			    =  monetary amount (#,###.##)
+//   'ms'			    =  signed monetary amount (+/-#,###.##)
+//   'd'			    =  date (dd-mm-yyyy), used for input controls, etc.
+//   'dl'			    =  date in language (dd-MMM-yyyy)
 //
 // ****************************************************************
-function dis(&$output, $f = "a", $rad = NULL)
+function dis(&$output, $f = 'a', $rad = NULL)
 {
     // boolean always returns true or false 
-    if ($f === "b") return ($output) ? "true" : "false";
+    if ($f === 'b') return ($output) ? 'true' : 'false';
 
         //_log("output: " . $output);
-    if ( $output === NULL) return ""; // when output is null return empty;
+    if ( $output === NULL) return ''; // when output is null return empty;
 
-    if ($output === "*") return "*"; // usually a wildcard is allowed as well
+    if ($output === '*') return '*'; // usually a wildcard is allowed as well
  
     switch(strtolower($f)) // assume all output has been sanitized but not HTML safe
     {
-        case "s":
+        case 's':
         // this escapes the output so it doesn't screw the html
-        return htmlspecialchars($output, ENT_QUOTES, "UTF-8"); 
+        return htmlspecialchars($output, ENT_QUOTES, 'UTF-8'); 
 
-        case "s%":
+        case 's%':
         // to be used for filter controls (it receives straight from $_POST so slashes need to be stripped)
         // percentage signs for LIKE stmt (and single quotes) need to be placed around it
-        return htmlspecialchars(stripslashes($output), ENT_QUOTES, "UTF-8"); 
+        return htmlspecialchars(stripslashes($output), ENT_QUOTES, 'UTF-8'); 
 
-        case "chk":
-        // fill cell with "Y" or nothing
-        return !empty($output) ? "Y" : "";  
+        case 'chk':
+        // fill cell with 'Y' or nothing
+        return !empty($output) ? 'Y' : '';  
 
-        case "chk_ctrl":
+        case 'chk_ctrl':
         // set control on or not (empty)
         return !empty($output) ? "checked='checked' " : "";
 
-        case "rad_ctrl":
-        // set control on ("1") or not ("0"), depending on $rad
-        if ( !isset($rad))  return "";
+        case 'rad_ctrl':
+        // set control on ('1') or not ('0'), depending on $rad
+        if ( !isset($rad))  return '';
         return ($output == $rad) ? "checked='checked' " : "";
 
-        case "m":
+        case 'm':
         return number_format(abs($output),2);
 
-        case "ms":
+        case 'ms':
         return number_format($output,2);
 
-        case "fr":
+        case 'fr':
         return round($output, 2);
 
-        case "d":
-        if ( $output==="NOW" ) {
+        case 'd':
+        if ( $output==='NOW' ) {
             $date = new DateTime(null, new DateTimeZone('America/Lima'));
         } else {
             $date = date_create_from_format('Y-m-d H:i:s',$output, new DateTimeZone('America/Lima'));
         }
-        return ($date)? date_format($date, 'd-m-Y') : "date error";
+        return ($date)? date_format($date, 'd-m-Y') : 'date error';
 
-        case "dl":
-        //_log("loc a the moment: " . setlocale(LC_TIME, "spanish"));
-        if ( $output==="NOW" ) {
+        case 'dl':
+        //_log("loc a the moment: " . setlocale(LC_TIME, 'spanish'));
+        if ( $output==='NOW' ) {
             $date = new DateTime(null, new DateTimeZone('America/Lima'));
         } else {
             $date = date_create_from_format('Y-m-d H:i:s',$output, new DateTimeZone('America/Lima'));
         }
-        return ($date)? strftime('%d-%b-%Y', date_timestamp_get($date)) : "date error";
+        return ($date)? strftime('%d-%b-%Y', date_timestamp_get($date)) : 'date error';
 
-//        case "a":
-//        case "i":
-//        case "f":
+//        case 'a':
+//        case 'i':
+//        case 'f':
         default:
         return $output;
     }
