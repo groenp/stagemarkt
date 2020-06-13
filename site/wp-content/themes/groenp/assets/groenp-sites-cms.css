@@ -19,12 +19,19 @@ html {
     margin-right: 2px;
 } */
 
+/* a link offset for forward scrolling */
+a.anchr {
+    display: block;
+    position: relative;
+    top: -85px;
+    visibility: hidden;
+}
 
 /* ************************************************************ */
 /*  login screen elements                                       */
 /* ************************************************************ */
 body.login h1 a {  
-    background-image:url('./GroenProductionsPath.svg'); 
+    background-image:url('GroenProductionsPath.svg'); 
     background-size: 300px 40px; 
     width: 300px; 
     height: 40px; 

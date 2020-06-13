@@ -26,12 +26,21 @@ $struct_screen = 'groenp_subscribers';
 // Add callbacks for this screen only
 // ****************************************************************
 add_action('load-dashboard_page_' . $struct_screen, 'groenp_insert_subscribers_meta_boxes');
-add_action('admin_footer-dashboard_page_' . $struct_screen,'groenp_print_script_in_footer');
+// add_action('admin_footer-dashboard_page_' . $struct_screen,'groenp_print_script_in_footer');
 
-function groenp_insert_subscribers_meta_boxes() {
+// remove screen option tab, but only for this page <= NOT NECCESSARY 
+add_filter('screen_options_show_screen', 'groenp_remove_these_options', 10, 2);
+function groenp_remove_these_options( $struct_screen, \WP_Screen $screen ) {
+
+    global $struct_screen;
+
+    return ('dashboard_page_' . $struct_screen) === $screen->base ? false : true; 
+}
+
+function groenp_insert_subscribers_meta_boxes( $struct_screen ) {
  
-    //global $struct_screen;
-    $struct_screen = 'groenp_subscribers';
+    global $struct_screen;
+    // $struct_screen = 'groenp_subscribers';
 
     /* Trigger the add_meta_boxes hooks to allow meta boxes to be added */
     do_action('add_meta_boxes_' . $struct_screen, null);
@@ -50,10 +59,10 @@ function groenp_register_subscribers_submenu_page() {
 }
 add_action('admin_menu', 'groenp_register_subscribers_submenu_page');
 
-function groenp_subscribers_page_cb() {
+function groenp_subscribers_page_cb( $struct_screen ) {
 	
-    //global $struct_screen;
-    $struct_screen = 'groenp_subscribers';
+    global $struct_screen;
+    // $struct_screen = 'groenp_subscribers';
 
     echo "<div class='wrap'>
         <h2>Subscribers and their projects</h2>";
@@ -71,24 +80,12 @@ function groenp_subscribers_page_cb() {
         echo "<div id='poststuff'>
  
             <div id='post-body' class='metabox-holder columns-1'>
+
                 <!-- #post-body-content -->
-                <div class='postbox' id='post-body-content'>
-
-                    <div class='inside'>
-                        <h3>This page supports the following tasks:</h3>
-                        <ul>
-                            <li><a href='#Sbscbr'>Manage subscribers</a>, <a href='#add_Sbscbr'>Add or edit subscriber</a></li>
-                            <li><a href='#Prjct'>Manage projects</a>, <a href='#add_Prjct'>Add or edit project</a></li>
-                            <li><a href='#SbsPrj'>Manage subscriber-project pairing</a>, <a href='#add_SbsPrj'>Add or edit pairing</a></li>
-                        </ul>
-                    </div>
-
-                </div>
-
                 <div id='postbox-container-1' class='postbox-container'>
 
                     <!-- all metaboxes go into the first column -->";
-                    do_meta_boxes($struct_screen, 'normal', null);
+                    do_meta_boxes($struct_screen, 'normal', null); 
                 echo "</div>
 
                 <div id='postbox-container-2' class='postbox-container'>
@@ -108,21 +105,36 @@ function groenp_subscribers_page_cb() {
 
 
 /******************************************************************************/
-/* Groen Productions - Create Meta Boxes for Subscribers page of MySQL DBs             */
+/* Groen Productions - Create Meta Boxes for Subscribers page of MySQL DBs    */
 /*                                                                            */
 /******************************************************************************/
 
-function groenp_subscribers_meta_boxes_add() 
+function groenp_subscribers_meta_boxes_add( $struct_screen ) 
 {
-    //global $struct_screen; 
-    $struct_screen = 'groenp_subscribers';
-    add_meta_box( 'gp-subscribers-mb', 'Manage subscribers',    'groenp_subscribers_meta_box_cb', $struct_screen, 'normal' );
-    add_meta_box( 'gp-projects-mb', 'Manage projects', 'groenp_projects_meta_box_cb', $struct_screen, 'normal' );
-    add_meta_box( 'gp-subpro-mb', 'Manage subscriber / project pairing', 'groenp_subpro_pairing_meta_box_cb', $struct_screen, 'normal' );
+    global $struct_screen; 
+    // $struct_screen = 'groenp_subscribers';
+
+    add_meta_box( 'gp-sbscrbr-cnt-mb', 'This page supports the following tasks:', 'groenp_sbscrbr_content_meta_box_cb', $struct_screen, 'normal' );
+    add_meta_box( 'gp-subscribers-mb', 'Manage subscribers',                      'groenp_subscribers_meta_box_cb',     $struct_screen, 'normal' );
+    add_meta_box( 'gp-projects-mb',    'Manage projects',                         'groenp_projects_meta_box_cb',        $struct_screen, 'normal' );
+    add_meta_box( 'gp-subpro-mb',      'Manage subscriber / project pairing',     'groenp_subpro_pairing_meta_box_cb',  $struct_screen, 'normal' );
 
 }
-add_action('add_meta_boxes_' . $struct_screen, 'groenp_subscribers_meta_boxes_add');
+add_action('add_meta_boxes_' . $struct_screen, $struct_screen . '_meta_boxes_add');
 
+
+// ****************************************************************
+// Callback for SBSCRBR CONTENT Meta Box
+// ****************************************************************
+function groenp_sbscrbr_content_meta_box_cb()  
+{
+    echo "<ul>
+        <li><a href='#Sbscbr'>Manage subscribers</a>, <a href='#add_Sbscbr'>Add or edit subscriber</a></li>
+        <li><a href='#Prjct'>Manage projects</a>, <a href='#add_Prjct'>Add or edit project</a></li>
+        <li><a href='#SbsPrj'>Manage subscriber-project pairing</a>, <a href='#add_SbsPrj'>Add or edit pairing</a></li>
+    </ul>";
+
+}  // End: groenp_sbscrbr_content_meta_box_cb() 
 
 // ****************************************************************
 // Callback for SUBSCRIBERS Meta Box
@@ -140,7 +152,7 @@ function groenp_subscribers_meta_box_cb()
 	$func = 'Sbscbr';
     
     // If no Edit button pressed inside the table of this meta box
-    if ( !array_search('Edit', $_POST) ) echo "<a name=" . $func . "></a>";  // Set anchor
+    if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // default SSL port number; use https version, otherwise not
     $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
@@ -552,10 +564,10 @@ function groenp_subscribers_meta_box_cb()
     }
     
     // If it is an Edit then we need to scroll till here.
-    if ( isset($editkey) ) echo "<a name=" . $func . "></a>";  // Set anchor
+    if ( isset($editkey) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // Start rendering the form
-    echo "<a name=add_" . $func . "></a>
+    echo "<a class='anchr' name=add_" . $func . "></a>
     <h4>Add or edit subscriber</h4>
     <p class='hor-form'>";
         // If Edit form keep edit key in hidden field
@@ -665,7 +677,7 @@ function groenp_projects_meta_box_cb()
     $func = 'Prjct';
     
     // If no Edit button pressed inside the table of this meta box
-    if ( !array_search('Edit', $_POST) ) echo "<a name=" . $func . "></a>";  // Set anchor
+    if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // default SSL port number; use https version, otherwise not
     $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
@@ -889,10 +901,10 @@ function groenp_projects_meta_box_cb()
     }
     
     // If it is an Edit then we need to scroll till here.
-    if ( isset($editkey) ) echo "<a name=" . $func . "></a>";  // Set anchor
+    if ( isset($editkey) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // Start rendering the form
-    echo "<h4><a name=add_" . $func . "></a>Add or edit domain</h4>
+    echo "<h4><a class='anchr' name=add_" . $func . "></a>Add or edit domain</h4>
     <p class='hor-form'>";
         // If edit form keep edit key in hidden field
         if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > "; 
@@ -946,7 +958,7 @@ function groenp_subpro_pairing_meta_box_cb()
     $func = 'SbsPrj';
     
     // If no Edit button pressed inside the table of this meta box
-    if ( !array_search('Edit', $_POST) ) echo "<a name=" . $func . "></a>";  // Set anchor
+    if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // default SSL port number; use https version, otherwise not
     $protocol = ($_SERVER['SERVER_PORT'] == "443") ? "https://" : "http://";
@@ -1163,10 +1175,10 @@ function groenp_subpro_pairing_meta_box_cb()
     }
     
     // If it is an Edit then we need to scroll till here.
-    if ( isset($editkey) ) echo "<a name=" . $func . "></a>";  // Set anchor
+    if ( isset($editkey) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
 
     // Start rendering the form
-    echo "<h4><a name=add_" . $func . "></a>Add or edit subscriber/project pairing</h4>
+    echo "<h4><a class='anchr' name=add_" . $func . "></a>Add or edit subscriber/project pairing</h4>
     <p class='hor-form'>";
         // If edit form keep edit key in hidden field
         if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > "; 

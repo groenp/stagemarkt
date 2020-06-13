@@ -1,28 +1,28 @@
 <?php
 /******************************************************************************/
 /*                                                              Pieter Groen  */
-/*  Version 0.1 - June 5, 2020                                                */
+/*  Version 0.1 - June 12, 2020                                               */
 /*                                                                            */
 /*  PHP for Groen Productions website CMS in WordPress                        */
 /*                                                                            */
-/*  Debug functions:                                                          */
+/* Debug functions:                                                           */
 /* - Debugging into debug.log                                 (~line   40)    */
 /* - Logging into user_activity_log_{year}_{month}.txt        (~line   60)    */
 /*                                                                            */
-/*  Custom Admin Dashboard functions:                                         */
+/* Custom Admin Dashboard functions:                                          */
 /* - based on twentytwenty theme                                              */
 /* - change login screen                                      (~line   85)    */
 /* - create Manager role based on author and allow User Admin (~line  110)    */
 /* - simplify Profile pages for non Administrators            (~line  160)    */
 /* - collapse side menu for Subscriber role                   (~line  200)    */
 /* - remove unneccesary widgets                               (~line  230)    */
-/* - stop heartbeat (ajax calls)                              (~line  260)    */
-/* - Rewrite email messages for change and reset pwd          (~line  270)    */
-/* - Logging user activities in Standard Wordpress interface  (~line  365)    */
-/* - insert Groen Productions asset files into admin pages    (~line  480)    */
-/* - create meta boxes for Groen Productions CMS              (~line  555)    */
+/* - stop heartbeat (ajax calls) DISABLED                     (~line  280)    */
+/* - Rewrite email messages for change and reset pwd          (~line  290)    */
+/* - Logging user activities in Standard Wordpress interface  (~line  385)    */
+/* - insert Groen Productions asset files into admin pages    (~line  500)    */
+/* - create meta boxes for Groen Productions CMS              (~line  550)    */
 /*                                                                            */
-/*  Plugins needed:                                                           */
+/* Plugins needed:                                                            */
 /* - Groen Productions Mailing plugin to change registration mails            */
 /* - WP-Mail-SMTP plugin to use groenproductions.com for registration mail    */
 /*                                                                            */
@@ -90,21 +90,31 @@ if(!function_exists('_lua')){
 // ****************************************************************
 // Custom admin login message
 // ****************************************************************
-function groenp_cookie_warning_login() {
-	return '<p class="message lowlight">This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>By logging in you accept the use of these cookies. Please review the <a href="privacy_and_terms_of_use.php">Privacy Statement and Terms of Use</a> for more detail.</p>';
-}
 add_filter('login_message', 'groenp_cookie_warning_login');
+function groenp_cookie_warning_login() {
+    return '<p class="message lowlight">
+    This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>
+    By logging in you accept the use of these cookies. 
+    Please review the <a href="privacy_and_terms_of_use.php">Privacy Statement and Terms of Use</a> for more detail.</p>';
+}
 
 
 // ****************************************************************
 // Change admin login logo link
 // ****************************************************************
+add_filter('login_headerurl', 'groenp_change_wp_login_url');
 function groenp_change_wp_login_url()
 {
     return trailingslashit(admin_url());
 }
-add_filter('login_headerurl', 'groenp_change_wp_login_url');
 
+// ****************************************************************
+// Reset the login page to be main Dashboard page (not profile page)
+// ****************************************************************'
+add_filter('login_redirect', 'groenp_login_to_dashboard', 10, 2);
+function groenp_login_to_dashboard( $redirect_to, $request ) {
+    return admin_url('index.php');
+}
 
 // ****************************************************************
 // ONLY ON CHANGE OF THEME:
@@ -112,13 +122,15 @@ add_filter('login_headerurl', 'groenp_change_wp_login_url');
 // Allow Manager role (somebody working for Groen Productions) to do user admin 
 // Remove Editor and Contributor roles
 // ****************************************************************
+// this is saved in the DB so only do this once...
+// add_action( 'after_switch_theme', 'groenp_create_manager_role', 10 ,  2);
 
-// Manager role will be based on Author, 
 function groenp_create_manager_role($oldname, $oldtheme=false) {
     global $wp_roles;
 
     if ( ! isset( $wp_roles ) ) $wp_roles = new WP_Roles();
 
+    // Manager role will be based on Author 
     // rename the author role in U/I only
     $wp_roles->roles['author']['name'] = 'Manager';
     $wp_roles->role_names['author'] = 'Manager';     
@@ -146,8 +158,6 @@ function groenp_create_manager_role($oldname, $oldtheme=false) {
     //$role->remove_cap( 'promote_users' ); // not necessary; profile box is removed from edit form instead
 
 }
-// this is saved in the DB so only do this once...
-// add_action( 'after_switch_theme', 'groenp_create_manager_role', 10 ,  2);
 
 
 // ****************************************************************
@@ -155,6 +165,7 @@ function groenp_create_manager_role($oldname, $oldtheme=false) {
 //
 // (jQuery adjustments in footer: check with each update to WP)
 // ****************************************************************
+add_action('admin_init', 'groenp_user_profile_fields_disable');
 function groenp_user_profile_fields_disable() {
     global $pagenow;
 
@@ -166,7 +177,6 @@ function groenp_user_profile_fields_disable() {
     }
     add_action( 'admin_footer', 'groenp_user_profile_fields_disable_js' );
 }
-add_action('admin_init', 'groenp_user_profile_fields_disable');
  
 function groenp_user_profile_fields_disable_js() {
 ?>
@@ -197,12 +207,12 @@ function groenp_user_profile_fields_disable_js() {
 // ****************************************************************
 // Collapse side menu for Subscriber role
 // ****************************************************************
+add_action('admin_init', 'groenp_collapse_side_menu_for_subscriber');
 function groenp_collapse_side_menu_for_subscriber() {
     if ( !current_user_can('list_users') ) { // this is the least a manager and administrator can do
         add_action( 'admin_footer', 'groenp_add_collapse_js' );
     }
 }
-
 function groenp_add_collapse_js() {
 ?>
     <script type='text/javascript'>
@@ -210,16 +220,15 @@ function groenp_add_collapse_js() {
     </script>
 <?php
 }
-add_action('admin_init', 'groenp_collapse_side_menu_for_subscriber');
 
 // ****************************************************************
 // Admin footer modification
 // ****************************************************************
+add_filter('admin_footer_text', 'groenp_change_footer_admin');
 function groenp_change_footer_admin ()
 {
     echo "<span id='footer-thankyou'>Developed in WordPress by Groen Productions</span>";
 }
-add_filter('admin_footer_text', 'groenp_change_footer_admin');
 
 // ****************************************************************
 // Set upload folder to be uploads/ (just in case somebody changes it in the admin)
@@ -229,6 +238,7 @@ define( 'UPLOADS', 'wp-content/uploads' );
 // ****************************************************************
 // Remove meta boxes from wordpress dashboard for all users
 // ****************************************************************
+add_action('wp_dashboard_setup', 'groenp_remove_dashboard_widgets' );
 function groenp_remove_dashboard_widgets()
 {
     // remove_meta_box('dashboard_site_health', 'dashboard', 'normal');		// site health status
@@ -238,7 +248,6 @@ function groenp_remove_dashboard_widgets()
     remove_meta_box('dashboard_quick_press', 'dashboard', 'side');			// quick press/quick draft
     remove_meta_box('dashboard_primary', 'dashboard', 'side');				// wordpress news and events
 }
-add_action('wp_dashboard_setup', 'groenp_remove_dashboard_widgets' );
 
 // Remove  WordPress Welcome Panel
 remove_action('welcome_panel', 'wp_welcome_panel');
@@ -246,26 +255,43 @@ remove_action('welcome_panel', 'wp_welcome_panel');
 // Remove Screen Options tab
 // add_filter('screen_options_show_screen', '__return_false');
 
-// Remove Help tab, Comments count and '+' New widget in admin bar
-function groenp_remove_toolbar_items($wp_adminbar) {
+// Remove Help tab, Comments count, '+' New widget, Gravatar, and change greeting in admin bar
+add_action('admin_bar_menu', 'groenp_clean_up_toolbar_items', 999);
+function groenp_clean_up_toolbar_items($wp_admin_bar) {
 
-    global $current_screen;
-    $current_screen->remove_help_tabs();
+    $screen = get_current_screen();
+    $screen->remove_help_tabs();
     
     // _log("remove toolbar items: "); _log($wp_adminbar); // DEBUG //
-	$wp_adminbar->remove_node('wp-logo');
-  	$wp_adminbar->remove_node('comments');
-    $wp_adminbar->remove_node('new-content');
+	$wp_admin_bar->remove_node('wp-logo');
+  	$wp_admin_bar->remove_node('comments');
+    $wp_admin_bar->remove_node('new-content');
+    $wp_admin_bar->remove_node( 'user-info' );
+
+    $user_id = get_current_user_id();
+    $current_user = wp_get_current_user();
+    $newtitle = sprintf( __( '%1$s' ), "<span id='title-greeting' class='greeting'>Welcome </span> '<span class='display-name'>" . $current_user->display_name . "'</span>");
+
+    // update the node with the changes
+    $wp_admin_bar->add_node( array( 
+        'id'        => 'my-account',
+        'parent'    => 'top-secondary',
+        'title'     => $newtitle,
+        'href'      => false,
+        'meta'      => array(
+            'class'     => '',
+        ),
+    ) );
 }
-add_action('admin_bar_menu', 'groenp_remove_toolbar_items', 999);
+
 
 // ****************************************************************
 // Stop admin-ajax.php making unneccesary calls every 30secs
 // ****************************************************************
 // add_action( 'init', 'stop_heartbeat', 1 );
-function stop_heartbeat() {
-        wp_deregister_script('heartbeat');
-}
+// function stop_heartbeat() {
+//         wp_deregister_script('heartbeat');
+// }
 
 // ****************************************************************
 // Redirect blocked user to login page - close session
@@ -278,18 +304,19 @@ function groenp_redirect_blocked_users() {
 
     // Get user status
     $wp_userID = get_current_user_id();
-    $result = mysqli_query($con, "SELECT is_usr_blocked FROM subscribers WHERE fr_ID='" . $wp_userID . "';");
+    $result = mysqli_query($con, "SELECT is_usr_blocked FROM gp_subscribers WHERE fr_ID='" . $wp_userID . "';");
     if ( $result ) $row = mysqli_fetch_array($result);
 
+    // Close database
+    mysqli_close($con);
+    
 	if ( $result && $row[0] ) 
     {
         _lua("WPuser", "Subscriber (wpID:" . $wp_userID.") is trying to login, but has been BLOCKED!");
         session_unset(); 
         //session_destroy();
-        wp_redirect( '/wp-login.php?custom-logout=yes' );
+        wp_redirect( site_url('wp-login.php?custom-logout=yes') );
     }
-    // Close database
-    mysqli_close($con);
 }
 
 // Define custom message for the force-out situation
@@ -315,8 +342,8 @@ function groenp_changed_pwd_mail_message(  $pass_change_mail,  $user,  $userdata
     $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";  
     $message .= "If you did not change your password, please contact us at: admin@groenproductions.com\n";
     $message .= "This email has been sent to " . $user_email ."\r\n\r\n";
-    $message .= "Greetings,\nThe staff at Groen Productions\n\n";
-    $message .= "Groen Productions' Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n\n";
+    $message .= "Greetings,\nThe staff at Groen Productions\n\n\n";
+    $message .= "Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n";
     $pass_change_mail[ 'message' ] = $message;
 
   return $pass_change_mail;
@@ -357,8 +384,8 @@ function groenp_retrieve_password_message( $message, $key ){
     $message .= "To reset your password, select the following link:\n";
     $message .= site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . "\r\n\r\n";
     $message .= "We hope that you enjoy using the Sites Management Tool. If you have any questions or suggestions please do not hesitate to contact us at: admin@groenproductions.com\n\n";
-    $message .= "Greetings,\nThe staff at Groen Productions\n\n";
-    $message .= "Groen Productions' Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n\n";
+    $message .= "Greetings,\nThe staff at Groen Productions\n\n\n";
+    $message .= "Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n";
     return $message;
 }
 
@@ -382,14 +409,14 @@ function groenp_log_add_user( $user_id )
     }
 }
 
-add_action('edit_user_profile_update', 'groenp_log_update_user', 10, 1); // hooked at reload of user details page (of other users)
-add_action('personal_options_update', 'groenp_log_update_user', 10, 1); // hooked at reload of own user details page
+add_action('edit_user_profile_update', 'groenp_log_update_user', 10, 1);                    // hooked at reload of user details page (of other users)
+add_action('personal_options_update', 'groenp_log_update_user', 10, 1);                     // hooked at reload of own user details page
 function groenp_log_update_user( $user_id ) 
 {
     global $wpdb;
     $del_user = get_userdata( $user_id );
-    if ( !empty($_POST['pass1']) &&  !empty($_POST['pass2']) ) // This works because the pwd fields are emptied, when an error occurs. 
-    {                                                          // If the pwd fields are returned with the $_POST it must be a successful submit.
+    if ( !empty($_POST['pass1']) &&  !empty($_POST['pass2']) )                              // this works because the pwd fields are emptied, when an error occurs
+    {                                                                                       // if the pwd fields are returned with the $_POST it must be a successful submit
         if ( $del_user )
         {
             _lua("WPuser", "User (wpID:". $del_user->ID .", ". $del_user->user_login  . ") password changed.");
@@ -416,7 +443,7 @@ function groenp_log_updated_user( $user_id )
 }
 
 
-add_action( 'delete_user', 'groenp_log_delete_user');  // hooked just before deletion
+add_action( 'delete_user', 'groenp_log_delete_user');                                       // hooked just before deletion
 function groenp_log_delete_user( $user_id ) 
 {
     global $wpdb;
@@ -429,7 +456,7 @@ function groenp_log_delete_user( $user_id )
     }
 }
 
-add_action( 'deleted_user', 'groenp_log_deleted_user');  // hooked AFTER deletion (so can't refer to user data)
+add_action( 'deleted_user', 'groenp_log_deleted_user');                                     // hooked AFTER deletion (so can't refer to user data)
 function groenp_log_deleted_user( $user_id ) 
 {
     _lua("WPuser", "User delete successful.");
@@ -459,19 +486,23 @@ function groenp_log_login($user_login, $user)
     }
 }
 
-add_action('wp_logout', 'groenp_log_logout'); // called after auth cookie cleared
+// add_action('wp_logout', 'groenp_log_logout');                                               // called after auth cookie cleared
+add_action('clear_auth_cookie', 'groenp_log_logout');                                       // called before auth cookie cleared
 function groenp_log_logout() 
 {
-    _lua("WPuser", "User logged out.");
-
     // global $wpdb;
-    // $user = wp_get_current_user();
-    // if ( isset($user) && ($user->ID != "0") )
-    // {
-    //     _lua("WPuser", "User (wpID:". $user->ID . ", ". $user->user_login  . ") logged out.");
-    // } else {
-    //     _lua("WPuser", "User logged out.");
-    // }
+    $user = wp_get_current_user();
+    if ( isset($user) && ($user->ID != "0") )
+    {
+        if ( $user->roles[0] == "subscriber")
+        {
+            _lua("WPuser", "Subscriber (wpID:". $user->ID .", ". $user->user_login .") logged out.");
+        } else {
+            _lua("WPuser", "Admin user (wpID:". $user->ID .", ". $user->user_login .") logged out.");
+        }
+    } else {
+        _lua("WPuser", "User logged out.");
+    }
 }
 
 
@@ -523,7 +554,8 @@ add_action('admin_head','groenp_include_in_head');
 add_action('login_head','groenp_include_in_head');
 
 
-// Prints script in footer of Dashboard pages
+// Prints script in footer of Dashboard pages - NOT NEEDED ANYMORE
+// add_action( 'admin_footer', 'groenp_print_script_in_footer' ); // is placed only in other .php admin files
 function groenp_print_script_in_footer() {
     echo "<script type='text/javascript'>
         jQuery(document).ready(function(){ 
@@ -533,7 +565,6 @@ function groenp_print_script_in_footer() {
         });
         </script>";
 }
-// add_action( 'admin_footer', 'groenp_print_script_in_footer' ); // is placed only in other .php admin files
 
 /******************************************************************************/
 /* Groen Productions site management functions for all Dashboard pages        */
@@ -544,10 +575,34 @@ function groenp_print_script_in_footer() {
 // _log('load other page files');
 
 /* all general and admin meta boxes for the Dashboard page have been defined in: 'groenp_sites_management.php' */
-require_once( 'groenp_sites_management.php' );
+require_once( 'groenp_test_mgmt.php' );
 
 /* all meta boxes for the Subscribers page have been defined in: 'groenp_subscribers.php' */
 require_once( 'groenp_subscribers.php' );
+
+
+// ****************************************************************
+// Callback for WELCOME Meta Box
+// ****************************************************************
+function groenp_welcome_meta_box_cb()
+{  
+    // Meta box introduction
+    echo "<p>Welcome to your site management tool. Groen Production's Sites Management Tool allows you to change the dynamic content of your site. 
+    Inside the box for your own website, you can find detailed instructions on how to do this.</p>
+
+    <p>Please be aware that while you use this tool, you must adhere to our Terms of Use. You can find them together with the Privacy Statement and the explanation 
+    of our use of cookies: <a href= '". site_url('privacy_and_terms_of_use.php') ."'>Privacy Statement and Terms of Use</a>.</p>
+
+    <p>If this is your first time using this tool, please change your password as soon as convenient to you. 
+    You can change it on  your <a href= '". admin_url('profile.php') ."'>Profile page</a>. You can return to this page, by selecting ‘Dashboard’ in the side menu.</p>
+
+    <p>I hope that you enjoy using the tool. If you have any questions and/or suggestions, please do not hesitate to contact me at: 
+    <a href='mailto://admin@groenproductions.com'>admin@groenproductions.com</a></p>
+
+    <p>Cheers,<br />
+    Pieter at Groen Productions</p>";
+    
+} // End: groenp_welcome_meta_box_cb()
 
 
 // ****************************************************************
