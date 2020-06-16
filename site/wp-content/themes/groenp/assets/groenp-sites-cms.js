@@ -154,6 +154,7 @@ function build_fltrd_sbscrbrs_table(func) {
     if ($('#fltr_sbscrbr_name').val() != "" )  var fltr3 = $('#fltr_sbscrbr_name').val();
     if ($('#fltr_user_email').val() != "" ) var fltr4 = $('#fltr_user_email').val();
     if ($('#fltr_user_registered').val() != "" ) var fltr5 = $('#fltr_user_registered').val();
+    if ($('#fltr_locale').val() != "") var fltr6 = $('#fltr_locale').val();
     if ($('#fltr_gets_html_mail').val().toLowerCase() === "y" ) { 
         var fltr7 = 1; 
     } else if ($('#fltr_gets_html_mail').val().toLowerCase() === "n" ) { 
@@ -179,6 +180,7 @@ function build_fltrd_sbscrbrs_table(func) {
              ( !fltr3 || ((Sbscrbrs[i].first || Sbscrbrs[i].last) && ((fltr3=='*' && (Sbscrbrs[i].first || Sbscrbrs[i].last)) || (fltr3 && Sbscrbrs[i].first.toLowerCase().indexOf(fltr3.toLowerCase()) >= 0) || (fltr3 && Sbscrbrs[i].last.toLowerCase().indexOf(fltr3.toLowerCase()) >= 0))) ) &&
              ( !fltr4 || (Sbscrbrs[i].user_email &&    ((fltr4=='*' && Sbscrbrs[i].user_email)    || (fltr4 && Sbscrbrs[i].user_email.toLowerCase().indexOf(fltr4.toLowerCase()) >= 0))) ) &&
              ( !fltr5 || (Sbscrbrs[i].user_registered && ((fltr5=='*' && Sbscrbrs[i].user_registered) || (fltr5 && loc(Sbscrbrs[i].user_registered).toLowerCase().indexOf(fltr5.toLowerCase()) >= 0))) ) &&
+             ( !fltr6 || (Sbscrbrs[i].locale && ((fltr6 == '*' && Sbscrbrs[i].locale) || (fltr6 && Sbscrbrs[i].locale.toLowerCase().indexOf(fltr6.toLowerCase()) >= 0)))) &&
              ( fltr7 == undefined || (Sbscrbrs[i].gets_html_mail && ((fltr7=='*' && Sbscrbrs[i].gets_html_mail) || (fltr7 != undefined && Sbscrbrs[i].gets_html_mail == fltr7))) ) &&
              ( fltr8 == undefined || (Sbscrbrs[i].is_usr_blocked && ((fltr8=='*' && Sbscrbrs[i].is_usr_blocked) || (fltr8 != undefined && Sbscrbrs[i].is_usr_blocked == fltr8))) ) &&
              ( !fltr9 || (Sbscrbrs[i].sbscrbr_notes && ((fltr9=='*' && Sbscrbrs[i].sbscrbr_notes) || (fltr9 && Sbscrbrs[i].sbscrbr_notes.toLowerCase().indexOf(fltr9.toLowerCase()) >= 0))) )
@@ -188,6 +190,11 @@ function build_fltrd_sbscrbrs_table(func) {
             var sbscrbr_name = (Sbscrbrs[i].last == undefined || Sbscrbrs[i].last == "" ) ? "" : Sbscrbrs[i].last + ", ";
             sbscrbr_name += (Sbscrbrs[i].first == undefined) ? "" : Sbscrbrs[i].first;
 
+            // adjust locale for default ("")
+            var locale = ( Sbscrbrs[i].locale === null )? "N/A" : Sbscrbrs[i].locale;
+            if ( locale == "" ) locale = "site";
+            if (locale == "N/A") locale = "";
+
             // create table row
             $('#sbscrbr_table').find('tbody')
                 .append($('<tr>')
@@ -196,6 +203,7 @@ function build_fltrd_sbscrbrs_table(func) {
                     .append($('<td>').html(escapeSpecialChars(sbscrbr_name)))
                     .append($('<td>').html(escapeSpecialChars(Sbscrbrs[i].user_email)))
                     .append($('<td>').text(loc(Sbscrbrs[i].user_registered)))
+                    .append($('<td>').html(escapeSpecialChars(locale)))
             );
             if (Sbscrbrs[i].gets_html_mail == "1") { $('#sbscrbr_table tr:last').append($('<td>').text("Y").addClass('chck'));} else { $('#sbscrbr_table tr:last').append($('<td>')); } 
             if (Sbscrbrs[i].is_usr_blocked == "1") { $('#sbscrbr_table tr:last').append($('<td>').text("Y").addClass('chck'));} else { $('#sbscrbr_table tr:last').append($('<td>')); } 

@@ -103,7 +103,9 @@ function groenp_multipart_mail($wp_user_id, $mail_content, $email_subject, $emai
     ob_end_clean();
 
     // Send mail
-    $result = wp_mail(stripslashes($user->user_email), $email_subject, $message);
+    _log("message groenp_multipart_mail: "); _log($message);                                                 // DEBUG //
+    // $result = wp_mail(stripslashes($user->user_email), $email_subject, $message);
+    $result = false;
     if ( $result ) {
         _lua("SMTP", "Multipart mail (". $email_subject .") succesfully sent to " . $user->user_email . ".");
     } else {
@@ -144,7 +146,8 @@ function groenp_html_mail($wp_user_id, $mail_content, $email_subject, $email_hea
     ob_end_clean();
 
     // Send mail
-    $result = wp_mail(stripslashes($user->user_email), $email_subject, $message);
+    _log("message groenp_html_mail: "); _log($message);                                                 // DEBUG //
+    // $result = wp_mail(stripslashes($user->user_email), $email_subject, $message);
     if ( $result ) {
         _lua("SMTP", "HTML mail (". $email_subject .") succesfully sent to " . $user->user_email . ".");
     } else {
@@ -179,7 +182,8 @@ function groenp_plain_mail($wp_user_id, $mail_content, $email_subject, $email_he
     ob_end_clean();
 
     // Send mail
-    $result = wp_mail(stripslashes($user->user_email), $email_subject, $message);
+    _log("message groenp_plain_mail: "); _log($message);                                                 // DEBUG //
+    // $result = wp_mail(stripslashes($user->user_email), $email_subject, $message);
     if ( $result ) {
         _lua("SMTP", "Plain mail (". $email_subject .") succesfully sent to " . $user->user_email . ".");
     } else {

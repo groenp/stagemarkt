@@ -20,3 +20,4 @@ site/logs/*.txt
 *).php
 *.json
 *.mo
+site/wp-content/languages/themes/twenty*

@@ -1,33 +1,47 @@
 <?php
 /******************************************************************************/
 /*                                                              Pieter Groen  */
-/*  Version 0.1 - June 12, 2020                                               */
+/*  Version 0.1 - June 16, 2020                                               */
 /*                                                                            */
 /*  PHP for Groen Productions website CMS in WordPress                        */
 /*                                                                            */
 /* Debug functions:                                                           */
-/* - Debugging into debug.log                                 (~line   40)    */
-/* - Logging into user_activity_log_{year}_{month}.txt        (~line   60)    */
+/* - Debugging into debug.log                                 (~line   55)    */
+/* - Logging into user_activity_log_{year}_{month}.txt        (~line   75)    */
 /*                                                                            */
-/* Custom Admin Dashboard functions:                                          */
+/* Custom Admin Dashboard functions:                          (~line   95)    */
 /* - based on twentytwenty theme                                              */
-/* - change login screen                                      (~line   85)    */
-/* - create Manager role based on author and allow User Admin (~line  110)    */
-/* - simplify Profile pages for non Administrators            (~line  160)    */
-/* - collapse side menu for Subscriber role                   (~line  200)    */
-/* - remove unneccesary widgets                               (~line  230)    */
-/* - stop heartbeat (ajax calls) DISABLED                     (~line  280)    */
-/* - Rewrite email messages for change and reset pwd          (~line  290)    */
-/* - Logging user activities in Standard Wordpress interface  (~line  385)    */
-/* - insert Groen Productions asset files into admin pages    (~line  500)    */
-/* - create meta boxes for Groen Productions CMS              (~line  550)    */
+/* - add login cookie message                                 (~line  105)    */
+/* - make login links language sensitive                      (~line  155)    */
+/* - create Manager role based on author and allow User Admin (~line  175)    */
+/* - simplify Profile pages for non Administrators            (~line  220)    */
+/* - collapse side menu for Subscriber role                   (~line  265)    */
+/* - remove unneccesary widgets                               (~line  295)    */
+/* - stop heartbeat (ajax calls) DISABLED                     (~line  345)    */
+/*                                                                            */
+/* User mails and msgs are adjusted to user's locale (es, nl, en):            */
+/* - Redirect blocked users                                   (~line  355)    */
+/* - Email change notification                                (~line  430)    */
+/* - Password change notification                             (~line  495)    */
+/* - New password request                                     (~line  555)    */
+/*                                                                            */
+/* Tracing user activity and changes to databases:                            */
+/* - Logging user activities in Standard Wordpress interface  (~line  665)    */
+/* - insert Groen Productions asset files into admin pages    (~line  785)    */
 /*                                                                            */
 /* Plugins needed:                                                            */
 /* - Groen Productions Mailing plugin to change registration mails            */
 /* - WP-Mail-SMTP plugin to use groenproductions.com for registration mail    */
 /*                                                                            */
+/* Dashboard Meta Boxes:                                                      */
+/* - Loading of language files pomo                           (~line  845)    */
+/* - Loading of Meta Boxes                                    (~line  855)    */
+/* - Welcome Meta Box                                                         */
+/* - Meta Box's PHP file selection for loading                                */
+/*                                                                            */
 /* Functions used in other Groen Productions PHP files for site management:   */
 /* - Connect to Groen Productions database                    (~line  540)    */
+/* - Retrieve likely locale when user's logged out            (~line  540)    */
 /* - Upload pictures                                          (~line  570)    */
 /* - Input/output functions for database, forms, web page     (~line  650)    */
 /*   . Sanitization of input data                               (~line  650)  */
@@ -87,15 +101,41 @@ if(!function_exists('_lua')){
 // ****************************************************************
 // see: function groenp_include_in_head()
 
+
 // ****************************************************************
 // Custom admin login message
 // ****************************************************************
 add_filter('login_message', 'groenp_cookie_warning_login');
 function groenp_cookie_warning_login() {
-    return "<p class='message lowlight'>
-    This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>
-    By logging in you accept the use of these cookies. 
-    Please review the <a href='privacy_and_terms_of_use.php'>Privacy Statement and Terms of Use</a> for more detail.</p>";
+
+    // retrieve locale from url query, or from html page
+    $locale = groenp_anon_locale();
+    $lng = strtolower( substr($locale, 0, 2) );
+
+    switch($lng):
+
+        case 'nl':
+            $message = "<p class='message lowlight'>
+            Deze site gebruikt cookies om uw gebruikerssessie te waarborgen en uw voorkeuren vast te leggen.<br><br>
+            Door in te loggen accepteert u het gebruik van cookies. 
+            Bekijk de <a href='privacy_and_terms_of_use.php?wp_lang=". $locale."'>Privacy verklaring en de gebruiksvoorwaarden</a> voor alle details.</p>";
+            break;
+
+        case 'es':
+            $message = "<p class='message lowlight'>
+            Este sitio utiliza cookies para salvaguardar su sesión y realizar un seguimiento de sus preferencias.<br><br>
+            Al iniciar sesión, acepta el uso de estas cookies. 
+            Consulte la <a href='privacy_and_terms_of_use.php?wp_lang=". $locale."'>Declaración de privacidad y los Términos de uso</a> para obtener todos los detalles.</p>";
+            break;
+
+        default:
+            $message = "<p class='message lowlight'>
+            This site uses cookies in order to safeguard your session and to keep track of your preferences.<br><br>
+            By logging in you accept the use of these cookies. 
+            Please review the <a href='privacy_and_terms_of_use.php?wp_lang=". $locale."'>Privacy Statement and Terms of Use</a> for all details.</p>";
+
+    endswitch;
+    return $message;
 }
 
 
@@ -107,6 +147,22 @@ function groenp_change_wp_login_url()
 {
     return trailingslashit(admin_url());
 }
+
+// ****************************************************************
+// Make Forgot password link and login link language sensitive
+// ****************************************************************
+add_filter('lostpassword_url', 'groenp_lostpassword_url', 10, 2);
+function groenp_lostpassword_url()
+{
+    return site_url('wp-login.php?action=lostpassword&wp_lang='. groenp_anon_locale() );
+}
+
+add_filter('login_url', 'groenp_login_url', 10, 2);
+function groenp_login_url()
+{
+    return site_url('wp-login.php?&wp_lang='. groenp_anon_locale() );
+}
+
 
 // ****************************************************************
 // Reset the login page to be main Dashboard page (not profile page)
@@ -227,7 +283,7 @@ function groenp_add_collapse_js() {
 add_filter('admin_footer_text', 'groenp_change_footer_admin');
 function groenp_change_footer_admin ()
 {
-    echo "<span id='footer-thankyou'>Developed in WordPress by Groen Productions</span>";
+    echo "<span id='footer-thankyou'>". __('Developed in WordPress by', 'groenp') ." Groen Productions</span>";
 }
 
 // ****************************************************************
@@ -270,7 +326,7 @@ function groenp_clean_up_toolbar_items($wp_admin_bar) {
 
     $user_id = get_current_user_id();
     $current_user = wp_get_current_user();
-    $newtitle = sprintf( __( '%1$s' ), "<span id='title-greeting' class='greeting'>Welcome </span> '<span class='display-name'>" . $current_user->display_name . "'</span>");
+    $newtitle = "<span id='title-greeting' class='greeting'>". __('Welcome', 'groenp') ." </span> '<span class='display-name'>" . $current_user->display_name . "'</span>";
 
     // update the node with the changes
     $wp_admin_bar->add_node( array( 
@@ -309,48 +365,192 @@ function groenp_redirect_blocked_users() {
 
     // Close database
     mysqli_close($con);
+
     
 	if ( $result && $row[0] ) 
     {
+        // Retrieve user's locale before user is forced out
+        $locale = get_user_locale( $wp_userID );
+
         _lua("WPuser", "Subscriber (wpID:" . $wp_userID.") is trying to login, but has been BLOCKED!");
         session_unset(); 
         //session_destroy();
-        wp_redirect( site_url('wp-login.php?custom-logout=yes') );
+        wp_redirect( site_url('wp-login.php?custom_logout=yes&wp_lang='.$locale) );
     }
 }
 
-// Define custom message for the force-out situation
-if(!empty($_GET['custom-logout']) && strtolower($_GET['custom-logout']) == 'yes'){
+// Define custom message for force-out situation
+if(!empty($_GET['custom_logout']) && strtolower($_GET['custom_logout']) == 'yes'){
+
+    add_filter('login_message', 'groenp_force_out_message');
     function groenp_force_out_message() {
-        $message = "<p class='message'>Your username has been blocked. <br />Please contact <a href='mailto:admin@groenproductions.com'>administration at Groen Productions</a> for more information.</p>";
+
+        if ( !empty($_GET['wp_lang']) ) {
+
+            //switch on the first 2 chars
+            $lng = strtolower( substr($_GET['wp_lang'], 0, 2) );
+
+            switch($lng): 
+
+                case 'nl':
+                    $message = "<p class='message'>Uw gebruikersnaam is geblokkeerd.<br />
+                    Neem contact op met de <a href='mailto:admin@groenproductions.com'>administratie van Groen Productions</a> voor meer informatie.</p>";
+                    break;
+
+                case 'es':
+                    $message = "<p class='message'>Su nombre de usuario ha sido bloqueada.<br />
+                    Por favor, póngase en contacto con la <a href='mailto:admin@groenproductions.com'>administración de Groen Productions</a> para obtener más información.</p>";
+                    break;
+
+                default:
+                    $message = "<p class='message'>Your username has been blocked.<br />
+                    Please contact <a href='mailto:admin@groenproductions.com'>administration at Groen Productions</a> for more information.</p>";
+
+            endswitch;
+
+        } else {
+            // create default message (en_US)
+            $message = "<p class='message'>Your username has been blocked.<br />
+            Please contact <a href='mailto:admin@groenproductions.com'>administration at Groen Productions</a> for more information.</p>";
+        }
+
         return $message;
     }
-    add_filter('login_message', 'groenp_force_out_message');
 }
 
 
-// ****************************************************************
+// *********************************************************************************
+// SECTION: CHANGE EMAILS SENT TO SUBSCRIBER (ADJUST TONE & MULTI LINGUAL)
+// *********************************************************************************
+
+// *********************************************************************************
+// Changed email address notification to user - message  filter hook
+// (Change of msg title and body)
+// *********************************************************************************
+add_filter( 'email_change_email',  'groenp_changed_email_mail_message', 10, 3);
+function groenp_changed_email_mail_message( $email_change_email,  $user,  $userdata ) 
+{
+    //   $email_change_email: Used to build wp_mail().
+    //  (all are strings:)
+	//   $to      The intended recipients.
+    //   $subject The subject of the email.  => __( '[%s] Email Changed' )
+    //   $headers Headers.
+	//   $message The content of the email.
+    //      The following strings have a special meaning and will get replaced dynamically:
+    //      - ###USERNAME###    The current user's username.
+    //      - ###ADMIN_EMAIL### The admin email in case this was unexpected.
+    //      - ###NEW_EMAIL###   The new email address.
+    //      - ###EMAIL###       The old email address.
+    //      - ###SITENAME###    The name of the site.
+    //      - ###SITEURL###     The URL to the site.
+    
+    // Retrieve user's locale 
+    $locale = get_user_locale( $user['ID'] );
+    $lng = strtolower( substr($locale, 0, 2) );
+
+    switch($lng):
+
+        case 'nl':
+            $message = "Dit bericht is een bevestiging dat het emailadres voor ###SITENAME### gewijzigd is voor de volgende gebruiker.\n\n" .
+                "Nieuw emailadres: ###NEW_EMAIL###\r\n".
+                "Gebruikersnaam: ###USERNAME###\r\n\r\n" .
+                "Als u zelf niet het emailadres veranderd heeft, neem dan contact op met ons via: ###ADMIN_EMAIL###\n" .
+                "Deze e-mail is verzonden aan ###EMAIL###\r\n\r\n" .
+                "Met vriendelijke groeten,\nDe medewerkers van Groen Productions\n\n\n" .
+                "Privacy verklaring: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            $subject = "Uw emailadres is gewijzigd voor %s";
+            break;
+            
+        case 'es':
+            $message = "Este aviso confirma que el correo electrónico por ###SITENAME### ha sido cambiado por el siguiente usuario.\n\n" .
+                "Neuvo correo electrónico: ###NEW_EMAIL###\r\n" .
+                "Nombre de Usuario: ###USERNAME###\r\n\r\n" .
+                "Si usted no ha cambiado el correo electrónico, contacte con nosotros en: ###ADMIN_EMAIL###\n" .
+                "Este correo ha sido enviado a ###EMAIL###\r\n\r\n" .
+                "Saludos,\nEl equipo de Groen Productions\n\n\n" .
+                "Declaración de privacidad: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            $subject = "Su correo electrónico ha sido cambiado por %s";
+            break;
+            
+        default:
+            $message = "This notice confirms that the email address for ###SITENAME### has been changed for the following user.\n\n" .
+                "New email address: ###NEW_EMAIL###\r\n". 
+                "Username: ###USERNAME###\r\n\r\n" .
+                "If you did not change the email address, please contact us at: ###ADMIN_EMAIL###\n" .
+                "This email has been sent to ###EMAIL###\r\n\r\n" .
+                "Greetings,\nThe staff at Groen Productions\n\n\n" .
+                "Privacy statement: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            $subject = "Your email address has been changed for %s";
+        
+    endswitch;
+    // adjust the message in the password change mail array
+    $email_change_email[ 'message' ] = $message;
+    $email_change_email[ 'subject' ] = $subject;
+    _log("message for changed email: ". $subject); _log($message);                                                 // DEBUG //
+
+  return $email_change_email;
+}
+
+
+// *********************************************************************************
 // Changed password notification to user - message  filter hook
-// ****************************************************************
+// (Change of msg title and body)
+// *********************************************************************************
 add_filter( 'password_change_email',  'groenp_changed_pwd_mail_message', 10, 3);
-function groenp_changed_pwd_mail_message(  $pass_change_mail,  $user,  $userdata ) {
+function groenp_changed_pwd_mail_message(  $pass_change_email,  $user,  $userdata ) 
+{
+    // Originally: $pass_change_email['subject'] = "[%s] Password changed" 
+    // (%s = $blogname and $blogname = "Groen Productions | Site Management Tool")
 
-    $user_login = $user['user_login'];
-    $user_email = $user['user_email'];
+    $user_login = $userdata['user_login'];
+    $user_email = $userdata['user_email'];
 
-    $message = "This notice confirms that the password has been changed on Groen Productions – Sites Management Tool for the following user.\n\n";
-    $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";  
-    $message .= "If you did not change your password, please contact us at: admin@groenproductions.com\n";
-    $message .= "This email has been sent to " . $user_email ."\r\n\r\n";
-    $message .= "Greetings,\nThe staff at Groen Productions\n\n\n";
-    $message .= "Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n";
-    $pass_change_mail[ 'message' ] = $message;
+    // Retrieve user's locale 
+    $locale = get_user_locale( $user['ID'] );
+    $lng = strtolower( substr($locale, 0, 2) );
 
-  return $pass_change_mail;
+    switch($lng):
+
+        case 'nl':
+            $message = "Dit bericht is een bevestiging dat het wachtwoord gewijzigd is voor de volgende gebruiker.\n\n" .
+                "Gebruikersnaam: " . $user_login . "\r\n\r\n" .
+                "Als u zelf niet het wachtwoord veranderd heeft, neem dan contact op met ons via: admin@groenproductions.com\n" .
+                "Deze e-mail is verzonden aan ". $user_email ."\r\n\r\n" .
+                "Met vriendelijke groeten,\nDe medewerkers van Groen Productions\n\n\n" .
+                "Privacy verklaring: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            $subject = "Uw wachtwoord is gewijzigd voor %s";
+            break;
+            
+        case 'es':
+            $message = "Este aviso confirma que la contraseña ha sido cambiado por el siguiente usuario.\n\n" .
+                "Nombre de Usuario: " . $user_login . "\r\n\r\n" .
+                "Si usted no ha cambiado la contraseña, contacte con nosotros en: admin@groenproductions.com\n" .
+                "Este correo ha sido enviado a ". $user_email ."\r\n\r\n" .
+                "Saludos,\nEl equipo de Groen Productions\n\n\n" .
+                "Declaración de privacidad: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            $subject = "Su contraseña ha sido cambiado para %s";
+            break;
+            
+        default:
+            $message = "This notice confirms that the password has been changed for the following user.\n\n" .
+                "Username: " . $user_login . "\r\n\r\n" .  
+                "If you did not change your password, please contact us at: admin@groenproductions.com\n" .
+                "This email has been sent to ". $user_email ."\r\n\r\n" .
+                "Greetings,\nThe staff at Groen Productions\n\n\n" .
+                "Privacy statement: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            $subject = "Your password has been changed for %s";
+        
+    endswitch;
+    // adjust the message in the password change mail array
+    $pass_change_email[ 'message' ] = $message;
+    $pass_change_email[ 'subject' ] = $subject;
+    _log("message for changed password: ". $subject); _log($message);                                                 // DEBUG //
+  return $pass_change_email;
 }
 
 // ****************************************************************
-// User requested new password - message  filter hook
+// User requested new password - message filter hook
+// (change msg body only)
 // ****************************************************************
 add_filter( 'retrieve_password_message', 'groenp_retrieve_password_message', 10, 2 );
 function groenp_retrieve_password_message( $message, $key ){
@@ -375,22 +575,93 @@ function groenp_retrieve_password_message( $message, $key ){
     }
 
     $user_login = $user_data->user_login;
-    $user_email = $user_data->user_email;
+    
+    // Retrieve user's locale 
+    $locale = get_user_locale( $user_data->ID );
+    $lng = strtolower( substr($locale, 0, 2) );
 
-    // Set up message for retrieve password
-    $message = "A password reset has been requested for your account on the Groen Productions | Sites Management Tool.\n\n";
-    $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";  
-    $message .= "If you did not request this, just ignore this email and nothing will happen.\n\n"; 
-    $message .= "To reset your password, select the following link:\n";
-    $message .= site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . "\r\n\r\n";
-    $message .= "We hope that you enjoy using the Sites Management Tool. If you have any questions or suggestions please do not hesitate to contact us at: admin@groenproductions.com\n\n";
-    $message .= "Greetings,\nThe staff at Groen Productions\n\n\n";
-    $message .= "Privacy Statement: https://admin.groenproductions.com/site/privacy_and_terms_of_use.php\n";
+    // Set up message for password retrieval in nl, es, en
+    switch($lng):
+
+        case 'nl':
+            $message = "Er is een reset voor het wachtwoord van uw account aangevraagd bij Groen Productions | Site Management Tool.\n\n" .
+                "Gebruikersnaam: " . $user_login . "\r\n\r\n" .
+                "Als u deze reset niet heeft aangevraagd, kunt u dit bericht gewoon negeren. Er gebeurt dan niets.\n\n" .
+                "Selecteer deze link om uw wachtwoord te resetten:\n" .
+                site_url("wp-login.php?action=rp&wp_lang=$locale&key=$key&login=" . rawurlencode($user_login), 'login') ."\r\n\r\n" .
+                "Wij hopen dat het gebruik van de Site Management Tool bevalt. Als u nog vragen of suggesties heeft, aarzel dan niet om contact op te nemen via: admin@groenproductions.com\n\n" .
+                "Met vriendelijke groeten,\nDe medewerkers van Groen Productions\n\n\n" .
+                "Privacy verklaring: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            break;
+
+        case 'es':
+            $message = "Alguien ha solicitado un restablecimiento de la contraseña para su cuenta en el Site Management Tool | Groen Productions.\n\n" .
+                "Nombre de Usuario: " . $user_login . "\r\n\r\n" .
+                "Si no desea cambiar la contraseña, tranquilamente puede ignorar este mensaje y nada va a pasar.\n\n" .
+                "Para cambiar su contraseña, ingrese al siguiente enlace:\n" .
+                site_url("wp-login.php?action=rp&wp_lang=$locale&key=$key&login=" . rawurlencode($user_login), 'login') ."\r\n\r\n" .
+                "Esperamos que disfrute usando la herramienta de Site Management. Si tiene algún pregunta o sugerencias, por favor no dude en contactar con nosotros a: admin@groenproductions.com\n\n" .
+                "Saludos,\nEl equipo de Groen Productions\n\n\n" .
+                "Declaración de privacidad: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            break;
+
+        default:
+            $message = "A password reset has been requested for your account on the Groen Productions | Site Management Tool.\n\n" .
+                "Username: " . $user_login . "\r\n\r\n" .
+                "If you did not request this, just ignore this email and nothing will happen.\n\n" .
+                "To reset your password, select the following link:\n" .
+                site_url("wp-login.php?action=rp&wp_lang=$locale&key=$key&login=" . rawurlencode($user_login), 'login') ."\r\n\r\n" .
+                "We hope that you enjoy using the Site Management tool. If you have any questions or suggestions please do not hesitate to contact us at: admin@groenproductions.com\n\n" .
+                "Greetings,\nThe staff at Groen Productions\n\n\n" .
+                "Privacy statement: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+
+    endswitch;
+    _log("message for retrieve password: "); _log($message);                                                 // DEBUG //
     return $message;
-}
+} // end of: groenp_retrieve_password_message()
 
 // ****************************************************************
-// Logs the actions in the Std WordPress interface ('Add New User', 'Edit', 'Delete', 'Olvidó su contraseña', 'Iniciar Sesión', 'Cerrar sesión' )
+// User requested new password - message filter hook
+// (change msg title only)
+// ****************************************************************
+add_filter( 'retrieve_password_title',  'groenp_retrieve_password_title', 10, 2);
+function groenp_retrieve_password_title(  $title,  $user_login ) 
+{
+    // $title       = Default email title.
+    // $title       = sprintf( __( '[%s] Password Reset' ), $site_name );
+    // $user_login  = The username for the user.
+
+    // Get user locale
+    $user = get_user_by('login', $user_login);
+    $locale = get_user_locale( $user->ID );
+    $lng = strtolower( substr($locale, 0, 2) );
+
+    // Set up title for password retrieval in nl, es, en
+    switch($lng):
+
+        case 'nl':
+            $title = "Wachtwoord reset voor ". $user_login ." op %s";
+            break;
+
+        case 'es':
+            $title = "Restablecimiento de contraseña para ". $user_login ." por %s";
+            break;
+
+        default:
+            $title = "Password reset for ". $user_login ." on %s";
+    endswitch;
+
+    return $title;
+
+} // end of: groenp_retrieve_password_title()
+
+
+// ****************************************************************
+// Groen Productions - Log database actions in monthly log files
+//                     For standard  WordPress interface: 
+//                     'Add New User', 'Edit', 'Delete', 'Forgot password', 
+//                     'Start session', 'Close session' 
+//
 // ****************************************************************
 add_action( 'user_register', 'groenp_log_add_user', 10, 1); // hooked right after creation
 function groenp_log_add_user( $user_id ) 
@@ -511,7 +782,7 @@ function groenp_log_logout()
 // ****************************************************************
 
 // ****************************************************************
-// Groen Productions  - cusconow_script_enqueuer()
+// Groen Productions  - groenp_script_enqueuer()
 //                    - Includes jQuery (ajax) javascript at the right spot, and 
 //                      non-subscriber javascript only for GP admin
 // ****************************************************************
@@ -534,8 +805,8 @@ add_action( 'init', 'groenp_script_enqueuer' );
 
 // ****************************************************************
 // Groen Productions  - groenp_include_in_head()
-//                    - Includes groenp-sites-cms in head, and 
-//                      non-subscriber javascript only for GP admin
+//                    - Includes groenp-sites-cms.css in head, and 
+//
 // ****************************************************************
 function groenp_include_in_head() 
 { 
@@ -566,6 +837,15 @@ function groenp_print_script_in_footer() {
         });
         </script>";
 }
+// ****************************************************************
+// Groen Productions  - groenp_pomo_setup()
+//                    - Load the groenp mo files from /wp-content/languages/themes
+// ****************************************************************
+add_action( 'after_setup_theme', 'groenp_pomo_setup' );
+function groenp_pomo_setup(){
+
+    load_child_theme_textdomain( 'groenp', get_template_directory() . '/languages' );
+}
 
 /******************************************************************************/
 /* Groen Productions site management functions for all Dashboard pages        */
@@ -583,28 +863,51 @@ require_once( 'groenp_subscribers.php' );
 
 
 // ****************************************************************
+// Groen Productions - Create Meta Boxes for Dashboard  
+// ****************************************************************
+add_action( 'wp_dashboard_setup', 'groenp_dashboard_meta_boxes_add' );  
+function groenp_dashboard_meta_boxes_add()  
+{  
+    wp_add_dashboard_widget( 'welcome-mb', __("Welcome to the ", 'groenp') .__("Groen Productions | Site Management Tool", 'groenp') , 'groenp_welcome_meta_box_cb');
+    if ( current_user_can('list_users') ) wp_add_dashboard_widget( 'sel-domain-mb', 'Choose Domain to edit', 'groenp_sel_domain_meta_box_cb');
+    // if ( !current_user_can('list_users') || !empty($_POST['est_sbscrbr_login']) )
+    //     wp_add_dashboard_widget( 'cus-est-details-mb', 'X', 'groenp_est_details_meta_box_cb');
+}
+
+
+// ****************************************************************
 // Callback for WELCOME Meta Box
 // ****************************************************************
 function groenp_welcome_meta_box_cb()
 {  
+    // Retrieve user's locale 
+    $user = wp_get_current_user();
+    $locale = ($user)? get_user_locale( $user->ID ) : get_user_locale();
+    // _log("user: ". $user->ID .", locale: " . $locale);                                                          // DEBUG //
+
     // Meta box introduction
-    echo "<p>Welcome to your site management tool. Groen Production's Sites Management Tool allows you to change the dynamic content of your site. 
-    Inside the box for your own website, you can find detailed instructions on how to do this.</p>
+    echo "<p>Welcome to the Site Management Tool. his tool allows you to change the dynamic content of your site. 
+    Inside the box(es) for your own website, you can find detailed instructions on how to do this.</p>
 
     <p>Please be aware that while you use this tool, you must adhere to our Terms of Use. You can find them together with the Privacy Statement and the explanation 
-    of our use of cookies: <a href= '". site_url('privacy_and_terms_of_use.php') ."'>Privacy Statement and Terms of Use</a>.</p>
+    of our use of cookies: <a href= '". site_url('privacy_and_terms_of_use.php?wp_lang=' . $locale) ."'>Privacy Statement and Terms of Use</a>.</p>
 
-    <p>If this is your first time using this tool, please change your password as soon as convenient to you. 
-    You can change it on  your <a href= '". admin_url('profile.php') ."'>Profile page</a>. You can return to this page, by selecting ‘Dashboard’ in the side menu.</p>
+    <p>If this is your first time using this tool, please change your password as soon as is convenient to you. 
+    You can change it on your <a href= '". admin_url('profile.php') ."'>Profile page</a>. You can return to this page, by selecting ‘". __("Dashboard") ."’ in the side menu.</p>
 
     <p>I hope that you enjoy using the tool. If you have any questions and/or suggestions, please do not hesitate to contact me at: 
     <a href='mailto://admin@groenproductions.com'>admin@groenproductions.com</a></p>
 
-    <p>Cheers,<br />
+    <p>Have a nice day!<br />
     Pieter at Groen Productions</p>";
     
 } // End: groenp_welcome_meta_box_cb()
 
+// This function determines whether php file should be loaded, based on the sbscrbr/project pairing in groenp_subscribers.php
+function groenp_load_on_user_cap()
+{
+
+}
 
 // ****************************************************************
 // Groen Productions - Open GROENP_SITES_CMS database 
@@ -642,6 +945,23 @@ function groenp_open_database()
     }
 }
 
+
+// ****************************************************************
+//  Groen Productions - retrieve locale from url or <html>
+//                      ONLY use when user is not logged in
+// ****************************************************************
+function groenp_anon_locale()
+{
+    // _log('wp_lang: '. $_GET['wp_lang']);                                                                                                // DEBUG //
+    // _log('get_language_attributes: '. str_replace('"', '', substr(get_language_attributes(), 6)));                                      // DEBUG //
+    // _log('groenp_anon_locale: '. substr($locale, 0, 2));                                                                                // DEBUG //
+
+    // Get the url cookie (url query), and if there is none, then get it from <html> element
+    return isset( $_GET['wp_lang'] )? $_GET['wp_lang'] : str_replace('"', '', substr(get_language_attributes(), 6));
+
+    // Return only main language to avoid confusion between 'es_PE' and 'es-PE' etc.
+    // return substr($locale, 0, 2);
+}
 
 // ****************************************************************
 // Groen Productions - Upload Picture to Stroomt directory (optionally set max filesize and exact dimensions)

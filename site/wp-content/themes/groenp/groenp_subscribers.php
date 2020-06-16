@@ -214,14 +214,24 @@ function groenp_subscribers_meta_box_cb()
                         wp_update_user( array(
                                 'ID'    => $user_id,
                                 'first_name' => $_POST['first_name'],
-                                'last_name' => $_POST['last_name'])
+                                'last_name' => $_POST['last_name'],
+                                'locale'=> $_POST['locale'])
                         );
                         // Cannot create the reset key immediately afterwards, it expires
 
                         // Mail the user with the new ID and pwd, this is a safer bet (need to understand hashing)
-                        // groenp_plain_mail(    $user_id, 'new_user_notification', "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
-                        // groenp_html_mail(     $user_id, 'new_user_notification', "Bienvenido a CuscoNow!", "Detalles de registro", NULL, $password);
-                        groenp_multipart_mail($user_id, 'new_user_notification', "Welcome to Groen Productions - Sites Management", "Registration details", NULL, $password);
+                        // groenp_plain_mail(    $user_id, 'new_user_notification', "Welcome to Groen Productions - Site Management", "Registration details", NULL, $password);
+                        // groenp_html_mail(     $user_id, 'new_user_notification', "Welcome to Groen Productions - Site Management", "Registration details", NULL, $password);
+
+                        // Mail in new user's own language as defined by admin during creation: nl, es, en (or any other)
+                        $lng = substr($_POST['locale'], 0, 2);
+                        if ($lng == 'nl') {
+                            groenp_multipart_mail($user_id, 'new_user_notification', "Welkom bij Groen Productions - Sitebeheer", "Registratiegegevens", NULL, $password);
+                        } elseif ($lng == 'es') {
+                            groenp_multipart_mail($user_id, 'new_user_notification', "Bienvenido a Groen Productions - Manejo de sitio", "Detalles de registro", NULL, $password);
+                        } else {
+                            groenp_multipart_mail($user_id, 'new_user_notification', "Welcome to Groen Productions - Site Management", "Registration details", NULL, $password);
+                        }
                         //wp_mail( $_POST['user_email'], 'Bienvenido a CuscoNow!', 'Your loginID: '. $_POST['user_login'] . ', Your Password: ' . $password );
 
                         if ( is_wp_error( $user_id ) ) { // There was an error updating the wp_user table...
@@ -316,7 +326,8 @@ function groenp_subscribers_meta_box_cb()
                     wp_update_user( array(
                         'ID'    => $row['fr_ID'],
                         'first_name' => $_POST['first_name'],
-                        'last_name' => $_POST['last_name'])
+                        'last_name' => $_POST['last_name'],
+                        'locale'=> $_POST['locale'])
                     );
                     _lua($func, "Subscriber (ID: ". $pk_sbscrbr_id .", ". $user_login .") wp_user part edit successful? (no answer means yes)"); 
                 }
@@ -454,10 +465,12 @@ function groenp_subscribers_meta_box_cb()
     // Create query to get all gp_subscribers that DON'T have admin panel access AND those that DO have admin panel access
 
     $query_string = 'SELECT gp.pk_sbscrbr_id, gp.sbscrbr_login, gp.is_usr_blocked, gp.gets_html_mail,';
-    $query_string .= ' wp_fst.meta_value first, wp_lst.meta_value last, wp.user_registered, wp.user_email, gp.sbscrbr_notes'; 
+    $query_string .= ' wp_fst.meta_value first, wp_lst.meta_value last, wp_loc.meta_value locale, wp.user_registered, wp.user_email, gp.sbscrbr_notes'; 
     $query_string .= ' FROM '. $db .'.gp_subscribers gp LEFT JOIN '.DB_NAME.'.wp_users wp ON ( wp.ID = gp.fr_ID )';
     $query_string .= ' LEFT JOIN '.DB_NAME.'.wp_usermeta wp_fst ON ( wp_fst.user_id = gp.fr_ID AND wp_fst.meta_key = \'first_name\')';
-    $query_string .= ' LEFT JOIN '.DB_NAME.'.wp_usermeta wp_lst ON ( wp_lst.user_id = gp.fr_ID AND wp_lst.meta_key = \'last_name\') ORDER BY gp.sbscrbr_login;';
+    $query_string .= ' LEFT JOIN '.DB_NAME.'.wp_usermeta wp_lst ON ( wp_lst.user_id = gp.fr_ID AND wp_lst.meta_key = \'last_name\')';
+    $query_string .= ' LEFT JOIN '.DB_NAME.'.wp_usermeta wp_loc ON ( wp_loc.user_id = gp.fr_ID AND wp_loc.meta_key = \'locale\')';
+    $query_string .= ' ORDER BY gp.sbscrbr_login;';
 
     // store in different temp array
     $sbscrbrs = array();
@@ -511,6 +524,7 @@ function groenp_subscribers_meta_box_cb()
                 <th>Full name</th>
                 <th>Email address</th>
                 <th>Registered date</th>
+                <th class='chck'>Locale</th>
                 <th class='chck'>HTML format?</th>
                 <th class='chck'>Blocked?</th>
                 <th>Notes</th>
@@ -524,6 +538,7 @@ function groenp_subscribers_meta_box_cb()
         <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_name'],'s%') . "' name='fltr_sbscrbr_name' id='fltr_sbscrbr_name' maxlength='200' /></td>
         <td class='head'><input type='text' value='" . dis($_POST['fltr_user_email'],'a') . "' name='fltr_user_email' id='fltr_user_email' maxlength='100' /></td>
         <td class='head'><input type='text' value='" . dis($_POST['fltr_user_registered'],'a') . "' name='fltr_user_registered' id='fltr_user_registered' maxlength='30' /></td>
+        <td class='head'><input class='numb' type='text' value='" . dis($_POST['fltr_locale'],'s%') . "' name='fltr_locale' id='fltr_locale' pattern='[a-zA-Z0-9_]+|\*' maxlength='20' /></td>
         <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_gets_html_mail'],'chk') . "' name='fltr_gets_html_mail' id='fltr_gets_html_mail' pattern='[YyNn\*]' maxlength='1' /></td>
         <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_is_usr_blocked'],'chk') . "' name='fltr_is_usr_blocked' id='fltr_is_usr_blocked' pattern='[YyNn\*]' maxlength='1' /></td>
         <td class='head'><input type='text' value='" . dis($_POST['fltr_sbscrbr_notes'],'s%') . "' name='fltr_sbscrbr_notes' id='fltr_sbscrbr_notes' maxlength='200' /></td>
@@ -571,6 +586,12 @@ function groenp_subscribers_meta_box_cb()
         // If edit form keep edit key in hidden field and insert anchor: we need to scroll till here
         if(isset($editkey)) echo "<input type='hidden' name='edit_id' value=". $editkey . " > 
         <a class='anchr' name=" . $func . "></a>"; 
+
+        // Get list of installed languages (except for default language)
+        $langs = array_keys( wp_get_installed_translations('core')['default'] );
+        $deflang = get_locale();
+        // _log("default lang: ". $deflang);                                               // DEBUG //
+        // _log("available langs: "); _log($langs);                                        // DEBUG //
                 
         // If Edit populate each field with the present values
         if (isset($editkey)) echo "<label for='pk_sbscrbr_id'>ID</label><span id='pk_sbscrbr_id' name='pk_sbscrbr_id' class='display-only' >". dis($editrow['pk_sbscrbr_id'],'i') ."</span>";
@@ -623,14 +644,28 @@ function groenp_subscribers_meta_box_cb()
         if ( !isset($editkey) ) 
         {
             echo "<label for='first_name'>First name †</label><span>(† only saved when Email provided)</span><input type='text' name='first_name' id='first_name' maxlength='200' />
-            <label for='last_name'>Last name †</label><input type='text' name='last_name' id='last_name' maxlength='200' />";
+            <label for='last_name'>Last name †</label><input type='text' name='last_name' id='last_name' maxlength='200' />
+            <label for='locale'>Locale †</label><select class='prompt' name='locale' id='locale'>
+                <option value='". $deflang ."' selected >Default: ". $deflang ."</option>";
+                foreach($langs as $lng) {
+                    echo "<option value='" . $lng . "'>" . $lng  ."</option>";
+                }
+            echo "</select>";  
         }
         elseif ( $wp_user )
         {
             $first = $wp_user->first_name;
             $last = $wp_user->last_name;
+            $locale = get_user_locale( $wp_user->ID );
+            $langs = array_keys( wp_get_installed_translations('core')['default'] );
             echo "<label for='first_name'>First name</label><input type='text' name='first_name' id='first_name' maxlength='200' value='" . dis($first,'s') . "' />
-            <label for='last_name'>Last name</label><input type='text' name='last_name' id='last_name' maxlength='200' value='" . dis($last,'s') . "' />";
+            <label for='last_name'>Last name</label><input type='text' name='last_name' id='last_name' maxlength='200' value='" . dis($last,'s') . "' />
+            <label for='locale'>Locale</label><select class='prompt' name='locale' id='locale'>
+                <option value=''"; if($locale == $deflang) echo " selected "; echo ">Default: ". $deflang ."</option>";
+                foreach($langs as $lng) {
+                    echo "<option value='" . $lng . "'"; if($locale == $lng) echo " selected "; echo ">" . $lng  ."</option>";
+                }
+            echo "</select>";
         }
         echo "<label for='sbscrbr_notes'>Notes</label><span>(max. 200 chars, only visible to administrator and managers, enter first and last name when no email)</span><textarea name='sbscrbr_notes' rows='4' cols='50'>". dis($editrow['sbscrbr_notes'],'s') ."</textarea>
     </p>
