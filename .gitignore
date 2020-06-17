@@ -20,4 +20,5 @@ site/logs/*.txt
 *).php
 *.json
 *.mo
+*.eml
 site/wp-content/languages/themes/twenty*
