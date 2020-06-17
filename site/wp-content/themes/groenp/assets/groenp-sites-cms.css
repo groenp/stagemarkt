@@ -8,13 +8,16 @@
 html {
   scroll-behavior: smooth;
 }
-/* created space at the bottom of the page to scroll properly to last form */
-/* padding is 100% of the screen height */
-#wpbody-content {
+/* 
+only for groenp pages: 
+    created space at the bottom of the page to scroll properly to last form 
+    padding is 100% of the screen height 
+*/
+.dashboard_page_groenp_subscribers #wpbody-content {
     padding-bottom: 100vh;
 }
 /* place footer tagline right at the top, so users see it */
-#wpfooter {
+.dashboard_page_groenp_subscribers #wpfooter {
     min-height: 100vh;
 }
 
@@ -183,15 +186,20 @@ div.postbox td {
 
 }
 
-/* move the content over when hovering and show padding, so really the end */
+/* wrap content when hovering, and break anywhere so large names and urls show entirely */
 div.postbox td:hover {
-    direction: rtl;
-    padding-right: .5rem;
+    overflow: visible;
+    white-space: normal;
+    word-wrap: anywhere;
 }
+/* make sure that two lines fit in the td when hovering, applies to tr */
+div.postbox .inside tr {
+    line-height: 1.3;
+}
+
 /* cell with action buttons should not re-order */
 div.postbox td:last-child:hover {
-    direction: ltr;
-    padding-right: 0;
+    white-space: nowrap;
 }
 div.postbox td.dvdr {
     border-bottom: 1px solid #aaaaaa;
