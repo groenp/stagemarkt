@@ -1,56 +1,13 @@
 <?php
 /*
-Plugin Name:        Groen Productions Sites Management -  Mailing functionality
+Plugin Name:        Groen Productions | Site Management Tool -  Mailing functionality
 Description:        Any administration panel functionality that cannot be included in the theme: Multi-part MIME mailing functionality. Standard WP registration mail is rewritten for GroenProductions.com.  
                     Based on the CuscoNow! mailing plugin.
-Inactive for now:   'administrator' account U/I will be in English, the rest of the admin users will see the default language. 
-                    Based on code by Nikolay Bachiyski; Admin in English.
-Version:            0.2
+Version:            0.3
 Author:             Groen Productions
 Author URI:         http://www.linkedin.com/in/pietergroen/
 */
 //echo 'Current PHP version: ' . phpversion();
-
-// ****************************************************************
-// Change admin panel locale, but for 'administrator' role only 
-// ****************************************************************
-
-function cusconow_locale_add_hooks() {
-	add_filter( 'locale', 'cusconow_locale_locale' );
-}
-// add_action( 'plugins_loaded', 'cusconow_locale_add_hooks' );
-
-function cusconow_locale_locale( $locale ) {
-	if ( cusconow_locale_should_use_english() ) {
-        return 'en_US';
-	}
-	return $locale;
-}
-
-function cusconow_locale_should_use_english() {
-    $current_user = wp_get_current_user();
-    if( isset($current_user->roles[0]) && ($current_user->roles[0] == 'administrator') )
-	{
-        // frontend AJAX calls are mistaken for admin calls, because the endpoint is wp-admin/admin-ajax.php
-	    return cusconow_locale_is_admin() && !cusconow_locale_is_frontend_ajax();
-	}
-    return 0;
-}
-
-function cusconow_locale_is_admin() {
-	return
-		is_admin() || cusconow_locale_is_tiny_mce();
-}
-
-function cusconow_locale_is_frontend_ajax() {
-	return defined( 'DOING_AJAX' ) && DOING_AJAX && false === strpos( wp_get_referer(), '/wp-admin/' );
-}
-
-function cusconow_locale_is_tiny_mce() {
-	return false !== strpos( $_SERVER['REQUEST_URI'], '/wp-includes/js/tinymce/');
-}
-
-
 
 // ****************************************************************
 // Registration email modification
