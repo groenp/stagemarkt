@@ -792,20 +792,24 @@ function groenp_script_enqueuer()
     // default SSL port number OR http: port number; use minimized version, otherwise not
     $min_url = ($_SERVER['SERVER_PORT'] == '443' || $_SERVER['SERVER_PORT'] == '80') ? '.min' : '';
     
-    wp_register_script( 'groenp-sbscrbr', trailingslashit( get_stylesheet_directory_uri() ) .'assets/groenp-sbscrbr' . $min_url . '.js', array('jquery') );
-    if ( current_user_can('list_users') ) wp_register_script( 'groenp-sites-cms',  trailingslashit( get_stylesheet_directory_uri() ) . 'assets/groenp-sites-cms' . $min_url . '.js', array('jquery') );
-    wp_localize_script( 'groenp-sbscrbr', 'groenpAsync', array( 'ajaxurl' => admin_url( 'admin-ajax.php' )));
+    wp_register_script( 'groenp-sites-cms', trailingslashit( get_stylesheet_directory_uri() ) .'assets/groenp-sites-cms' . $min_url . '.js', array('jquery') );
+    // wp_localize_script( 'groenp-sites-cms', 'groenpAsync', array( 'ajaxurl' => admin_url( 'admin-ajax.php' )));
+    if ( current_user_can('list_users') ) {
+        wp_register_script( 'groenp-sites-cms-admin',  trailingslashit( get_stylesheet_directory_uri() ) . 'assets/groenp-sites-cms-admin' . $min_url . '.js', array('jquery') );
+    }
 
     wp_enqueue_script( 'jquery' );
-    wp_enqueue_script( 'groenp-sbscrbr' );
-    if ( current_user_can('list_users') ) wp_enqueue_script( 'groenp-sites-cms' );
+    wp_enqueue_script( 'groenp-sites-cms' );
+    if ( current_user_can('list_users') ) wp_enqueue_script( 'groenp-sites-cms-admin' );
 } // End of: groenp_script_enqueuer()
 add_action( 'init', 'groenp_script_enqueuer' );
 
 
 // ****************************************************************
 // Groen Productions  - groenp_include_in_head()
-//                    - Includes groenp-sites-cms.css in head, and 
+//                    - Includes in head: 
+//                      groenp-sites-cms(.min).css
+//                      font-awesome.min.css
 //
 // ****************************************************************
 function groenp_include_in_head() 
@@ -899,7 +903,8 @@ function groenp_welcome_meta_box_cb()
     <a href='mailto://admin@groenproductions.com'>admin@groenproductions.com</a></p>
 
     <p>Have a nice day!<br />
-    Pieter at Groen Productions</p>";
+    Pieter at Groen Productions</p>
+    <p class='htb'><a href='#'>remove this box</a></p>";
     
 } // End: groenp_welcome_meta_box_cb()
 

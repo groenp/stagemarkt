@@ -263,20 +263,27 @@ div.postbox input.numb[type="text"] {
     margin-top: 0em;
 }
 
-/* Back to top buttons */
-p.btt {
+/* Back to top, hide this box buttons */
+p.btt, p.htb {
     height: 8px;
 }
-.btt  a {
+.btt  a, .htb a {
     font-size: 8pt;
     float: right;
 }
-.btt a:after {
+.btt a:after, .htb a:after {
     font-family: FontAwesome;
     font-weight: 200;
     display: inline-block;
     padding-left: .4rem;
     content: "\f077"; /* chevron up */
+}
+.htb {
+    display: none;
+}
+.htb a:after {
+    /* content: "\f057"; times circle */
+    content: "\f00d"; /* times */
 }
 
 
