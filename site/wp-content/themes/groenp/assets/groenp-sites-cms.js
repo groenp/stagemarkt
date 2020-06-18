@@ -36,6 +36,32 @@ $(document).ready(function () {
     // always check after each update to WordPress 
     // ************************************************************************
 
+
+    // groen productions: yes it's me!
+    $('#pg-GroenP').hover(function () {
+        $(this).removeClass('conceal');
+        void $('#pg-GroenP').offset();
+        $(this).addClass('reveal');
+    }, function () {
+        $(this).removeClass('reveal');
+            void $('#pg-GroenP').offset();
+        $(this).addClass('conceal');
+    });
+
+    // Remove Welcome to GP | SMT
+    // only if the removal checkbox is in the screen options
+    if ( $('#welcome-mb-hide').length ) {
+
+        // show the control
+        $('#welcome-mb-boxctrl').show();
+
+        // add click event
+        $('#welcome-mb-boxctrl a').click(function() {
+            $('#welcome-mb-hide').click();
+        });
+
+    }
+    
 //     // Remove screen options tab
 //     // $('#screen-options-link-wrap').hide();
 

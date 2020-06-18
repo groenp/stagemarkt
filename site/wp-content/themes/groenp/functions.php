@@ -851,33 +851,15 @@ function groenp_pomo_setup(){
     load_child_theme_textdomain( 'groenp', get_template_directory() . '/languages' );
 }
 
-/******************************************************************************/
-/* Groen Productions site management functions for all Dashboard pages        */
-/*                                                                            */
-/******************************************************************************/
-
-// Check user privileges and determine which sections can be loaded
-// _log('load other page files');
-
-/* all general and admin meta boxes for the Dashboard page have been defined in: 'groenp_sites_management.php' */
-require_once( 'groenp_test_mgmt.php' );
-
-/* all meta boxes for the Subscribers page have been defined in: 'groenp_subscribers.php' */
-require_once( 'groenp_subscribers.php' );
-
 
 // ****************************************************************
-// Groen Productions - Create Meta Boxes for Dashboard  
+// Groen Productions - Create WELCOME Meta Box for Dashboard  
 // ****************************************************************
 add_action( 'wp_dashboard_setup', 'groenp_dashboard_meta_boxes_add' );  
 function groenp_dashboard_meta_boxes_add()  
 {  
     wp_add_dashboard_widget( 'welcome-mb', __("Welcome to the ", 'groenp') .__("Groen Productions | Site Management Tool", 'groenp') , 'groenp_welcome_meta_box_cb');
-    if ( current_user_can('list_users') ) wp_add_dashboard_widget( 'sel-domain-mb', 'Choose Domain to edit', 'groenp_sel_domain_meta_box_cb');
-    // if ( !current_user_can('list_users') || !empty($_POST['est_sbscrbr_login']) )
-    //     wp_add_dashboard_widget( 'cus-est-details-mb', 'X', 'groenp_est_details_meta_box_cb');
 }
-
 
 // ****************************************************************
 // Callback for WELCOME Meta Box
@@ -893,36 +875,90 @@ function groenp_welcome_meta_box_cb()
     echo "<p>Welcome to the Site Management Tool. his tool allows you to change the dynamic content of your site. 
     Inside the box(es) for your own website, you can find detailed instructions on how to do this.</p>
 
-    <p>Please be aware that while you use this tool, you must adhere to our Terms of Use. You can find them together with the Privacy Statement and the explanation 
-    of our use of cookies: <a href= '". site_url('privacy_and_terms_of_use.php?wp_lang=' . $locale) ."'>Privacy Statement and Terms of Use</a>.</p>
+    <p>Please be aware that while you use this tool, you must adhere to our Terms of Use. 
+    You can find them together with the Privacy Statement and the explanation of our use of cookies: 
+    <a href= '". site_url('privacy_and_terms_of_use.php?wp_lang=' . $locale) ."'>Privacy Statement and Terms of Use</a>.</p>
 
     <p>If this is your first time using this tool, please change your password as soon as is convenient to you. 
-    You can change it on your <a href= '". admin_url('profile.php') ."'>Profile page</a>. You can return to this page, by selecting ‘". __("Dashboard") ."’ in the side menu.</p>
+    You can change it on your <a href= '". admin_url('profile.php') ."'>Profile page</a>. 
+    You can return to this page, by selecting ‘". __("Dashboard") ."’ <i class='awecon'>&#xf0e4;</i> in the side menu.</p>
 
     <p>I hope that you enjoy using the tool. If you have any questions and/or suggestions, please do not hesitate to contact me at: 
     <a href='mailto://admin@groenproductions.com'>admin@groenproductions.com</a></p>
 
     <p>Have a nice day!<br />
-    Pieter at Groen Productions</p>
-    <p class='htb'><a href='#'>remove this box</a></p>";
+    Pieter at Groen Productions</p>"; 
+    include('assets/GroenProductions.min.svg');
+    echo "<p id='welcome-mb-boxctrl' class='htb'><a href='#'>remove this box</a></p>";
     
-} // End: groenp_welcome_meta_box_cb()
+} // End of: groenp_welcome_meta_box_cb()
 
-// This function determines whether php file should be loaded, based on the sbscrbr/project pairing in groenp_subscribers.php
-function groenp_load_on_user_cap()
-{
+/******************************************************************************/
+/* Groen Productions site management functions for all Dashboard pages        */
+/*                                                                            */
+/******************************************************************************/
 
-}
+/* all meta boxes for the Subscribers page have been defined in: 'groenp_subscribers.php' */
+if ( current_user_can('list_users') ) require_once( 'groenp_subscribers.php' );
 
-// ****************************************************************
-// Groen Productions - Open GROENP_SITES_CMS database 
+// Check user privileges and determine which sections can be loaded (ADMIN has always access)
+groenp_load_on_privileges( 'groenp_test_mgmt.php' );
+
+
+// **************************************************************** 
+//  Groen Productions - Determine whether php file should be loaded based on
+//                      the sbscrbr/project pairing in groenp_subscribers.php
+//                      - $php_file = name of php file with project and MBs
 //
-// There are 2 groenp users, one for each level of access:
-// - Same users defined on all servers
-// - Database is named groenp_sites_cms local and on Groen Productions server
-// - There is no separate database on test server
-// ****************************************************************
+// **************************************************************** 
+function groenp_load_on_privileges( $php_file )
+{
+    if ( current_user_can('list_users') ) 
+    {
+        // Part of Mgmt team, so always load MB but in separate page
+        $load = 1;
 
+    } else {
+        // User is Subscriber and logged in 
+        $current_user = wp_get_current_user();
+        $sbscrbr_login = $current_user->user_login;
+
+        // open database
+        $con = groenp_open_database();
+
+        // query: prjct_php-> pk = fk_prjct_id | fk_sbscrbr_id = pk <- sbscrbr_login
+        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, sub.sbscrbr_login, prj.prjct_php' .
+            ' FROM gp_sbscrbr_prjct_pairings spp'.
+            ' LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
+            ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
+            ' WHERE prj.prjct_php = ? AND sub.sbscrbr_login = ?');
+        mysqli_stmt_bind_param($stmt, 'ss', $php_file, $sbscrbr_login);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+
+        // record the number of hits, this can be zero, one or more
+        $load = mysqli_stmt_num_rows($stmt);
+        mysqli_stmt_close($stmt); 
+        // close database
+        mysqli_close($con);
+    }
+
+    _log("gp_sbscrbr_prjct_pairings - num of result rows: " . $load);
+    if ( $load > 0 ) {
+        require_once( $php_file );
+    }
+}  // end of: groenp_load_on_privileges( $php_file )
+
+
+// **************************************************************** 
+//  Groen Productions - Open GROENP_SITES_CMS database 
+//
+//  There are 2 groenp users, one for each level of access:
+//    - Same users defined on all servers
+//    - Database is named groenp_sites_cms local and on Groen Productions server
+//    - There is no separate database on test server
+//
+// ****************************************************************
 function groenp_open_database() 
 {
     // connect with correct user and select correct db
@@ -932,9 +968,12 @@ function groenp_open_database()
     {
         // CRUD connection to groenp_sites_cms
         $connect = mysqli_connect('localhost','groenpf99v6Vd53','m^W$pQ&5W!j5', $db); // CRUD privileges
+        _log('groenp database connection opened with CRUD priv');                          // DEBUG //
+
     } else {
         // read only connection to groenp_sites_cms
         $connect = mysqli_connect('localhost','groenpRdrgYAUCm','#yCAh(j&kv>Q', $db); // R/O privileges
+        _log('groenp database connection opened with R/O priv');                          // DEBUG //
     }
 
     if (!$connect)

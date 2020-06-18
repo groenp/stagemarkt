@@ -4,10 +4,15 @@
 /*  Version 0.1 - May 24, 2014                                                */
 /*                                                                            */
 /*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                    */
-/*   - show dashboard after login                                             */
-/*   - welcome callback                                                       */
+/*   - test Meta Box to test filter per user                                  */
 /*                                                                            */
 /******************************************************************************/
+
+add_action( 'wp_dashboard_setup', 'groenp_test_meta_boxes_add' );  
+function groenp_test_meta_boxes_add()  
+{  
+        wp_add_dashboard_widget( 'sel-domain-mb', 'Choose Domain to edit', 'groenp_sel_domain_meta_box_cb');
+}
 
 
 // ****************************************************************

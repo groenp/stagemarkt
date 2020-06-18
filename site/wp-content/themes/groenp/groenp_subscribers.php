@@ -833,9 +833,39 @@ function groenp_projects_meta_box_cb()
             } // end of: stmt prepared successful
 	    } // End of: deletion
     } // End of: checking for form submits
-	
+
     // ************************************************************
-    //  2. Build updated table with PROJECTS
+    // 2. Create jQuery object holding all Projects
+    // ************************************************************
+
+    // For now not used in this Meta Box, but use in Subscriber/Project Pairing
+    // Create query for all Projects
+    $query_string = 'SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
+                    ' FROM gp_projects ORDER BY prjct_name, prjct_php;';
+
+    // store in different temp array
+    $projects = array();
+
+    //echo "query string: " . $query_string;
+    $result = mysqli_query($con, $query_string);
+
+    // BUG: handle empty result first for ALL occurrences
+    if ( $result ) { 
+        while($r = mysqli_fetch_assoc($result)) {
+            $projects[] = $r;
+        }
+        mysqli_free_result($result);
+    }
+
+    // Create javascript Object: Projects
+    echo "<script type='text/javascript'>
+
+        var Projects = "; echo json_encode($projects); echo ";
+
+    </script>";
+
+    // ************************************************************
+    //  3. Build updated table with PROJECTS
     // ************************************************************
 
     // Meta box introduction
@@ -974,7 +1004,8 @@ function groenp_projects_meta_box_cb()
     mysqli_close($con);
 	unset($result);
 	unset($row);
-	unset($editrow);
+    unset($editrow);
+	unset($projects);
 
 }  // End: groenp_projects_meta_box_cb() 
 
@@ -1015,12 +1046,39 @@ function groenp_subpro_pairing_meta_box_cb()
     		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
         }
         else {
-                // define and sanitize vars
-                $spp_prjct_id   = prep($_POST['spp_prjct_id'], 'i');
-                $spp_sbscrbr_id = prep($_POST['spp_sbscrbr_id'], 'i');
+
+            // define and sanitize vars
+            $spp_prjct_id   = prep($_POST['spp_prjct_id'], 'i');
+            $spp_sbscrbr_id = prep($_POST['spp_sbscrbr_id'], 'i');
+
+            // Check if pair is unique
+            $stmt = mysqli_prepare($con, 'SELECT pk_sppair_id' .
+                             ' FROM gp_sbscrbr_prjct_pairings' .
+                             ' WHERE fk_prjct_id=? AND fk_sbscrbr_id=?');
+            if ($stmt ===  FALSE) { _log("Invalid compare uniqueness query query for " . $func . ": " . mysqli_error($con)); }
+            else {
+                // bind stmt = i: integer, d: double, s: string
+                $bind = mysqli_stmt_bind_param($stmt, 'ii', $spp_prjct_id, $spp_sbscrbr_id);
+                if ($bind ===  FALSE) { _log("Bind parameters failed for compare uniqueness query in " . $func); }
+                else {
+                    // execute query and record the number of hits; this can be zero, one or more
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_store_result($stmt);
+                    $num_rows = mysqli_stmt_num_rows($stmt);
+                    mysqli_stmt_close($stmt); 
+
+                } // end of: binding successful
+            } // end of: stmt prepared successful
 
             // ************************************************************
-		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
+            if ( $num_rows > 0 ) // at least one more identical pair was found
+            // ************************************************************
+            {
+                echo "<p class='err-msg'>There already is an identical pairing. This one has not been added or edited.</p>";
+            }
+
+            // ************************************************************
+		    elseif ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
 			// ************************************************************
 			{
                 // create a prepared statement 
@@ -1043,7 +1101,8 @@ function groenp_subpro_pairing_meta_box_cb()
                         mysqli_stmt_close($stmt); 
                     } // end of: binding successful
                 } // end of: stmt prepared successful
-			} // End of: add
+            } // End of: add
+            
 			// ************************************************************
 			elseif ( isset($_POST[('edit_'. $func)]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]!=='no')  // update tables row with editkey 
 			// ************************************************************
@@ -1100,13 +1159,38 @@ function groenp_subpro_pairing_meta_box_cb()
     } // End of: checking for form submits
     
     // ************************************************************
-    // 2. Create jQuery object holding all Subscribers and Projects
+    // 2. Create jQuery object holding all Subscriber/Project Pairings
     // ************************************************************
 
     // Sbscrbrs json object needed to fill out Add/Edit form:
     // has already been created in groenp_subscribers_meta_box_cb
 
-    // Projects json object not necessary; only needed for droplist, so built inline 
+    // Create query for all Projects
+    $query_string = 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.prjct_php, prj.is_test_active' .
+                    ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
+                    ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
+                    ' ORDER BY prj.prjct_name, sub.sbscrbr_login';
+
+    // store in different temp array
+    $sub_proj_pairings = array();
+
+    //echo "query string: " . $query_string;
+    $result = mysqli_query($con, $query_string);
+
+    // BUG: handle empty result first for ALL occurrences
+    if ( $result ) { 
+        while($r = mysqli_fetch_assoc($result)) {
+            $sub_proj_pairings[] = $r;
+        }
+        mysqli_free_result($result);
+    }
+
+    // Create javascript Object: Projects
+    echo "<script type='text/javascript'>
+
+        var SbscrbrPrjctPrngs = "; echo json_encode($sub_proj_pairings); echo ";
+
+    </script>";
 
     
     // ************************************************************
@@ -1131,6 +1215,7 @@ function groenp_subpro_pairing_meta_box_cb()
     echo "<table id='sppair_tbl' class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'>
         <thead style='text-align: left'>
             <tr style='text-align: left'>
+                <th class='numb'>Prjct ID</th>
                 <th>Project name</th>
                 <th class='chck'>Test enabled?</th>
                 <th>Subscriber ID</th>
@@ -1143,54 +1228,76 @@ function groenp_subpro_pairing_meta_box_cb()
         </thead>
         <tbody>";
 
+    // Build filter 
+    echo "<tr>
+        <td class='head'><input class='numb' type='text' value='" . dis($_POST['fltr_spp_fk_prjct_id'],'i') . "' name='fltr_spp_fk_prjct_id' id='fltr_spp_fk_prjct_id' pattern='\d*|\*' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_prjct_name'],'a') . "' name='fltr_spp_prjct_name' id='fltr_spp_prjct_name' maxlength='100' /></td>
+        <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_spp_is_test_active'],'chk') . "' name='fltr_spp_is_test_active' id='fltr_spp_is_test_active' pattern='[YyNn\*]' maxlength='1' /></td>
 
-    // Query table, and leave out 'edit' row depending on action selection, and filter 
-    unset($result); unset($row); // re-initialize
-    if (isset($editkey))
-    {
-        // prepare statement excluding item to be edited
-        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active' .
-                             ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
-                             ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
-                             ' WHERE spp.pk_sppair_id != ?'.
-                             ' ORDER BY prj.prjct_name, sub.sbscrbr_login');
-        mysqli_stmt_bind_param($stmt, 'i', $editkey);
-    } 
-    else 
-    {
-        // prepare statement in similar way as edit, but no parameters
-        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active' .
-                             ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
-                             ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
-                             ' ORDER BY prj.prjct_name, sub.sbscrbr_login');
-    } // End of: not set editkey
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_sbscrbr_login'],'a') . "' name='fltr_spp_sbscrbr_login' id='fltr_spp_sbscrbr_login' pattern='[a-zA-Z0-9_]+|\*' maxlength='60' /></td>
+        <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_spp_is_usr_blocked'],'chk') . "' name='fltr_spp_is_usr_blocked' id='fltr_spp_is_usr_blocked' pattern='[YyNn\*]' maxlength='1' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_sbscrbr_name'],'s%') . "' name='fltr_spp_sbscrbr_name' id='fltr_spp_sbscrbr_name' maxlength='200' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_user_email'],'a') . "' name='fltr_spp_user_email' id='fltr_spp_user_email' maxlength='100' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_sbscrbr_notes'],'s%') . "' name='fltr_spp_sbscrbr_notes' id='fltr_spp_sbscrbr_notes' maxlength='200' /></td>
+        <td class='head'>
+            <input type='button' class='button-primary' name='srch_". $func ."' value='Filter' onclick='build_fltrd_spp_table(\"". $func ."\");'>
+            <input type='button' class='button-secondary' name='clr_" . $func . "' value='Clear' onclick='clear_filter(\"sppair_tbl\");'>
+        </td>
+    </tr>";
 
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $row['pk_sppair_id'], $row['pk_sbscrbr_id'], $row['sbscrbr_login'], $row['is_usr_blocked'], $row['fk_prjct_id'], $row['prjct_name'], $row['is_test_active']);
-
-    // Retrieve row by row the project data in the DB
-    while ( mysqli_stmt_fetch($stmt) )
-    {
-        // Build row
-        echo "<tr>
-                <td>" . dis($row['prjct_name'],'s') . "</td>
-                <td class='chck'>" . dis($row['is_test_active'],'chk') . "</td>
-                <td>" . dis($row['sbscrbr_login'],'s') . "</td>
-                <td class='chck'>" . dis($row['is_usr_blocked'],'chk') . "</td>
-                <td>" . dis($row['pk_sbscrbr_id'],'i') . "</td>
-                <td></td>
-                <td></td>";
-
-                // Add final cell with button section and link to javascript pop-up
-                echo "<td><input type='submit' class='button-primary' name='" . $row['pk_sppair_id'] . "' value='Edit'> 
-                            <input type='submit' class='button-secondary' name='" . $row['pk_sppair_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
-                </tr>";
-    } // End of: while result
-    mysqli_stmt_close($stmt);
+	// Subscribers table built by jQuery: build_fltrd_sbscrbrs_table(func);
 
     // finalize table
-    echo "</tbody>
-    </table>";
+    echo "</tbody></table>";
+
+    
+    // // Query table, and leave out 'edit' row depending on action selection, and filter 
+    // unset($result); unset($row); // re-initialize
+    // if (isset($editkey))
+    // {
+    //     // prepare statement excluding item to be edited
+    //     $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active' .
+    //                          ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
+    //                          ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
+    //                          ' WHERE spp.pk_sppair_id != ?'.
+    //                          ' ORDER BY prj.prjct_name, sub.sbscrbr_login');
+    //     mysqli_stmt_bind_param($stmt, 'i', $editkey);
+    // } 
+    // else 
+    // {
+    //     // prepare statement in similar way as edit, but no parameters
+    //     $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.is_test_active' .
+    //                          ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
+    //                          ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
+    //                          ' ORDER BY prj.prjct_name, sub.sbscrbr_login');
+    // } // End of: not set editkey
+
+    // mysqli_stmt_execute($stmt);
+    // mysqli_stmt_bind_result($stmt, $row['pk_sppair_id'], $row['pk_sbscrbr_id'], $row['sbscrbr_login'], $row['is_usr_blocked'], $row['fk_prjct_id'], $row['prjct_name'], $row['is_test_active']);
+
+    // // Retrieve row by row the project data in the DB
+    // while ( mysqli_stmt_fetch($stmt) )
+    // {
+    //     // Build row
+    //     echo "<tr>
+    //             <td>" . dis($row['prjct_name'],'s') . "</td>
+    //             <td class='chck'>" . dis($row['is_test_active'],'chk') . "</td>
+    //             <td>" . dis($row['sbscrbr_login'],'s') . "</td>
+    //             <td class='chck'>" . dis($row['is_usr_blocked'],'chk') . "</td>
+    //             <td>" . dis($row['pk_sbscrbr_id'],'i') . "</td>
+    //             <td></td>
+    //             <td></td>";
+
+    //             // Add final cell with button section and link to javascript pop-up
+    //             echo "<td><input type='submit' class='button-primary' name='" . $row['pk_sppair_id'] . "' value='Edit'> 
+    //                         <input type='submit' class='button-secondary' name='" . $row['pk_sppair_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+    //             </tr>";
+    // } // End of: while result
+    // mysqli_stmt_close($stmt);
+
+    // // finalize table
+    // echo "</tbody>
+    // </table>";
 
 
     // ************************************************************
@@ -1296,6 +1403,7 @@ function groenp_subpro_pairing_meta_box_cb()
 	unset($result);
 	unset($row);
 	unset($editrow);
+	unset($sub_proj_pairings);
 
 }  // End: groenp_subpro_pairing_meta_box_cb() 
 

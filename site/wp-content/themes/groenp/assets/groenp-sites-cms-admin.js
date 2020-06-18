@@ -89,21 +89,21 @@ $(document).ready(function () {
     // This is normally done by LEFT JOIN the user table
     // The only reason to use the Sbscrbrs json is to minimize contact with wp tables
 
-    $('#sppair_tbl tbody tr').each(function () {
-        var sbscrbr_id = $(this).find('td:eq(4)').text();
-        if (sbscrbr_id) {
+    // $('#sppair_tbl tbody tr').each(function () {
+    //     var sbscrbr_id = $(this).find('td:eq(4)').text();
+    //     if (sbscrbr_id) {
 
-            // find index in array by mapping pk_sbscrbr_id to parsed sbscrbr_id
-            var ndx = Sbscrbrs.map(function (o) { return o.pk_sbscrbr_id; }).indexOf(sbscrbr_id);
+    //         // find index in array by mapping pk_sbscrbr_id to parsed sbscrbr_id
+    //         var ndx = Sbscrbrs.map(function (o) { return o.pk_sbscrbr_id; }).indexOf(sbscrbr_id);
 
-            // only if the right Sbscrbrs item has been found
-            if (typeof Sbscrbrs[ndx] !== "undefined") {
-                $(this).find('td:eq(4)').html(Sbscrbrs[ndx].first + " " + Sbscrbrs[ndx].last);  // Full name
-                $(this).find('td:eq(5)').html(Sbscrbrs[ndx].user_email);                        // Email
-                $(this).find('td:eq(6)').html(Sbscrbrs[ndx].sbscrbr_notes);                     // Notes
-            }
-        }
-    });
+    //         // only if the right Sbscrbrs item has been found
+    //         if (typeof Sbscrbrs[ndx] !== "undefined") {
+    //             $(this).find('td:eq(4)').html(Sbscrbrs[ndx].first + " " + Sbscrbrs[ndx].last);  // Full name
+    //             $(this).find('td:eq(5)').html(Sbscrbrs[ndx].user_email);                        // Email
+    //             $(this).find('td:eq(6)').html(Sbscrbrs[ndx].sbscrbr_notes);                     // Notes
+    //         }
+    //     }
+    // });
     
     
 });  // end of document.ready()
@@ -116,6 +116,8 @@ $(document).ready(function () {
 // Subscribers  MB
 // **************************************************************************
 
+// sort and build the #sbscrbr_table table body (heading and filter are already there)
+// and apply and fill the filters
 function build_fltrd_sbscrbrs_table(func) {
 
     // set checkbox fltr fields 
@@ -238,6 +240,90 @@ function build_fltrd_sbscrbrs_table(func) {
 // Subscriber - Project Pairing  MB
 // **************************************************************************
 
+// build the #sppair_tbl table body (heading and filter are already there)
+// and apply and fill the filters
+function build_fltrd_spp_table(func) {
+
+    // set checkbox fltr fields 
+    $('#sppair_tbl td.fltr input.chk').each(function () {
+        $(this).val($(this).val().toUpperCase());
+    });
+
+    // clean out table except for filter
+    $('#sppair_tbl').find("tr:gt(1)").remove();
+
+    // define filters in sppair_tbl
+    if ($('#fltr_spp_fk_prjct_id').val() != "") var fltr1 = $('#fltr_spp_fk_prjct_id').val();
+    if ($('#fltr_spp_prjct_name').val() != "") var fltr2 = $('#fltr_spp_prjct_name').val();
+    if ($('#fltr_spp_is_test_active').val().toLowerCase() === "y") {
+        var fltr3 = 1;
+    } else if ($('#fltr_spp_is_test_active').val().toLowerCase() === "n") {
+        var fltr3 = 0;
+    } else if ($('#fltr_spp_is_test_active').val() === "*") {
+        var fltr3 = "*";
+    }
+    if ($('#fltr_spp_sbscrbr_login').val() != "") var fltr4 = $('#fltr_spp_sbscrbr_login').val();
+    if ($('#fltr_spp_is_usr_blocked').val().toLowerCase() === "y") {
+        var fltr5 = 1;
+    } else if ($('#fltr_spp_is_usr_blocked').val().toLowerCase() === "n") {
+        var fltr5 = 0;
+    } else if ($('#fltr_spp_is_usr_blocked').val() === "*") {
+        var fltr5 = "*";
+    }
+    if ($('#fltr_spp_sbscrbr_name').val() != "") var fltr6 = $('#fltr_spp_sbscrbr_name').val();
+    if ($('#fltr_spp_user_email').val() != "") var fltr7 = $('#fltr_spp_user_email').val();
+    if ($('#fltr_spp_sbscrbr_notes').val() != "") var fltr8 = $('#fltr_spp_sbscrbr_notes').val();
+
+    // build table, first row is already there
+    var ndx = 0;
+    for (var i = 0; i < SbscrbrPrjctPrngs.length; i++) {
+
+        // find corresponding index in Sbscrbrs array by mapping pk_sbscrbr_id in Sbscrbrs[] to fk_sbscrbr_id in SbscrbrPrjctPrngs[]
+        // this isi used to append the Sbscrbr data (full name, email, notes) to SbscrbrPrjctPrngs
+        ndx = Sbscrbrs.map(function (o) { return o.pk_sbscrbr_id; }).indexOf(SbscrbrPrjctPrngs[i].fk_sbscrbr_id);
+
+        // check whether in filter
+        if ((!fltr1 || (SbscrbrPrjctPrngs[i].fk_prjct_id && ((fltr1 == '*' && SbscrbrPrjctPrngs[i].fk_prjct_id) || (fltr1 && SbscrbrPrjctPrngs[i].fk_prjct_id.indexOf(fltr1) >= 0)))) &&
+            (!fltr2 || (SbscrbrPrjctPrngs[i].prjct_name && ((fltr2 == '*' && SbscrbrPrjctPrngs[i].prjct_name) || (fltr2 && SbscrbrPrjctPrngs[i].prjct_name.toLowerCase().indexOf(fltr2.toLowerCase()) >= 0)))) &&
+            (fltr3 == undefined || (SbscrbrPrjctPrngs[i].is_test_active && ((fltr3 == '*' && SbscrbrPrjctPrngs[i].is_test_active) || (fltr3 != undefined && SbscrbrPrjctPrngs[i].is_test_active == fltr3)))) &&
+            (!fltr4 || (SbscrbrPrjctPrngs[i].sbscrbr_login && ((fltr4 == '*' && SbscrbrPrjctPrngs[i].sbscrbr_login) || (fltr4 && SbscrbrPrjctPrngs[i].sbscrbr_login.toLowerCase().indexOf(fltr4.toLowerCase()) >= 0)))) &&
+            (fltr5 == undefined || (SbscrbrPrjctPrngs[i].is_usr_blocked && ((fltr5 == '*' && SbscrbrPrjctPrngs[i].is_usr_blocked) || (fltr5 != undefined && SbscrbrPrjctPrngs[i].is_usr_blocked == fltr5)))) &&
+
+            (!fltr6 || ((Sbscrbrs[ndx].first || Sbscrbrs[ndx].last) && ((fltr6 == '*' && (Sbscrbrs[ndx].first || Sbscrbrs[ndx].last)) || (fltr6 && Sbscrbrs[ndx].first.toLowerCase().indexOf(fltr6.toLowerCase()) >= 0) || (fltr6 && Sbscrbrs[ndx].last.toLowerCase().indexOf(fltr6.toLowerCase()) >= 0)))) &&
+            (!fltr7 || (Sbscrbrs[ndx].user_email && ((fltr7 == '*' && Sbscrbrs[ndx].user_email) || (fltr7 && Sbscrbrs[ndx].user_email.toLowerCase().indexOf(fltr7.toLowerCase()) >= 0)))) &&
+            (!fltr8 || (Sbscrbrs[ndx].sbscrbr_notes && ((fltr8 == '*' && Sbscrbrs[ndx].sbscrbr_notes) || (fltr8 && Sbscrbrs[ndx].sbscrbr_notes.toLowerCase().indexOf(fltr8.toLowerCase()) >= 0))))
+        ) {
+
+            // create table row
+            $('#sppair_tbl').find('tbody')
+                .append($('<tr>')
+                    .append($('<td>').text(SbscrbrPrjctPrngs[i].fk_prjct_id).addClass('numb'))
+                    .append($('<td>').text(SbscrbrPrjctPrngs[i].prjct_name))
+                );
+            if (SbscrbrPrjctPrngs[i].is_test_active == "1") { $('#sppair_tbl tr:last').append($('<td>').text("Y").addClass('chck')); } else { $('#sppair_tbl tr:last').append($('<td>')); }
+            $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(SbscrbrPrjctPrngs[i].sbscrbr_login)));
+            if (SbscrbrPrjctPrngs[i].is_usr_blocked == "1") { $('#sppair_tbl tr:last').append($('<td>').text("Y").addClass('chck')); } else { $('#sppair_tbl tr:last').append($('<td>')); }
+            $('#sppair_tbl tr:last').append($('<td>').html(Sbscrbrs[ndx].first + " " + Sbscrbrs[ndx].last)); // Full name
+            $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(Sbscrbrs[ndx].user_email)));
+            $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(Sbscrbrs[ndx].sbscrbr_notes)));
+
+            //  create buttons for this row
+            $('#sppair_tbl tr:last').append($('<td>').append("<input type='submit' name='" + SbscrbrPrjctPrngs[i].pk_sppair_id + "' value='Edit'/>"));
+            $('#sppair_tbl tr:last td:last').append("&nbsp;<input type='submit' name='" + SbscrbrPrjctPrngs[i].pk_sppair_id + "' value='Delete'/>");
+
+        } // filter check
+    }
+    // clean up 'undefined's in full name field
+    $('#sppair_tbl td').html().replace(/(undefined)*/g, '');
+
+    // all created buttons need to be styled and working
+    $('#sppair_tbl input[type="submit"][value="Edit"]').addClass('button-primary');
+    $('#sppair_tbl input[type="submit"][value="Delete"]').addClass('button-secondary').click(function () {
+        confirm_deletion('sure_' + func);
+    });
+} // end of: build_fltrd_spp_table()
+
+
 // Change button: to change selected subscriber, 
 // shows the inline selection form elements
 function show_sbscrbr_filter() {
@@ -307,6 +393,7 @@ function filter_sbscrbrs() {
         $('#fltr_sbscrbr_results').hide();
     }
 }
+
 
 // On selection of subscriber in list: shows subscriber details
 function show_sbscrbr_det() {

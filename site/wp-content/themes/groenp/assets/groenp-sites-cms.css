@@ -285,7 +285,12 @@ p.btt, p.htb {
     /* content: "\f057"; times circle */
     content: "\f00d"; /* times */
 }
-
+/* Welcome MB */
+.awecon {
+    font-family: FontAwesome;
+    font-size: 12px;
+    font-style: normal;
+}
 
 /* Introduction fixed text on page */
 /* #post-body-content li {
@@ -575,4 +580,83 @@ div.postbox p.fbk-msg {
     display: block;
 	font-weight: bold;
 	color: #363;
+}
+
+
+/* ***************************************** */
+/*        GROEN PRODUCTIONS.COM BADGE        */
+/* ***************************************** */
+/* #pg-Ggroup, #pg-Pgroup, #pg-Roen, #pg-Roductions */
+
+.groenp a {
+    color: #00503b !important;
+    margin-left: 1rem;
+    white-space: nowrap;
+    display: block;
+}
+.groenp a:hover, .groenp a:active {
+    text-decoration: none;
+    color: #00b03a !important;
+} 
+
+/* SVG section */
+#pg-GroenP {
+    transform-origin: 0% 40%;
+    /* transform: scale(2, 2); */
+    transform: scale(.7, .7);
+    /* transform: scale(.5, .5); */
+}
+#pg-Pgroup {
+    transform-origin: .895rem 1.355rem;
+    transform: translate(.15rem, -.333rem);
+}
+#pg-Roen {
+    clip-path: polygon(0 0, 0 100%, 0% 100%, 0% 0);
+}
+#pg-Roductions {
+    opacity: 0;
+}
+
+.reveal #pg-Pgroup {
+    animation: pg2gp .7s ease-in-out forwards;
+}
+.conceal #pg-Pgroup {
+    animation: pg2gp .7s ease-in-out .5s reverse backwards;
+}
+.reveal #pg-Roen {
+    animation: wipe .35s ease-in-out .25s forwards;
+}
+.conceal #pg-Roen {
+    animation: wipe .35s ease-in-out .6s reverse backwards;
+}
+
+.reveal #pg-Roductions {
+    animation: appear .7s ease-in .7s forwards;
+}
+.conceal #pg-Roductions {
+    animation: appear .7s ease-in reverse backwards;
+}
+
+@keyframes pg2gp {
+  0% {
+    transform: translate(.15rem, -.333rem) rotate(0deg);
+  } 100% {
+    transform: translate(7.6rem, -.333rem) rotate(720deg);
+  }
+}
+@keyframes wipe {
+    0% {
+        clip-path: polygon(0 0, 0 100%, 0% 100%, 0% 0);
+        /* clip-path: inset(0 100% 0 0); */
+    } 100% {
+        clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
+        /* clip-path: inset(0 0% 0 0); */
+    } 
+}
+@keyframes appear {
+    0% {
+        opacity: 0;
+    } 100% {
+        opacity: 1;
+    } 
 }
