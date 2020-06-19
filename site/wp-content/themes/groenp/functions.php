@@ -968,12 +968,12 @@ function groenp_open_database()
     {
         // CRUD connection to groenp_sites_cms
         $connect = mysqli_connect('localhost','groenpf99v6Vd53','m^W$pQ&5W!j5', $db); // CRUD privileges
-        _log('groenp database connection opened with CRUD priv');                          // DEBUG //
+        // _log('groenp database connection opened with CRUD priv');                          // DEBUG //
 
     } else {
         // read only connection to groenp_sites_cms
         $connect = mysqli_connect('localhost','groenpRdrgYAUCm','#yCAh(j&kv>Q', $db); // R/O privileges
-        _log('groenp database connection opened with R/O priv');                          // DEBUG //
+        // _log('groenp database connection opened with R/O priv');                          // DEBUG //
     }
 
     if (!$connect)
