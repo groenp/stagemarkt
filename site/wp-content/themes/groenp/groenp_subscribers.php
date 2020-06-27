@@ -25,18 +25,18 @@ $struct_screen = 'groenp_subscribers';
 // ****************************************************************
 // Add callbacks for this screen only
 // ****************************************************************
-add_action('load-dashboard_page_' . $struct_screen, 'groenp_insert_subscribers_meta_boxes');
 // add_action('admin_footer-dashboard_page_' . $struct_screen,'groenp_print_script_in_footer');
 
 // remove screen option tab, but only for this page <= NOT NECCESSARY 
-add_filter('screen_options_show_screen', 'groenp_remove_these_options', 10, 2);
-function groenp_remove_these_options( $struct_screen, \WP_Screen $screen ) {
+// add_filter('screen_options_show_screen', 'groenp_remove_these_options', 10, 2);
+// function groenp_remove_these_options( $struct_screen, \WP_Screen $screen ) {
 
-    global $struct_screen;
+//     global $struct_screen;
 
-    return ('dashboard_page_' . $struct_screen) === $screen->base ? false : true; 
-}
+//     return ('dashboard_page_' . $struct_screen) === $screen->base ? false : true; 
+// }
 
+add_action('load-dashboard_page_' . $struct_screen, 'groenp_insert_subscribers_meta_boxes');
 function groenp_insert_subscribers_meta_boxes( $struct_screen ) {
  
     global $struct_screen;
@@ -49,15 +49,14 @@ function groenp_insert_subscribers_meta_boxes( $struct_screen ) {
     /* Enqueue WordPress' script for handling the meta boxes */
     wp_enqueue_script('postbox');
  
-    /* Add screen option: user can choose between 1 or 2 columns (default 1) */
-    add_screen_option('layout_columns', array('max' => 2, 'default' => 1) );
+    /* Add screen option: set to 1 in jQuery (groenp-sites-admin.js) */
 }
  
 /* Create page content */
+add_action('admin_menu', 'groenp_register_subscribers_submenu_page');
 function groenp_register_subscribers_submenu_page() {
 	add_submenu_page( 'index.php', 'Subscribers', 'GP: Subscribers', 'create_users', 'groenp_subscribers', 'groenp_subscribers_page_cb' ); 
 }
-add_action('admin_menu', 'groenp_register_subscribers_submenu_page');
 
 function groenp_subscribers_page_cb( $struct_screen ) {
 	
@@ -76,23 +75,24 @@ function groenp_subscribers_page_cb( $struct_screen ) {
         wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
 		echo "</form>";
 
- 
         echo "<div id='poststuff'>
  
-            <div id='post-body' class='metabox-holder columns-1'>
+            <div id='post-body' class='metabox-holder columns-2'>
 
                 <!-- #post-body-content -->
                 <div id='postbox-container-1' class='postbox-container'>
-
-                    <!-- all metaboxes go into the first column -->";
-                    do_meta_boxes($struct_screen, 'normal', null); 
-                echo "</div>
-
-                <div id='postbox-container-2' class='postbox-container'>
                     <!-- second column stays empty -->
                     <div class='meta-box-sortables ui-sortable empty-container' id='side-sortables'></div>
                 </div>
  
+                <div id='postbox-container-2' class='postbox-container'>
+
+                    <!-- all metaboxes go into the first column -->";
+
+        do_meta_boxes($struct_screen, 'normal', null); 
+
+                echo "</div>
+
             </div> <!-- #post-body --> 
  
         </div> <!-- #poststuff -->";
@@ -431,25 +431,42 @@ function groenp_subscribers_meta_box_cb()
 		// [3] Maybe there is a delete id and user answered 'Yes' on RUsure?
         elseif ( isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
         {
-            // Delete all rows in table with id= delkey
-            $query_string = 'DELETE LOW_PRIORITY FROM gp_subscribers WHERE pk_sbscrbr_id = ?';
-            $stmt = mysqli_prepare($con, $query_string);
-            mysqli_stmt_bind_param($stmt, 'i', $delkey);
-            $exec = mysqli_stmt_execute($stmt);
-            if ($exec === FALSE) { echo "<p class='err-msg'>Subscriber could not be deleted: Subscriber may be linked to a project, see below. " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-            elseif ( $wp_user ) 
-            {
-                // delete wp_user only if user role is 'subscriber' when wp_user exists
-                if ( $wp_user->roles[0] == 'subscriber' ) 
-                {
-                    wp_delete_user($wp_user->ID );
-                    _lua($func, "Subscriber (ID: ". $delkey .", ". $wp_user->user_login .") deleted, and corresponding wp_user deleted.");
-                } else {
-                    echo "<p class='err-msg'>The corresponding wp_user part of this subscriber has a role higher than subscriber and cannot be deleted.</p>";
-                }
-            } // wp_user exists for deletion
-            else { _lua($func, "Subscriber (ID: ". $delkey .", ". $row['sbscrbr_login'] .") deleted (but no wp_user deleted)."); }
+            // First check whether Subscriber is not 'active', ie. assigned to one or more projects
+            $stmt = mysqli_prepare($con, 'SELECT pk_sppair_id FROM gp_sbscrbr_prjct_pairings WHERE fk_sbscrbr_id = ?');
+            mysqli_stmt_bind_param($stmt, 'i', $sbscrbr_id);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_store_result($stmt);
+
+            // record the number of hits, this can be zero, one or more
+            $hits = mysqli_stmt_num_rows($stmt);
             mysqli_stmt_close($stmt); 
+            
+            if ( $hits == 0 )
+            {
+                // Delete all rows in table with id= delkey
+                $query_string = 'DELETE LOW_PRIORITY FROM gp_subscribers WHERE pk_sbscrbr_id = ?';
+                $stmt = mysqli_prepare($con, $query_string);
+                mysqli_stmt_bind_param($stmt, 'i', $delkey);
+                $exec = mysqli_stmt_execute($stmt);
+                if ($exec === FALSE) { echo "<p class='err-msg'>Subscriber could not be deleted: Subscriber may be linked to a project, see below. " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                elseif ( $wp_user ) 
+                {
+                    // delete wp_user only if user role is 'subscriber' when wp_user exists
+                    if ( $wp_user->roles[0] == 'subscriber' ) 
+                    {
+                        wp_delete_user($wp_user->ID );
+                        _lua($func, "Subscriber (ID: ". $delkey .", ". $wp_user->user_login .") deleted, and corresponding wp_user deleted.");
+                    } else {
+                        echo "<p class='err-msg'>The corresponding wp_user part of this subscriber has a role higher than subscriber and cannot be deleted.</p>";
+                    }
+                } // wp_user exists for deletion
+                else { _lua($func, "Subscriber (ID: ". $delkey .", ". $row['sbscrbr_login'] .") deleted (but no wp_user deleted)."); }
+                mysqli_stmt_close($stmt); 
+            }
+            else // there is at least one Sbscrbr/Prjct assignment
+            {
+                        echo "<p class='err-msg'>Subscriber has at least one project assigned to them. This Subscriber has not been deleted. Check <a href='#SbsPrj'>Subscriber-Project Pairing table</a> for more information.</p>";
+            }
 	    } // end deletion
     } // end checking for form submits
 
@@ -820,17 +837,34 @@ function groenp_projects_meta_box_cb()
 		// If there is a delete id and user answered 'Yes' on RUsure?
         if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
         {
-            // Create a prepared statement and delete row
-            $query_string = 'DELETE LOW_PRIORITY FROM gp_projects WHERE pk_prjct_id = ?';
-            $stmt = mysqli_prepare($con, $query_string);
-            if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
-            else {
-                $bind = mysqli_stmt_bind_param($stmt, 'i', $delkey);
-                $exec = mysqli_stmt_execute($stmt);
-                if ($exec ===  FALSE) { echo "<p class='err-msg'>Proejct could not be deleted. Project may be assigned to subscriber. See below: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                else { _lua($func, "Project (ID: ". $delkey .") deleted."); }
-                mysqli_stmt_close($stmt); 
-            } // end of: stmt prepared successful
+            // First check whether Subscriber is not 'active', ie. assigned to one or more projects
+            $stmt = mysqli_prepare($con, 'SELECT pk_sppair_id FROM gp_sbscrbr_prjct_pairings WHERE fk_prjct_id = ?');
+            mysqli_stmt_bind_param($stmt, 'i', $delkey);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_store_result($stmt);
+
+            // record the number of hits, this can be zero, one or more
+            $hits = mysqli_stmt_num_rows($stmt);
+            mysqli_stmt_close($stmt); 
+            
+            if ( $hits == 0 )
+            {
+                // Create a prepared statement and delete row
+                $query_string = 'DELETE LOW_PRIORITY FROM gp_projects WHERE pk_prjct_id = ?';
+                $stmt = mysqli_prepare($con, $query_string);
+                if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
+                else {
+                    $bind = mysqli_stmt_bind_param($stmt, 'i', $delkey);
+                    $exec = mysqli_stmt_execute($stmt);
+                    if ($exec ===  FALSE) { echo "<p class='err-msg'>Project could not be deleted. Project may be assigned to subscriber. See below: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                    else { _lua($func, "Project (ID: ". $delkey .") deleted."); }
+                    mysqli_stmt_close($stmt); 
+                } // end of: stmt prepared successful
+            }
+            else // there is at least one Sbscrbr/Prjct assignment
+            {
+                echo "<p class='err-msg'>Project has at least one Subscriber assigned to it. This Project has not been deleted. Check <a href='#SbsPrj'>Subscriber-Project Pairing table</a> for more information.</p>";
+            }
 	    } // End of: deletion
     } // End of: checking for form submits
 

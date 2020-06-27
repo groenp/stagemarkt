@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: groenp\n"
-"POT-Creation-Date: 2020-06-15 14:34+0200\n"
-"PO-Revision-Date: 2020-06-15 15:13+0200\n"
+"POT-Creation-Date: 2020-06-23 19:06+0200\n"
+"PO-Revision-Date: 2020-06-23 19:06+0200\n"
 "Last-Translator: Pieter Groen\n"
 "Language-Team: \n"
 "Language: nl_NL@formal\n"
@@ -12,90 +12,202 @@ msgstr ""
 "X-Generator: Poedit 2.3.1\n"
 "X-Poedit-Basepath: ../../themes/groenp\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-Flags-xgettext: --add-comments\n"
 "X-Poedit-KeywordsList: __;_e\n"
 "X-Poedit-SearchPath-0: functions.php\n"
+"X-Poedit-SearchPath-1: groenp_test_mgmt.php\n"
 
-#: functions.php:256
-msgid "Developed in WordPress by"
-msgstr "Ontwikkeld met WordPress door"
+#. TRANSLATORS: %s: Groen Productions
+#: functions.php:287
+#, php-format
+msgid "Developed in WordPress by %s"
+msgstr "Ontwikkeld met WordPress door %s"
 
-#: functions.php:299
+#. TRANSLATORS: Welcome + username
+#: functions.php:344
 msgid "Welcome"
 msgstr "Welkom"
 
-#: functions.php:397
-msgid "This notice confirms that the password has been changed on "
-msgstr "Dit bericht bevestigt dat uw wachtwoord is veranderd bij "
+#. TRANSLATORS: %s: Groen Productions | Site Management Tool (also translated)
+#: functions.php:936
+#, php-format
+msgid "Welcome to the %s"
+msgstr "Welkom bij het %s"
 
-#: functions.php:397 functions.php:439 functions.php:660
+#: functions.php:936
 msgid "Groen Productions | Site Management Tool"
 msgstr ""
 
-#: functions.php:397
+#: functions.php:950
 msgid ""
-" for the following user.\n"
-"\n"
+"Welcome to the Site Management Tool. This tool allows you to create dynamic "
+"content for your site. Inside the box(es) for your own website you can find "
+"instructions on how to do this."
 msgstr ""
-" voor de volgende gebruiker.\n"
-"\n"
+"Welkom bij het Site Management Tool. Met dit tool kunt u dynamische content "
+"voor uw site aanmaken. In de vak(ken) voor uw website staat hoe u dit kunt "
+"doen."
 
-#: functions.php:398 functions.php:440
-msgid "Username: "
-msgstr "Gebruikersnaam: "
-
-#: functions.php:399
-msgid "If you did not change your password, please contact us at:"
-msgstr ""
-"Als u zelf niet het wachtwoord veranderd heeft, neem dan contact op met ons "
-"via:"
-
-#: functions.php:400
-msgid "This email has been sent to "
-msgstr "Deze e-mail is verzonden aan "
-
-#: functions.php:401 functions.php:445
+#. TRANSLATORS: text + link to: Privacy Statement and Terms of Use (already translated)
+#: functions.php:953
 msgid ""
-"Greetings,\n"
-"The staff at Groen Productions"
+"Please be aware that while you use this tool, you must adhere to our Terms "
+"of Use. You can find them here, together with the Privacy Statement and the "
+"explanation of our use of cookies: "
 msgstr ""
-"Met vriendelijke groeten,\n"
-"De medewerkers van Groen Productions"
+"Als u dit tool gebruikt moet u de gebruiksvoorwaarden in acht nemen. Deze "
+"staan hier, samen met de Privacy verklaring en de uitleg over het gebruik "
+"van cookies: "
 
-#: functions.php:402 functions.php:446
-msgid "Privacy statement:"
-msgstr "Privacy verklaring:"
+#: functions.php:954 groenp_test_mgmt.php:42
+msgid "Privacy Statement and Terms of Use"
+msgstr "Privacy Verklaring en Gebruiksvoorwaarden"
 
-#: functions.php:439
-msgid "A password reset has been requested for your account on the "
-msgstr "Er is een reset voor het wachtwoord van uw account aangevraagd bij "
-
-#: functions.php:441
+#: functions.php:957
 msgid ""
-"If you did not request this, just ignore this email and nothing will happen."
+"If this is your first time using this tool, please change your password as "
+"soon as is convenient to you. You can change it on your"
 msgstr ""
-"Als u deze reset niet heeft aangevraagd, kunt u dit bericht gewoon negeren. "
-"Er gebeurt dan niets."
+"Als dit de eerste keer is dat u inlogt, dan is het ten zeerste aan te raden "
+"om uw wachtwoord te wijzigen. Dit kunt u doen op uw"
 
-#: functions.php:442
-msgid "To reset your password, select the following link:"
-msgstr "Selecteer deze link om uw wachtwoord te resetten:"
+#. TRANSLATORS: %s: Profile (part of core po-file)
+#: functions.php:959
+#, php-format
+msgid "%s page"
+msgstr "%s pagina"
 
-#: functions.php:444
+#. TRANSLATORS: DO NOT TRANSLATE; part of core po-file
+#: functions.php:959
+msgid "Profile"
+msgstr ""
+
+#. TRANSLATORS: Copy over code as is; %s: [icon] 'Dashboard' (part of core po-file)
+#: functions.php:961
+#, php-format
 msgid ""
-"We hope that you enjoy using the Site Management tool. If you have any "
-"questions or suggestions please do not hesitate to contact us at:"
+"You can return to this page by selecting <i class='wpicon'>&#xf226;</i>&nbsp;"
+"&lsquo;%s&rsquo; in the side menu."
 msgstr ""
-"Wij hopen dat het gebruik van de Site Management Tool bevalt. Als u nog "
-"vragen of suggesties heeft, aarzel dan niet om contact op te nemen via:"
+"U kunt terugkeren naar deze pagina door <i class='wpicon'>&#xf226;</i>&nbsp;"
+"&lsquo;%s&rsquo; in het zijmenu te selecteren."
 
-#: functions.php:660
-msgid "Welcome to the "
-msgstr "Welkom bij de "
-
-#: functions.php:685
+#. TRANSLATORS: DO NOT TRANSLATE; part of core po-file
+#: functions.php:963
 msgid "Dashboard"
 msgstr ""
+
+#. TRANSLATORS: text + email link to admin@groenproductions.com
+#: functions.php:966
+msgid ""
+"I hope that you enjoy using the tool. If you have any questions and/or "
+"suggestions, please do not hesitate to contact me at: "
+msgstr ""
+"Ik hoop dat de tool u bevalt. Als u nog vragen en/of opmerkingen heeft, "
+"aarzelt u dan niet om mij te mailen op: "
+
+#: functions.php:969
+msgid ""
+"Have a nice day!<br />\n"
+"    Pieter at Groen Productions"
+msgstr ""
+"Een fijne dag toegewenst!<br />\n"
+"    Pieter van Groen Productions"
+
+#. TRANSLATORS: in imperative voice
+#: functions.php:973
+msgid "remove this box"
+msgstr "verwijder dit vak"
+
+#. TRANSLATORS: DO NOT TRANSLATE; part of core po-file
+#: groenp_test_mgmt.php:18
+msgid "Settings"
+msgstr ""
+
+#. TRANSLATORS: Please review the + Privacy Statement and Terms of Use
+#: groenp_test_mgmt.php:42
+msgid "Please review the"
+msgstr "Raadpleeg hier de"
+
+#~ msgid ""
+#~ "Welcome to the Site Management Tool. This tool allows you to change the "
+#~ "dynamic content of your site. Inside the box(es) for your own website you "
+#~ "can find detailed instructions on how to do this."
+#~ msgstr ""
+#~ "Welkom bij het Site Management Tool. Met dit tool kunt u dynamische "
+#~ "content voor uw site aanmaken. In de vakken voor uw website staat hoe u "
+#~ "dit kunt doen."
+
+#~ msgid ""
+#~ "Please be aware that while you use this tool, you must adhere to our "
+#~ "Terms of Use. You can find them together with the Privacy Statement and "
+#~ "the explanation of our use of cookies: "
+#~ msgstr ""
+#~ "Als u dit tool gebruikt moet u de gebruiksvoorwaarden in acht nemen. Deze "
+#~ "staan hier samen met de Privacy verklaring en de uitleg over het gebruik "
+#~ "van cookies: "
+
+#~ msgid ""
+#~ "Welcome to the Site Management Tool. his tool allows you to change the "
+#~ "dynamic content of your site. Inside the box(es) for your own website you "
+#~ "can find detailed instructions on how to do this."
+#~ msgstr " "
+
+#~ msgid "Welcome to the "
+#~ msgstr "Welkom bij de "
+
+#~ msgid "Developed in WordPress by"
+#~ msgstr "Ontwikkeld met WordPress door"
+
+#~ msgid "This notice confirms that the password has been changed on "
+#~ msgstr "Dit bericht bevestigt dat uw wachtwoord is veranderd bij "
+
+#~ msgid ""
+#~ " for the following user.\n"
+#~ "\n"
+#~ msgstr ""
+#~ " voor de volgende gebruiker.\n"
+#~ "\n"
+
+#~ msgid "Username: "
+#~ msgstr "Gebruikersnaam: "
+
+#~ msgid "If you did not change your password, please contact us at:"
+#~ msgstr ""
+#~ "Als u zelf niet het wachtwoord veranderd heeft, neem dan contact op met "
+#~ "ons via:"
+
+#~ msgid "This email has been sent to "
+#~ msgstr "Deze e-mail is verzonden aan "
+
+#~ msgid ""
+#~ "Greetings,\n"
+#~ "The staff at Groen Productions"
+#~ msgstr ""
+#~ "Met vriendelijke groeten,\n"
+#~ "De medewerkers van Groen Productions"
+
+#~ msgid "Privacy statement:"
+#~ msgstr "Privacy verklaring:"
+
+#~ msgid "A password reset has been requested for your account on the "
+#~ msgstr "Er is een reset voor het wachtwoord van uw account aangevraagd bij "
+
+#~ msgid ""
+#~ "If you did not request this, just ignore this email and nothing will "
+#~ "happen."
+#~ msgstr ""
+#~ "Als u deze reset niet heeft aangevraagd, kunt u dit bericht gewoon "
+#~ "negeren. Er gebeurt dan niets."
+
+#~ msgid "To reset your password, select the following link:"
+#~ msgstr "Selecteer deze link om uw wachtwoord te resetten:"
+
+#~ msgid ""
+#~ "We hope that you enjoy using the Site Management tool. If you have any "
+#~ "questions or suggestions please do not hesitate to contact us at:"
+#~ msgstr ""
+#~ "Wij hopen dat het gebruik van de Site Management Tool bevalt. Als u nog "
+#~ "vragen of suggesties heeft, aarzel dan niet om contact op te nemen via:"
 
 #~ msgid ""
 #~ " for the following user.\n"

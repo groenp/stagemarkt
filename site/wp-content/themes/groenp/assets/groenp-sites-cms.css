@@ -8,11 +8,12 @@
 html {
   scroll-behavior: smooth;
 }
-/* 
-only for groenp pages: 
-    created space at the bottom of the page to scroll properly to last form 
-    padding is 100% of the screen height 
-*/
+
+/* ************************************************************************** */
+/* only for groenp pages:                                                     */
+/*  created space at the bottom of the page to scroll properly to last form   */ 
+/*  padding is 100% of the screen height                                      */
+/* ************************************************************************** */
 .dashboard_page_groenp_subscribers #wpbody-content {
     padding-bottom: 100vh;
 }
@@ -21,16 +22,33 @@ only for groenp pages:
     min-height: 100vh;
 }
 
-
-/* removal of superfluous postbox containers; need entire width */
-/* #postbox-container-2, #postbox-container-3, #postbox-container-4 {
-    display: none;
+/* ************************************************************************** */
+/*  change 2-column layout to two equal width columns for additional pages    */
+/*  - container-1 is originally meant for side panels/boxes,                  */
+/*    that's why there were only 300px wide                                   */
+/* ************************************************************************** */
+/* container-1 is righthand side ! */
+#post-body.columns-2 #postbox-container-1 {
+    float: right;
+    margin-right: -100%;
+    width: calc(100% - 20px);
 }
-#wpbody-content #dashboard-widgets #postbox-container,
-#wpbody-content #dashboard-widgets #postbox-container-1 {
-    width: 100%;
-    margin-right: 2px;
-} */
+#poststuff #post-body.columns-2 #side-sortables {
+    width: calc(100% - 20px);
+}
+#poststuff #post-body.columns-2 {
+	margin-right: 50%;
+}
+/* override 'responsive screen settings' */
+@media only screen and (min-width: 1500px) {
+    #wpbody-content #dashboard-widgets #postbox-container-1 {
+        width: calc(50% - 20px);
+    }
+}
+/* show the column selection on smaller screens as well */
+.columns-prefs {
+    display: block;
+}
 
 /* a link offset for forward scrolling */
 a.anchr {
@@ -271,7 +289,7 @@ p.btt, p.htb {
     font-size: 8pt;
     float: right;
 }
-.btt a:after, .htb a:after {
+.btt a:after, .htb a:after, a.launch:after {
     font-family: FontAwesome;
     font-weight: 200;
     display: inline-block;
@@ -285,11 +303,21 @@ p.btt, p.htb {
     /* content: "\f057"; times circle */
     content: "\f00d"; /* times */
 }
+a.launch:after {
+    content: "\f35d"; /* external link alt */
+}
+
 /* Welcome MB */
+.wpicon, .awecon {
+    font-family: dashicons;
+    font-size: 16px;
+    line-height: 12px;
+    vertical-align: middle;
+    font-style: normal;
+    font-weight: lighter;
+}
 .awecon {
     font-family: FontAwesome;
-    font-size: 12px;
-    font-style: normal;
 }
 
 /* Introduction fixed text on page */
@@ -492,20 +520,28 @@ div.postbox p.button-row option.list-dvdr {
 }
 
 /* all input elements are the same size  */
-div.postbox textarea, div.postbox input[type="text"], div.postbox input[type="email"], div.postbox select {
+div.postbox textarea, 
+div.postbox a[type="button"], 
+div.postbox input[type="text"], 
+div.postbox input[type="email"], 
+div.postbox select {
 	display: block;
 	width: 200px;
 	margin-bottom: 10px;
     /* line-height: 18px; */
     /* creates problems in select control, is necessary? */
 }
+div.postbox a[type="button"] {
+    display: inline-block;
+    text-align: center;
+} 
 div.postbox input.dbl-lbl, div.postbox p span.display-only.dbl-lbl {
     margin-bottom: 20px;
 }
 /* (file upload does not work well with some browsers sometimes, better give smaller width) */
 div.postbox input[type="file"] {
 	display: block;
-	width: 198px;
+	width: 200px;
 	margin-bottom: 10px;
     font-size: 8pt;
     padding: 0;
@@ -584,6 +620,97 @@ div.postbox p.fbk-msg {
 
 
 /* ***************************************** */
+/*              live/test switch             */
+/* ***************************************** */
+p.test-switch {
+    height: 120px;
+}
+div.postbox p label.test-switch {
+  position: relative;
+  display: inline-block;
+  width: 194px;
+  height: 80px;
+  margin: 0;
+
+}
+.test-switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* this span is the complete background of the slider */
+.test-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f1f1f1;
+  -webkit-transition: .333s;
+  transition: .333s;
+  border: 1px solid #ccd0d4;
+  border-radius: 12px;
+
+}
+/* this is the 'off' version of the switch */
+/* the switch button stands to the left */
+.test-slider:before {
+  position: absolute;
+  content: "LIVE version";
+  color: rgba(255, 255, 255, .7);
+  text-align: center;
+  line-height: 1;
+  font-size: 25px;
+  height: 74px;
+  padding-top: 10px; /* p-top + height = slider height */
+  width: 120px;
+  left: 3px;
+  bottom: 3px;
+  top: 3px;
+  /* background-color: #00b03a; */
+  /* background-color: #fff; */
+    /* rgba(255, 255, 255, 0.1) 79%,
+    rgba(255, 255, 255, 0.1) 81%, */
+  background-image: linear-gradient(
+    30deg,
+    #00b03a,
+    #00b03a 60%,
+    #7ee7a1 68%,
+    #7ee7a1 72%,
+    #00b03a 80%,
+    #00b03a
+  );
+  box-shadow: inset 5px 5px 20px rgba(214, 255, 228, .5);
+  transition: .3s cubic-bezier(.86,0,.07,1);
+  border-radius: 9px;
+}
+/* input:checked + .test-slider {
+} */
+
+input:focus + .test-slider {
+  box-shadow: 0 0 1px #00b03a;
+}
+
+/* this is the 'on' version of the switch */
+/* the switch button stands to the right  */
+input:checked + .test-slider:before {
+  transform: translateX(72px);
+  content: "TEST version";
+  /* color: rgb(202,218,169); */
+  /* background-color: #00503b; */
+  background-image: linear-gradient(
+    30deg,
+    #00503b,
+    #00503b 60%,
+    #35bb97 68%,
+    #35bb97 72%,
+    #00503b 80%,
+    #00503b
+  );
+  box-shadow: inset 5px 5px 20px rgba(182, 242, 226, .5);
+}
+/* ***************************************** */
 /*        GROEN PRODUCTIONS.COM BADGE        */
 /* ***************************************** */
 /* #pg-Ggroup, #pg-Pgroup, #pg-Roen, #pg-Roductions */
@@ -603,8 +730,9 @@ div.postbox p.fbk-msg {
 #pg-GroenP {
     transform-origin: 0% 40%;
     /* transform: scale(2, 2); */
-    transform: scale(.7, .7);
+    /* transform: scale(.7, .7); */
     /* transform: scale(.5, .5); */
+  cursor: pointer;
 }
 #pg-Pgroup {
     transform-origin: .895rem 1.355rem;
@@ -617,24 +745,38 @@ div.postbox p.fbk-msg {
     opacity: 0;
 }
 
-.reveal #pg-Pgroup {
+/* .reveal #pg-Pgroup {
     animation: pg2gp .7s ease-in-out forwards;
 }
 .conceal #pg-Pgroup {
-    animation: pg2gp .7s ease-in-out .5s reverse backwards;
+    animation: pg2gp .7s ease-in-out .3s reverse backwards;
 }
 .reveal #pg-Roen {
     animation: wipe .35s ease-in-out .25s forwards;
 }
 .conceal #pg-Roen {
-    animation: wipe .35s ease-in-out .6s reverse backwards;
+    animation: wipe .35s ease-in-out .4s reverse backwards;
+} */
+.reveal #pg-Pgroup {
+    animation: pg2gp .35s ease-in-out forwards;
+}
+.conceal #pg-Pgroup {
+    animation: pg2gp .35s ease-in-out .35s reverse backwards;
+}
+.reveal #pg-Roen {
+    animation: wipe .175s ease-in-out .125s forwards;
+}
+.conceal #pg-Roen {
+    animation: wipe .175s ease-in-out .4s reverse backwards;
 }
 
+
+
 .reveal #pg-Roductions {
-    animation: appear .7s ease-in .7s forwards;
+    animation: appear .35s ease-in .4s forwards;
 }
 .conceal #pg-Roductions {
-    animation: appear .7s ease-in reverse backwards;
+    animation: appear .35s ease-in reverse backwards;
 }
 
 @keyframes pg2gp {

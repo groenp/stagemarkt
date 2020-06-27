@@ -9,38 +9,38 @@
 /* - Debugging into debug.log                                 (~line   55)    */
 /* - Logging into user_activity_log_{year}_{month}.txt        (~line   75)    */
 /*                                                                            */
-/* Custom Admin Dashboard functions:                          (~line   95)    */
+/* Custom Admin Dashboard functions:                          (~line  100)    */
 /* - based on twentytwenty theme                                              */
-/* - add login cookie message                                 (~line  105)    */
-/* - make login links language sensitive                      (~line  155)    */
-/* - create Manager role based on author and allow User Admin (~line  175)    */
-/* - simplify Profile pages for non Administrators            (~line  220)    */
+/* - add login cookie message                                 (~line  110)    */
+/* - make login links language sensitive                      (~line  150)    */
+/* - create Manager role based on author and allow User Admin (~line  180)    */
+/* - simplify Profile pages for non Administrators            (~line  200)    */
 /* - collapse side menu for Subscriber role                   (~line  265)    */
 /* - remove unneccesary widgets                               (~line  295)    */
-/* - stop heartbeat (ajax calls) DISABLED                     (~line  345)    */
+/* - stop heartbeat (ajax calls) DISABLED                     (~line  360)    */
 /*                                                                            */
 /* User mails and msgs are adjusted to user's locale (es, nl, en):            */
-/* - Redirect blocked users                                   (~line  355)    */
-/* - Email change notification                                (~line  430)    */
-/* - Password change notification                             (~line  495)    */
-/* - New password request                                     (~line  555)    */
+/* - Redirect blocked users                                   (~line  370)    */
+/* - Email change notification                                (~line  440)    */
+/* - Password change notification                             (~line  570)    */
+/* - New password request                                     (~line  625)    */
 /*                                                                            */
 /* Tracing user activity and changes to databases:                            */
-/* - Logging user activities in Standard Wordpress interface  (~line  665)    */
-/* - insert Groen Productions asset files into admin pages    (~line  785)    */
+/* - Logging user activities in Standard Wordpress interface  (~line  740)    */
+/* - insert Groen Productions asset files into admin pages    (~line  860)    */
 /*                                                                            */
 /* Plugins needed:                                                            */
 /* - Groen Productions Mailing plugin to change registration mails            */
 /* - WP-Mail-SMTP plugin to use groenproductions.com for registration mail    */
 /*                                                                            */
 /* Dashboard Meta Boxes:                                                      */
-/* - Loading of language files pomo                           (~line  845)    */
-/* - Loading of Meta Boxes                                    (~line  855)    */
-/* - Welcome Meta Box                                                         */
+/* - Loading of language files pomo                           (~line  920)    */
+/* - Loading of Meta Boxes                                    (~line  980)    */
+/* - Welcome Meta Box                                         (~line  930)    */
 /* - Meta Box's PHP file selection for loading                                */
 /*                                                                            */
 /* Functions used in other Groen Productions PHP files for site management:   */
-/* - Connect to Groen Productions database                    (~line  540)    */
+/* - Connect to Groen Productions database                    (~line 1040)    */
 /* - Retrieve likely locale when user's logged out            (~line  540)    */
 /* - Upload pictures                                          (~line  570)    */
 /* - Input/output functions for database, forms, web page     (~line  650)    */
@@ -283,13 +283,18 @@ function groenp_add_collapse_js() {
 add_filter('admin_footer_text', 'groenp_change_footer_admin');
 function groenp_change_footer_admin ()
 {
-    echo "<span id='footer-thankyou'>". __('Developed in WordPress by', 'groenp') ." Groen Productions</span>";
+    // TRANSLATORS: %s: Groen Productions 
+    echo "<span id='footer-thankyou'>". sprintf( __('Developed in WordPress by %s', 'groenp'), 'Groen Productions') ."</span>";
 }
 
 // ****************************************************************
 // Set upload folder to be uploads/ (just in case somebody changes it in the admin)
 // ****************************************************************
 define( 'UPLOADS', 'wp-content/uploads' );
+
+// ****************************************************************
+
+
 
 // ****************************************************************
 // Remove meta boxes from wordpress dashboard for all users
@@ -317,6 +322,15 @@ function groenp_clean_up_toolbar_items($wp_admin_bar) {
 
     $screen = get_current_screen();
     $screen->remove_help_tabs();
+
+    // Add screen option: limited the number of columns on the Dasbaord main page for all users
+    // user can choose between 1 or 2 columns (default 2 for dashboard, 1 for others) 
+    if ( $screen->id == 'dashboard' ){
+        add_screen_option('layout_columns', array('max' => 2, 'default' => 2) );
+    } else {
+        add_screen_option('layout_columns', array('max' => 2, 'default' => 1) );
+    }
+    // _log('screen ID: ' . $screen->id);
     
     // _log("remove toolbar items: "); _log($wp_adminbar); // DEBUG //
 	$wp_admin_bar->remove_node('wp-logo');
@@ -326,6 +340,7 @@ function groenp_clean_up_toolbar_items($wp_admin_bar) {
 
     $user_id = get_current_user_id();
     $current_user = wp_get_current_user();
+    // TRANSLATORS: Welcome + username
     $newtitle = "<span id='title-greeting' class='greeting'>". __('Welcome', 'groenp') ." </span> '<span class='display-name'>" . $current_user->display_name . "'</span>";
 
     // update the node with the changes
@@ -424,6 +439,62 @@ if(!empty($_GET['custom_logout']) && strtolower($_GET['custom_logout']) == 'yes'
 // *********************************************************************************
 
 // *********************************************************************************
+// New email with link to user for confirmation - message  filter hook
+// (Change of msg body only)
+// *********************************************************************************
+add_filter( 'new_user_email_content',  'groenp_new_email_mail_message', 10, 2);
+function groenp_new_email_mail_message( $message ) 
+{
+    //   $message: message body to build wp_mail().
+    //
+    //      The following strings have a special meaning and will get replaced dynamically:
+    //      ###USERNAME###  The current user's username.
+    //      ###ADMIN_URL### The link to click on to confirm the email change.
+    //      ###EMAIL###     The new email.
+    //      ###SITENAME###  The name of the site.
+    //      ###SITEURL###   The URL to the site.
+    
+    // Retrieve user's locale 
+    $user = wp_get_current_user();
+    $locale = ($user)? get_user_locale( $user->ID ) : get_user_locale();
+    $lng = strtolower( substr($locale, 0, 2) );
+
+    switch($lng):
+
+        case 'nl':
+            $message = "U heeft recentelijk een aanvraag gedaan om het emailadres te wijzigen voor uw account (###USERNAME###)\r\n\r\n" .
+                "Als dit juist is, dan kunt u nu deze link selecteren om de wijziging te bevestigen:  ###ADMIN_URL###\r\n\r\n" .
+                "Als u deze wijziging niet heeft aangevraagd, kunt u dit bericht gewoon negeren. Er gebeurt dan niets.\n" .
+                "Deze e-mail is verzonden aan ###EMAIL###\r\n\r\n" .
+                "Met vriendelijke groeten,\nDe medewerkers van Groen Productions\n\n\n" .
+                "Privacy verklaring: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            break;
+            
+        case 'es':
+            $message = "Recientemente solicitaste cambiar la dirección de correo en su cuenta (###USERNAME###).\r\n\r\n" .
+                "Si es correcto, visita el siguiente enlace para cambiarlo: ###ADMIN_URL###\r\n\r\n" .
+                "Si no quiere realizar el cambio, puede ignorar este correo.\n" .
+                "Este correo ha sido enviado a ###EMAIL###\r\n\r\n" .
+                "Saludos,\nEl equipo de Groen Productions\n\n\n" .
+                "Declaración de privacidad: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+            break;
+            
+        default:
+            $message = "You recently requested to have the email address changed on your account (###USERNAME###).\r\n\r\n" .
+                "If this is correct, please select the following link to confirm the change: ###ADMIN_URL###\r\n\r\n" .
+                "If you did not request this change, you can safely ignore this email. Nothing will happen.\n" .
+                "This email has been sent to ###EMAIL###\r\n\r\n" .
+                "Greetings,\nThe staff at Groen Productions\n\n\n" .
+                "Privacy statement: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
+
+    endswitch;
+    // adjust the message in the password change mail array
+    _log("message for new email: "); _log($message);                                                 // DEBUG //
+
+  return $message;
+} // end of: groenp_new_email_mail_message()
+
+// *********************************************************************************
 // Changed email address notification to user - message  filter hook
 // (Change of msg title and body)
 // *********************************************************************************
@@ -489,7 +560,7 @@ function groenp_changed_email_mail_message( $email_change_email,  $user,  $userd
     _log("message for changed email: ". $subject); _log($message);                                                 // DEBUG //
 
   return $email_change_email;
-}
+} // end of: groenp_changed_email_mail_message()
 
 
 // *********************************************************************************
@@ -528,7 +599,7 @@ function groenp_changed_pwd_mail_message(  $pass_change_email,  $user,  $userdat
                 "Este correo ha sido enviado a ". $user_email ."\r\n\r\n" .
                 "Saludos,\nEl equipo de Groen Productions\n\n\n" .
                 "Declaración de privacidad: " . site_url('privacy_and_terms_of_use.php?wp_lang='. $locale ."\n\n");
-            $subject = "Su contraseña ha sido cambiado para %s";
+            $subject = "Su contraseña ha sido cambiado por %s";
             break;
             
         default:
@@ -631,6 +702,9 @@ function groenp_retrieve_password_title(  $title,  $user_login )
     // $title       = sprintf( __( '[%s] Password Reset' ), $site_name );
     // $user_login  = The username for the user.
 
+    // Get official site name for email header
+    $site_name = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+
     // Get user locale
     $user = get_user_by('login', $user_login);
     $locale = get_user_locale( $user->ID );
@@ -640,15 +714,15 @@ function groenp_retrieve_password_title(  $title,  $user_login )
     switch($lng):
 
         case 'nl':
-            $title = "Wachtwoord reset voor ". $user_login ." op %s";
+            $title = "Wachtwoord reset voor ". $user_login ." op ". $site_name;
             break;
 
         case 'es':
-            $title = "Restablecimiento de contraseña para ". $user_login ." por %s";
+            $title = "Restablecimiento de contraseña para ". $user_login ." por ". $site_name;
             break;
 
         default:
-            $title = "Password reset for ". $user_login ." on %s";
+            $title = "Password reset for ". $user_login ." on ". $site_name;
     endswitch;
 
     return $title;
@@ -823,8 +897,8 @@ function groenp_include_in_head()
     $min_url = ($_SERVER['SERVER_PORT'] == '443' || $_SERVER['SERVER_PORT'] == '80') ? '.min' : '';
 
     // include style sheets
-    echo "<link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' rel='stylesheet' />" .
-     "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "assets/groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
+    echo "<script src='https://kit.fontawesome.com/a02f8b3e52.js' crossorigin='anonymous'></script>
+        <link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "assets/groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
 } 
 add_action('admin_head','groenp_include_in_head');
 add_action('login_head','groenp_include_in_head');
@@ -858,7 +932,8 @@ function groenp_pomo_setup(){
 add_action( 'wp_dashboard_setup', 'groenp_dashboard_meta_boxes_add' );  
 function groenp_dashboard_meta_boxes_add()  
 {  
-    wp_add_dashboard_widget( 'welcome-mb', __("Welcome to the ", 'groenp') .__("Groen Productions | Site Management Tool", 'groenp') , 'groenp_welcome_meta_box_cb');
+    // TRANSLATORS: %s: Groen Productions | Site Management Tool (also translated)
+    wp_add_dashboard_widget( 'welcome-mb', sprintf( __("Welcome to the %s", 'groenp'), __("Groen Productions | Site Management Tool", 'groenp')) , 'groenp_welcome_meta_box_cb');
 }
 
 // ****************************************************************
@@ -872,24 +947,30 @@ function groenp_welcome_meta_box_cb()
     // _log("user: ". $user->ID .", locale: " . $locale);                                                          // DEBUG //
 
     // Meta box introduction
-    echo "<p>Welcome to the Site Management Tool. his tool allows you to change the dynamic content of your site. 
-    Inside the box(es) for your own website, you can find detailed instructions on how to do this.</p>
+    echo "<p>". __("Welcome to the Site Management Tool. This tool allows you to create dynamic content for your site. Inside the box(es) for your own website you can find instructions on how to do this.", 'groenp') ."</p>
 
-    <p>Please be aware that while you use this tool, you must adhere to our Terms of Use. 
-    You can find them together with the Privacy Statement and the explanation of our use of cookies: 
-    <a href= '". site_url('privacy_and_terms_of_use.php?wp_lang=' . $locale) ."'>Privacy Statement and Terms of Use</a>.</p>
+    <p>". // TRANSLATORS: text + link to: Privacy Statement and Terms of Use (already translated)
+    __("Please be aware that while you use this tool, you must adhere to our Terms of Use. You can find them here, together with the Privacy Statement and the explanation of our use of cookies: ",'groenp') ."
+    <a href= '". site_url('privacy_and_terms_of_use.php?wp_lang=' . $locale) ."'>". __("Privacy Statement and Terms of Use", 'groenp') ."</a>.</p>".
 
-    <p>If this is your first time using this tool, please change your password as soon as is convenient to you. 
-    You can change it on your <a href= '". admin_url('profile.php') ."'>Profile page</a>. 
-    You can return to this page, by selecting ‘". __("Dashboard") ."’ <i class='awecon'>&#xf0e4;</i> in the side menu.</p>
+    // text + Profile page (separately translated)
+    "<p>". __("If this is your first time using this tool, please change your password as soon as is convenient to you. You can change it on your",'groenp') ." <i class='wpicon'>&#xf110;</i>&nbsp;<a href= '". admin_url('profile.php') ."'>". 
+    // TRANSLATORS: %s: Profile (part of core po-file)
+    sprintf( __("%s page", 'groenp'), /* TRANSLATORS: DO NOT TRANSLATE; part of core po-file*/ __("Profile", 'core')). "</a>. ".
+    // TRANSLATORS: Copy over code as is; %s: [icon] 'Dashboard' (part of core po-file)
+    sprintf( __("You can return to this page by selecting <i class='wpicon'>&#xf226;</i>&nbsp;&lsquo;%s&rsquo; in the side menu.", 'groenp'), 
+    // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
+    __("Dashboard", 'core'))."</p>".
 
-    <p>I hope that you enjoy using the tool. If you have any questions and/or suggestions, please do not hesitate to contact me at: 
-    <a href='mailto://admin@groenproductions.com'>admin@groenproductions.com</a></p>
+    // TRANSLATORS: text + email link to admin@groenproductions.com
+    "<p>". __("I hope that you enjoy using the tool. If you have any questions and/or suggestions, please do not hesitate to contact me at: ",'groenp') . 
+    "<a href='mailto://admin@groenproductions.com'>admin@groenproductions.com</a></p>
 
-    <p>Have a nice day!<br />
-    Pieter at Groen Productions</p>"; 
+    <p>". __("Have a nice day!<br />
+    Pieter at Groen Productions",'groenp') . "</p>"; 
     include('assets/GroenProductions.min.svg');
-    echo "<p id='welcome-mb-boxctrl' class='htb'><a href='#'>remove this box</a></p>";
+    // TRANSLATORS: in imperative voice
+    echo "<p id='welcome-mb-boxctrl' class='htb'><a href='#'>". __("remove this box",'groenp') ."</a></p>";
     
 } // End of: groenp_welcome_meta_box_cb()
 
@@ -927,7 +1008,7 @@ function groenp_load_on_privileges( $php_file )
         $con = groenp_open_database();
 
         // query: prjct_php-> pk = fk_prjct_id | fk_sbscrbr_id = pk <- sbscrbr_login
-        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, sub.sbscrbr_login, prj.prjct_php' .
+        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, sub.sbscrbr_login, prj.prjct_php, prj.prjct_name, prj.base_url, prj.is_test_active, prj.test_url' .
             ' FROM gp_sbscrbr_prjct_pairings spp'.
             ' LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
             ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
@@ -943,7 +1024,7 @@ function groenp_load_on_privileges( $php_file )
         mysqli_close($con);
     }
 
-    _log("gp_sbscrbr_prjct_pairings - num of result rows: " . $load);
+    // _log("gp_sbscrbr_prjct_pairings - num of result rows: " . $load);
     if ( $load > 0 ) {
         require_once( $php_file );
     }

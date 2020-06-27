@@ -23,6 +23,8 @@ $ = jQuery;
 
 var InitialValues = [];         // initial values for form after loading of page
 var Changed = false;            // to store whether form content has changed
+var PgToggle = false;           // toggle for PG animation
+var Test = false;               // value of live switch (this needs to be stored in the LocalStorage)
 
 /* All functionality is loaded on document.ready */
 $(document).ready(function () {
@@ -38,15 +40,20 @@ $(document).ready(function () {
 
 
     // groen productions: yes it's me!
-    $('#pg-GroenP').hover(function () {
-        $(this).removeClass('conceal');
-        void $('#pg-GroenP').offset();
-        $(this).addClass('reveal');
-    }, function () {
-        $(this).removeClass('reveal');
+    $('#pg-GroenP').click(function () {
+        if (PgToggle) {
+            $(this).removeClass('reveal');
             void $('#pg-GroenP').offset();
-        $(this).addClass('conceal');
+            $(this).addClass('conceal');
+        } else {
+            $(this).removeClass('conceal');
+            void $('#pg-GroenP').offset();
+            $(this).addClass('reveal');
+        }
+        PgToggle = !PgToggle;
     });
+    // if initially the mb is open during load, then click so the svg opens up
+    if (!$('#welcome-mb').hasClass('closed')) $('#pg-GroenP').click();
 
     // Remove Welcome to GP | SMT
     // only if the removal checkbox is in the screen options
@@ -61,6 +68,19 @@ $(document).ready(function () {
         });
 
     }
+
+    // Test vs. Live switch is a checkbox
+    $('.testver').hide();
+    $('#live-test').change(function() {
+        Test = $(this).is(':checked');
+        if (Test) {
+            $('.livever').hide();
+            $('.testver').show();
+        } else {
+            $('.livever').show();
+            $('.testver').hide();
+        }
+    });
     
 //     // Remove screen options tab
 //     // $('#screen-options-link-wrap').hide();

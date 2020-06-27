@@ -34,8 +34,10 @@ $(document).ready(function () {
     if (typeof ref !== 'undefined' && ref.indexOf('groenp_subscribers') != -1) {
 
         // initialize meta box handling
-        postboxes.add_postbox_toggles(pagenow); 
+        postboxes.add_postbox_toggles(pagenow);
 
+        // set screen layout to 1 column
+        $('input[name=screen_columns][value="1"]').click();
     }
 
     // **************************************************************************
@@ -83,29 +85,6 @@ $(document).ready(function () {
         $(this).removeClass('verf-err verf-ok');
     });
 
-
-    // Augment table  list of pairings: sppair_tbl with subscriber details
-
-    // This is normally done by LEFT JOIN the user table
-    // The only reason to use the Sbscrbrs json is to minimize contact with wp tables
-
-    // $('#sppair_tbl tbody tr').each(function () {
-    //     var sbscrbr_id = $(this).find('td:eq(4)').text();
-    //     if (sbscrbr_id) {
-
-    //         // find index in array by mapping pk_sbscrbr_id to parsed sbscrbr_id
-    //         var ndx = Sbscrbrs.map(function (o) { return o.pk_sbscrbr_id; }).indexOf(sbscrbr_id);
-
-    //         // only if the right Sbscrbrs item has been found
-    //         if (typeof Sbscrbrs[ndx] !== "undefined") {
-    //             $(this).find('td:eq(4)').html(Sbscrbrs[ndx].first + " " + Sbscrbrs[ndx].last);  // Full name
-    //             $(this).find('td:eq(5)').html(Sbscrbrs[ndx].user_email);                        // Email
-    //             $(this).find('td:eq(6)').html(Sbscrbrs[ndx].sbscrbr_notes);                     // Notes
-    //         }
-    //     }
-    // });
-    
-    
 });  // end of document.ready()
 
 // **************************************************************************
@@ -303,9 +282,14 @@ function build_fltrd_spp_table(func) {
             if (SbscrbrPrjctPrngs[i].is_test_active == "1") { $('#sppair_tbl tr:last').append($('<td>').text("Y").addClass('chck')); } else { $('#sppair_tbl tr:last').append($('<td>')); }
             $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(SbscrbrPrjctPrngs[i].sbscrbr_login)));
             if (SbscrbrPrjctPrngs[i].is_usr_blocked == "1") { $('#sppair_tbl tr:last').append($('<td>').text("Y").addClass('chck')); } else { $('#sppair_tbl tr:last').append($('<td>')); }
-            $('#sppair_tbl tr:last').append($('<td>').html(Sbscrbrs[ndx].first + " " + Sbscrbrs[ndx].last)); // Full name
-            $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(Sbscrbrs[ndx].user_email)));
-            $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(Sbscrbrs[ndx].sbscrbr_notes)));
+
+            if (Sbscrbrs[ndx] == undefined) {
+                $('#sppair_tbl tr:last').append($('<td>').text("SUBSCRIBER NOT FOUND")).append($('<td>')).append($('<td>')); // ERROR
+            } else {
+                $('#sppair_tbl tr:last').append($('<td>').html(Sbscrbrs[ndx].first + " " + Sbscrbrs[ndx].last)); // Full name
+                $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(Sbscrbrs[ndx].user_email)));
+                $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(Sbscrbrs[ndx].sbscrbr_notes)));
+            }
 
             //  create buttons for this row
             $('#sppair_tbl tr:last').append($('<td>').append("<input type='submit' name='" + SbscrbrPrjctPrngs[i].pk_sppair_id + "' value='Edit'/>"));
