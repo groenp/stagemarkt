@@ -19,9 +19,9 @@ Stages:
 3) test the coupling/decoupling of subscribers with wp_users
 4) create framework where users only can get access to their own product and no other logic loads.
 5) create fake third project (with 2 databases) to see if this works
+6) create test/live switch
+7) generalize switch for all projects
 
 *I am here*
 
-6) create test/live switch
-7) generalize switch for all projects
 8) create bloem-consultants as an example
