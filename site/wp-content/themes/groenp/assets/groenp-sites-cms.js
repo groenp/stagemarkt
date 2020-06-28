@@ -70,22 +70,34 @@ $(document).ready(function () {
     }
 
     // Test vs. Live switch is a checkbox
-    $('.testver').hide();
+
+    // initial value (for now always false when not explicitly set)
+    // -> custom switch somehow remembers previous setting, and overrides ACTUAL setting in code
+    // -> use of hidden field $('#test_set') to read out actual setting and load form accordingly
+    // console.log("hidden: " + $('#test_set').val());
+
+    Test = ( $('#test_set').val() == "" )? false : true;
+    $('#live-test').prop('checked', Test);
+
+    // set text visibility according to Test setting
+    $('.livever').toggle(!Test);
+    $('.testver').toggle(Test);
+
+    // button is in initial state, so should always be disabled
+    $('button[name="RefreshLT"]').prop('disabled', true);
+
     $('#live-test').change(function() {
-        Test = $(this).is(':checked');
-        if (Test) {
-            $('.livever').hide();
-            $('.testver').show();
-        } else {
-            $('.livever').show();
-            $('.testver').hide();
-        }
+        chk = $(this).is(':checked');
+        $('button[name="RefreshLT"]').prop('disabled', (chk == Test));
+        $('.livever').toggle(!chk);
+        $('.testver').toggle(chk);
     });
+
+    // read-only displays need to be augmented with a label in jquery to display state + lbl class for styling
+    $('.test-display').after($('<label>').text(Test ? "TEST":"LIVE").addClass('lbl'));
     
 //     // Remove screen options tab
 //     // $('#screen-options-link-wrap').hide();
-
-
 });
 
 

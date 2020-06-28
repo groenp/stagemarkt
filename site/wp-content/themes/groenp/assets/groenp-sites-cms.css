@@ -13,12 +13,15 @@ html {
 /* only for groenp pages:                                                     */
 /*  created space at the bottom of the page to scroll properly to last form   */ 
 /*  padding is 100% of the screen height                                      */
+/*  => for all body elements who have a class snippet with                    */
+/*     "dashboard_page_groenp" in them, these child elements:                 */
 /* ************************************************************************** */
-.dashboard_page_groenp_subscribers #wpbody-content {
+[class*="dashboard_page_groenp"] #wpbody-content {
     padding-bottom: 100vh;
 }
 /* place footer tagline right at the top, so users see it */
-.dashboard_page_groenp_subscribers #wpfooter {
+/* .dashboard_page_groenp_subscribers #wpfooter { */
+[class*="dashboard_page_groenp"] #wpfooter {
     min-height: 100vh;
 }
 
@@ -289,22 +292,27 @@ p.btt, p.htb {
     font-size: 8pt;
     float: right;
 }
-.btt a:after, .htb a:after, a.launch:after {
-    font-family: FontAwesome;
+.btt a:after, .htb a:after, 
+a.launch:after {
+    font-family: dashicons;
     font-weight: 200;
+    font-size: 12pt;
+    line-height: 8pt;
+    vertical-align: text-top;
     display: inline-block;
     padding-left: .4rem;
-    content: "\f077"; /* chevron up */
+    /* content: "\f142"; arrow up */
+    content: "\f343"; /* chevron up */
 }
 .htb {
     display: none;
 }
 .htb a:after {
-    /* content: "\f057"; times circle */
-    content: "\f00d"; /* times */
+    /* content: "\f153"; times circle */
+    content: "\f158"; /* times */
 }
 a.launch:after {
-    content: "\f35d"; /* external link alt */
+    content: "\f504"; /* external link alt */
 }
 
 /* Welcome MB */
@@ -316,6 +324,7 @@ a.launch:after {
     font-style: normal;
     font-weight: lighter;
 }
+/* FontAwesome not linked anymore */
 .awecon {
     font-family: FontAwesome;
 }
@@ -463,18 +472,26 @@ div.postbox p.hor-form.wide span.display-only + span {
 /* end of: p.hor-form */
 
 /* show better distinction between enabled/disabled, disabled for checkbox and dropdown list is used as readonly */
-div.postbox select:disabled, textarea:disabled, input[type="text"]:disabled, input[type="file"]:disabled, input[type="email"]:disabled, input[type="checkbox"]:disabled {
+div.postbox select:disabled, 
+textarea:disabled, 
+input[type="text"]:disabled, 
+input[type="file"]:disabled, 
+input[type="email"]:disabled, 
+input[type="checkbox"]:disabled {
 	background-color: #eee;
     color: #000;
     opacity: 1;
 }
 
 /* backgrounds for verf-ok and verf-err */
-div.postbox input.verf-ok, div.postbox p.hor-form span.display-only.verf-ok {
+div.postbox input.verf-ok, 
+div.postbox p.hor-form span.display-only.verf-ok {
     background-color: #ecf1f3;
     color: #000;
 }
-div.postbox input.verf-err, div.postbox span.verf-err, div.postbox p.hor-form span.verf-err {
+div.postbox input.verf-err, 
+div.postbox span.verf-err, 
+div.postbox p.hor-form span.verf-err {
     background-color: #ffe0e0;
     color: #000;
 }
@@ -522,6 +539,7 @@ div.postbox p.button-row option.list-dvdr {
 /* all input elements are the same size  */
 div.postbox textarea, 
 div.postbox a[type="button"], 
+div.postbox button[type="submit"],
 div.postbox input[type="text"], 
 div.postbox input[type="email"], 
 div.postbox select {
@@ -653,25 +671,12 @@ div.postbox p label.test-switch {
   border-radius: 12px;
 
 }
-/* this is the 'off' version of the switch */
-/* the switch button stands to the left */
+
+/* keep backgrounds consistent with slider and display */ 
+.test-display,
 .test-slider:before {
-  position: absolute;
-  content: "LIVE version";
   color: rgba(255, 255, 255, .7);
   text-align: center;
-  line-height: 1;
-  font-size: 25px;
-  height: 74px;
-  padding-top: 10px; /* p-top + height = slider height */
-  width: 120px;
-  left: 3px;
-  bottom: 3px;
-  top: 3px;
-  /* background-color: #00b03a; */
-  /* background-color: #fff; */
-    /* rgba(255, 255, 255, 0.1) 79%,
-    rgba(255, 255, 255, 0.1) 81%, */
   background-image: linear-gradient(
     30deg,
     #00b03a,
@@ -682,8 +687,41 @@ div.postbox p label.test-switch {
     #00b03a
   );
   box-shadow: inset 5px 5px 20px rgba(214, 255, 228, .5);
+}
+
+/* this is the 'off' version of the switch */
+/* the switch button stands to the left */
+.test-slider:before {
+  position: absolute;
+  content: "LIVE version";
+  line-height: 1;
+  font-size: 25px;
+  height: 74px;
+  padding-top: 10px; /* p-top + height = slider height */
+  width: 120px;
+  left: 3px;
+  bottom: 3px;
+  top: 3px;
   transition: .3s cubic-bezier(.86,0,.07,1);
   border-radius: 9px;
+}
+/* display */
+div.postbox input.test-display,
+div.postbox .test-display + .lbl {
+    position: absolute;
+    display: block;
+    width: 50px;
+    top: -44px;
+    right: 40px;
+    color: transparent;
+}
+div.postbox .test-display + .lbl {
+    font-weight: 500;
+    font-size: 16px;
+    margin: 0;
+    padding: 3px 0 0;
+    text-align: center;
+    color: rgba(255, 255, 255, .7);
 }
 /* input:checked + .test-slider {
 } */
@@ -692,11 +730,9 @@ input:focus + .test-slider {
   box-shadow: 0 0 1px #00b03a;
 }
 
-/* this is the 'on' version of the switch */
-/* the switch button stands to the right  */
+/* keep backgrounds consistent with slider and display */ 
+div.postbox .test-display[value="on"],
 input:checked + .test-slider:before {
-  transform: translateX(72px);
-  content: "TEST version";
   /* color: rgb(202,218,169); */
   /* background-color: #00503b; */
   background-image: linear-gradient(
@@ -710,6 +746,14 @@ input:checked + .test-slider:before {
   );
   box-shadow: inset 5px 5px 20px rgba(182, 242, 226, .5);
 }
+
+/* this is the 'on' version of the switch */
+/* the switch button stands to the right  */
+input:checked + .test-slider:before {
+  transform: translateX(72px);
+  content: "TEST version";
+}
+
 /* ***************************************** */
 /*        GROEN PRODUCTIONS.COM BADGE        */
 /* ***************************************** */

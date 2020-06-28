@@ -1,110 +1,417 @@
 <?php
-/******************************************************************************/
-/*                                                              Pieter Groen  */
-/*  Version 0.1 - May 24, 2014                                                */
-/*                                                                            */
-/*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                    */
-/*   - test Meta Box to test filter per user                                  */
-/*                                                                            */
-/******************************************************************************/
-
-/* Global var */
-$slug = 'test';
+/********************************************************************************************/
+/*                                                                            Pieter Groen  */
+/*  Version 0.1 - May 24, 2014                                                              */
+/*                                                                                          */
+/*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                                  */
+/*   - test Meta Box to test filter per user                                                */
+/*                                                                                          */
+/********************************************************************************************/
+// namespace groenp;
 
 
-function groenp_get_project( $php_file )
+
+// *****************************************************************************************    
+/*** FROM HERE ON IN THIS FILE ***/
+// *****************************************************************************************    
+
+
+// *****************************************************************************************    
+// Function for sub menu creation based on $project
+// menu and empty page get created based on 'read' access
+// *****************************************************************************************    
+function groenp_register_submenu_page_read() 
 {
-    // store results in row of project data
-    $row = array();
 
-    // open database
-    $con = groenp_open_database();
+    // Retrieve project information
+    $project = groenp_get_project_from_file( basename(__FILE__) );
 
-
-    // query projects and store in array
-    $result = mysqli_query($con, 'SELECT prjct_name, base_url, is_test_active, test_url FROM gp_projects WHERE prjct_php = "'. $php_file .'";');
-
-    // There can only be one result row. In any case; only get the first one
-    if ( $result ) { 
-        $row = mysqli_fetch_assoc($result);
-        mysqli_free_result($result);
-    } else {
-        $row['error'] = "Could not get project data from ". $php_file .".";
-    }
-    // close database
-    mysqli_close($con);
-
-    _log('right after creation:');                  // DEBUG //
-        _log( $prjct );                           // DEBUG //
-    }
+    // create menu 
+	add_submenu_page( 'index.php', $project['prjct_name'], 'GP: '. $project['prjct_name'], 'read', $project['page_slug'], 'groenp_create_page_cb' ); 
 }
-/*** WRAP IN FUNCTION  ***/
-/*** /WRAP IN FUNCTION  ***/
+
+// *****************************************************************************************    
+// Function for sub menu creation based on $project
+// menu and empty page get created based on 'list_users' access
+// (for Managers & Administrators only)
+// *****************************************************************************************    
+function groenp_register_submenu_page_mngr() 
+{
+    // Retrieve project information
+    $project = groenp_get_project_from_file( basename(__FILE__) );
+
+    // global $plugin_page; // there is no submenu page yet once called the first time
+
+    // create menu 
+	add_submenu_page( 'index.php', $project['prjct_name'], 'GP: '. $project['prjct_name'], 'list_users', $project['page_slug'], 'groenp_create_page_cb' ); 
+}
+
+// *****************************************************************************************       
+// Groen Productions  - MAIN: add project boxes to Dashboard or new page (if Project exists)
+//                      (meta boxes: register -> add (creation in mem) -> do (placement))
+// *****************************************************************************************    
+{ // MAIN
+
+    // Globals > AVOID USE - they change every time a thread runs
+    $project = groenp_get_project_from_file( basename(__FILE__) );
+
+    // This PHP file has been loaded - does it have a corresponding Project entry?
+    // only load on this page if the project information is loaded
+    if ( !isset( $project['error'] ) ) 
+    {
+        // retrieve slug
+        $page_slug = $project['page_slug'];
+
+        // I: create submenu page with specific call for this page: 
+        add_action('admin_menu', 'groenp_register_submenu_page_read');
+
+        // II: First step in the meta box creation:
+        // register metaboxes based on unique $page_slug
+        add_action('load-dashboard_page_' . $page_slug, 'groenp_register_meta_boxes');
+
+        // III: Second step in the meta box creation:
+        // In this case branch on user privileges
+        if ( current_user_can('list_users') )
+        {
+            // current user is Administrator: add metaboxes in own page
+            // specific call back: groenp_test_meta_boxes_add
+            add_action('add_meta_boxes_'. $page_slug, 'groenp_test_meta_boxes_add');
+        } 
+        else 
+        {
+            // current user is Subscriber: add metaboxes to dashboard
+
+            // specific call back: groenp_test_meta_boxes_add_dash
+            add_action( 'wp_dashboard_setup', 'groenp_test_meta_boxes_add_dash' );  
+
+            // and also add some to new page.. just to test
+            add_action('add_meta_boxes_'. $page_slug, 'groenp_test_meta_boxes_add');
+        }
+
+    }
+    
+} // end of: MAIN
+
+function groenp_test_meta_boxes_add()
+{
+    // Retrieve project information
+    global $plugin_page;
+    $project = groenp_get_project_from_slug( $plugin_page );
+
+    // Add metaboxes to this php_file's submenu page
+    if ( current_user_can('list_users') )
+    {
+        // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
+        add_meta_box( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings", 'core') .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb', $project['page_slug'], 'normal' );
+        add_meta_box( $project['page_slug'] .'-mb', $project['prjct_name'], 'groenp_test_meta_box_cb', $project['page_slug'], 'normal' ); 
+        add_meta_box( 'groenp_name-mb', $project['prjct_name'], 'groenp_name_meta_box_cb', $project['page_slug'], 'normal' );
+    }
+    add_meta_box( $project['page_slug'] .'2-mb', 'This is the second coming of the box', 'groenp_anothertest_meta_box_cb', $project['page_slug'], 'normal' );
+
+} //end of: groenp_test_meta_boxes_add()
 
 
-
-add_action( 'wp_dashboard_setup', 'groenp_test_mgmt_meta_boxes_add' );  
-function groenp_test_mgmt_meta_boxes_add()  
+function groenp_test_meta_boxes_add_dash()  
 {  
+    // Retrieve project information
+    $project = groenp_get_project_from_file( basename(__FILE__) );
+    // global $plugin_page; // doesn't work since it is on dashboard and not on its own page
+
+    // Add metaboxes to the dashboard
     // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
-    wp_add_dashboard_widget( 'gp-settings-mb', '<i class="fas fa-cog"></i> '.  __("Settings", 'core'), 'groenp_settings_meta_box_cb');
-}
+    wp_add_dashboard_widget( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings", 'core') .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb');
+    wp_add_dashboard_widget( $project['page_slug'] .'-mb', $project['prjct_name'], 'groenp_test_meta_box_cb');
+} //end of: groenp_test_meta_boxes_add_dash()
 
 
 // ****************************************************************
-// Groen Productions - add project boxes to Dashboard or new page 
+// Callback for TEST Meta Box 
 // ****************************************************************
-function groenp_add_project_meta_boxes( $slug )
+function groenp_test_meta_box_cb()
 {
-
-} //end of: groenp_add_project_meta_boxes()
-
-
-// ****************************************************************
-// Callback for TEST Meta Box 
-// ****************************************************************
-function groenp_settings_meta_box_cb()
-{  
-    // Retrieve user's locale 
-    $user = wp_get_current_user();
-    $locale = ($user)? get_user_locale( $user->ID ) : get_user_locale();
-
     // Meta box introduction
-    // TRANSLATORS: Please review the + Privacy Statement and Terms of Use 
-    echo "<p>". __("Please review the",'groenp') . " <a href= '". site_url('privacy_and_terms_of_use.php?wp_lang=' . $locale) ."'>".  __("Privacy Statement and Terms of Use", 'groenp') ."</a>.</p>
-    <p class='hor-form test-switch'>
-        <span class='prompt'>Choose here which version of your CMS you want to work on:<br />
-        <span class='context testver'>Only those that have access to the test version will see it. It is a great way to try things out, before everybody sees it.</span>
-        <span class='context livever'>The live version is directly connected to the live site.</span></span>
-        <label class='test-switch'>
-            <input id='live-test' name='live-test' type='checkbox'>
-            <span class='test-slider'></span>
-        </label>
-        <span class='context'>These versions are not connected in any way, the data is not copied over.</span> 
-    </p>
-    <p class='hor-form'>
-        <label for='open_site'>To verify the results:</label><span>(website will open in a separate window or tab)</span><a type='button' class='button-primary launch' name='open_site' target='_blank' href='https://test.groenproductions.com/'>Show website</a>
-    </p>
-    <p class='button-row btt'><a href='#'>back to top</a>
-    </p>";
-
-} // End: groenp_settings_meta_box_cb()
-
-
-// ****************************************************************
-// Callback for TEST Meta Box 
-// ****************************************************************
-function groenp_sel_domain_meta_box_cb()
-{  
-
-    // Meta box introduction
-    echo "<p>Test.</p>
-    <div class='custom-control custom-switch'>
-        <input type='checkbox' class='custom-control-input' id='customSwitch1' checked>
-        <label class='custom-control-label' for='customSwitch1'>Toggle this switch element</label>
+    echo "<h4>This is project specific: groenp_test_mgmt.php</h4>
+    <div class=''>
+     <p>This is a project specific box, but no project meta data, other than what's used in the add meta box call.</p>
     </div>";
 
 } // End: groenp_sel_domain_meta_box_cb()
+
+
+// ****************************************************************
+// Callback for ANOTHERTEST Meta Box 
+// ****************************************************************
+function groenp_anothertest_meta_box_cb()
+{
+    // Meta box introduction
+    echo "<h4>This is project specific: groenp_test_mgmt.php</h4>
+    <div class=''>
+     <p>This is the second meta box for the same project.</p>
+    </div>";
+
+} // End: groenp_sel_domain_meta_box_cb()
+
+
+// ****************************************************************
+// Callback for <name> Meta Box
+// ****************************************************************
+function groenp_name_meta_box_cb()  
+{  
+    // open database
+    $con = groenp_open_database();
+
+    // ************************************************************
+    // 1. Process any form data
+    // ************************************************************
+
+    // Make this form unique
+    $func = 'Tst2';
+    
+    // If no Edit button pressed inside the table of this meta box
+    if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
+
+    // default SSL port number; use https version, otherwise not
+    $protocol = ($_SERVER['SERVER_PORT'] == '443') ? 'https://' : 'http://';
+
+    // Create form url for this meta box
+	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '#' . $func;
+
+    
+    // ************************************************************
+	if ( isset($_POST[('add_'. $func)]) || isset($_POST[('edit_'. $func)]) )  // THIS form has been submitted
+    // ************************************************************
+    {
+		// Check if all mandatory fields have been entered
+		if ( !empty($_POST['prjct_name']) ) 
+		{
+            //_log("*** input error ***");
+    		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
+        }
+        else {
+                // define and sanitize vars
+                $prjct_name       = prep($_POST['prjct_name'], 's');
+
+            // ************************************************************
+		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
+			// ************************************************************
+			{
+                // create a prepared statement 
+                $query_string = 'INSERT INTO gp_projects ' .
+                    '(prjct_name) ' . 
+                    'VALUES (?)';
+                // _log("Add query for ". $func .": ". $query_string);                // DEBUG //
+                $stmt = mysqli_prepare($con, $query_string);
+
+                if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
+                else {
+                    // bind stmt = i: integer, d: double, s: string
+                    $bind = mysqli_stmt_bind_param($stmt, 's', $prjct_name);
+                    if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
+                    else {
+                        $exec = mysqli_stmt_execute($stmt);
+                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>";  }
+                        else { _lua($func, "Project (ID: ". mysqli_insert_id($con) .", ". $prjct_name .") created."); }
+                        mysqli_stmt_close($stmt); 
+                    } // end of: binding successful
+                } // end of: stmt prepared successful
+            } // End of: add
+            
+			// ************************************************************
+			elseif ( isset($_POST[('edit_'. $func)]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]!=='no')  // update tables row with editkey 
+			// ************************************************************
+			{
+                // sanitize editkey
+                $pk_prjct_id= prep($_POST['editkey'], 'i');
+
+                // create a prepared statement 
+                $query_string = 'UPDATE LOW_PRIORITY gp_projects SET ' .
+                    'prjct_name = ? ' . 
+                    'WHERE pk_prjct_id = ?';
+                $stmt = mysqli_prepare($con, $query_string);
+
+                if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
+                else {
+                    // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
+                    $bind = mysqli_stmt_bind_param($stmt, 'si', $prjct_name, $pk_prjct_id);
+                    if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
+                    else {
+                        $exec = mysqli_stmt_execute($stmt);
+                        if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not update item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                        else { _lua($func, "Project (ID: ". $pk_prjct_id .", ". $prjct_name .") updated."); }
+                        mysqli_stmt_close($stmt); 
+                    } // end of: binding successful
+                } // end of: stmt prepared successful
+			} // End of: edit
+		} // End of: not missing mandatory fields
+    } // End of: add or edit (form submitted)
+
+    // ************************************************************
+    elseif (isset($_POST[('sure_'. $func)]))  // check for 'sure_'+function to see whether pushbutton used in THIS table or form
+    // ************************************************************
+    {
+        $delkey = intval(array_search('Delete', $_POST));   // Maybe it's a Delete; check for id on 'Delete' button (case sensitive) and store it
+        $editkey = intval(array_search('Edit', $_POST));    // Maybe it's an Edit; check for id on 'Edit' button (case sensitive) and store it
+        if ( empty($editkey) ) unset($editkey);             // It's not an Edit, so unset otherwise the form will load as an edit
+
+		// If there is a delete id and user answered 'Yes' on RUsure?
+        if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
+        {
+            // Create a prepared statement and delete row
+            $query_string = 'DELETE LOW_PRIORITY FROM gp_projects WHERE pk_prjct_id = ?';
+            $stmt = mysqli_prepare($con, $query_string);
+            if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
+            else {
+                $bind = mysqli_stmt_bind_param($stmt, 'i', $delkey);
+                $exec = mysqli_stmt_execute($stmt);
+                if ($exec ===  FALSE) { echo "<p class='err-msg'><name> could not be deleted: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                else { _lua($func, "<name> (ID: ". $delkey .") deleted."); }
+                mysqli_stmt_close($stmt); 
+            } // end of: stmt prepared successful
+	    } // End of: deletion
+    } // End of: checking for form submits
+
+    // ************************************************************
+    // 2. Create jQuery object holding all <name>
+    // ************************************************************
+
+    // For now not used in this Meta Box
+    // Create query for all <name>
+    $query_string = 'SELECT pk_prjct_id, prjct_name FROM gp_projects ORDER BY prjct_name;';
+
+    // store in different temp array
+    // $names = array();
+
+    // $result = mysqli_query($con, $query_string);
+    // if ( $result ) { 
+    //     while($r = mysqli_fetch_assoc($result)) {
+    //         $names[] = $r;
+    //     }
+    //     mysqli_free_result($result);
+    // }
+
+    // Create javascript Object: Projects
+    // echo "<script type='text/javascript'>
+
+    //     var Names = "; echo json_encode($projects); echo ";
+
+    // </script>";
+
+    // ************************************************************
+    //  3. Build updated table with <name>
+    // ************************************************************
+
+    // keep loaded Live/Test selection in read-only field (first check if any form submitted, then switch operated, otherwise read from test_set field)
+    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
+
+    // Start of form;  hidden input field to store RUsure? response and display of LIVEvsTEST
+    echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'>
+    <p>
+        <input type='hidden' name='sure_" . $func . "' id='sure_" . $func . "' value='maybe' />
+        <input type='text' class='test-display' name='test_set' id='test_" . $func . "' value='" . dis($test_set,'a') . "' readonly='readonly' />
+    </p>"; 
+    
+    // Meta box introduction
+    echo "<p class='btt'><a href='#'>back to top</a></p>
+    <p>Entry fields marked with a '*' are mandatory. Entry fields marked with '**' have to be unique as well.</p>";
+    
+	// Start table build
+    echo "<table class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'><thead style='text-align: left'>
+            <tr style='text-align: left'>
+                <th class='numb'>ID</th>
+                <th>Project name</th>
+                <th>Action</th>
+            </tr></thead><tbody>";
+
+
+    // Query table, and leave out 'edit' row depending on action selection, and filter 
+    unset($result); unset($row); // re-initialize
+    if (isset($editkey))
+    {
+        // prepare statement excluding item to be edited
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name' .
+                             ' FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name');
+        mysqli_stmt_bind_param($stmt, 'i', $editkey);
+    } else {
+        // prepare statement in similar way as edit, but no parameters
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name' .
+                             ' FROM gp_projects ORDER BY prjct_name');
+    } // End of: not set editkey
+
+    // mysqli_stmt_execute($stmt);
+    // mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name']);
+
+    // // Retrieve row by row the project data in the DB
+    // while ( mysqli_stmt_fetch($stmt) )
+    // {
+    //     // Build row
+    //     echo "<tr>
+    //             <td class='numb'>" . dis($row['pk_prjct_id'],'i') . "</td>
+    //             <td>" . dis($row['prjct_name'],'s') . "</td>";
+
+    //             // Add final cell with button section and link to javascript pop-up
+    //             echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
+    //                         <input type='submit' class='button-secondary' name='" . $row['pk_prjct_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+    //             </tr>";
+    // } // End of: while result
+    mysqli_stmt_close($stmt);
+
+    // finalize table
+    echo "</tbody></table>";
+
+
+    // ************************************************************
+    // 3. Build add/edit form
+    // ************************************************************
+
+    // Retrieve edit row, if edit version of form
+    if ( isset($editkey) )
+    {
+        unset($stmt);
+        $stmt = mysqli_prepare($con, 'SELECT prjct_name FROM gp_projects WHERE pk_prjct_id = ?');
+        mysqli_stmt_bind_param($stmt, 'i', $editkey);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $editrow['prjct_name']);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt); 
+    }
+    
+    // Start rendering the form
+    echo "<h4>Add or edit <name></h4>
+    <p class='hor-form'>
+        <a class='anchr' name=add_" . $func . "></a>";
+    
+        // If edit form keep edit key in hidden field and insert anchor: we need to scroll till here
+        if(isset($editkey)) echo "<input type='hidden' name='editkey' value=". $editkey . " > 
+        <a class='anchr' name=" . $func . "></a>"; 
+        
+        // If Edit populate each field with the present values
+        echo "
+        <label for='prjct_name'>Name *</label><span>(max. 20 chars)</span><input type='text' name='prjct_name' id='prjct_name' maxlength='20' value='" . dis($editrow['prjct_name'],"s") . "' />
+    </p>
+    <p class='button-row'>";
+
+    if ( isset($editkey) )
+    {
+        // Edit form, so create Edit and Cancel buttons  
+        echo "<input type='submit'  class='button-primary' name='edit_" . $func . "' value='Edit <name>'> <input type='submit' class='button-secondary' name='cancel' value='Cancel'>";
+    } else {
+        // Normal (Add) form, so only Add button needed
+        echo "<input type='submit'  class='button-primary' name='XXX_" . $func . "' value='Add <name>'>";
+    }
+     echo "
+    </p>
+    </form>
+    <p class='btt'><a href='#'>back to top</a></p>";
+
+    // 4. Clean up
+    mysqli_close($con);
+	unset($result);
+	unset($row);
+    unset($editrow);
+	unset($projects);
+
+}  // End: groenp_name_meta_box_cb() 
+
 
 
 ?>

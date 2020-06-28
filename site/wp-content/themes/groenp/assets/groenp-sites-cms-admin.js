@@ -29,9 +29,10 @@ $(document).ready(function () {
 
     // switch on page like is done in the admin php page with: $struct_screen 
     // var struct_screen = 'groenp_subscribers';
+    // var slug = 'groenp_test';
 
     // if this is page 'struct_screen'
-    if (typeof ref !== 'undefined' && ref.indexOf('groenp_subscribers') != -1) {
+    if (typeof ref !== 'undefined' && ref.indexOf('groenp_') != -1) {
 
         // initialize meta box handling
         postboxes.add_postbox_toggles(pagenow);
@@ -39,6 +40,7 @@ $(document).ready(function () {
         // set screen layout to 1 column
         $('input[name=screen_columns][value="1"]').click();
     }
+
 
     // **************************************************************************
     // Specific Meta Boxes only:

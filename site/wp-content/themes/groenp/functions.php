@@ -1,59 +1,67 @@
 <?php
-/******************************************************************************/
-/*                                                              Pieter Groen  */
-/*  Version 0.1 - June 16, 2020                                               */
-/*                                                                            */
-/*  PHP for Groen Productions website CMS in WordPress                        */
-/*                                                                            */
-/* Debug functions:                                                           */
-/* - Debugging into debug.log                                 (~line   55)    */
-/* - Logging into user_activity_log_{year}_{month}.txt        (~line   75)    */
-/*                                                                            */
-/* Custom Admin Dashboard functions:                          (~line  100)    */
-/* - based on twentytwenty theme                                              */
-/* - add login cookie message                                 (~line  110)    */
-/* - make login links language sensitive                      (~line  150)    */
-/* - create Manager role based on author and allow User Admin (~line  180)    */
-/* - simplify Profile pages for non Administrators            (~line  200)    */
-/* - collapse side menu for Subscriber role                   (~line  265)    */
-/* - remove unneccesary widgets                               (~line  295)    */
-/* - stop heartbeat (ajax calls) DISABLED                     (~line  360)    */
-/*                                                                            */
-/* User mails and msgs are adjusted to user's locale (es, nl, en):            */
-/* - Redirect blocked users                                   (~line  370)    */
-/* - Email change notification                                (~line  440)    */
-/* - Password change notification                             (~line  570)    */
-/* - New password request                                     (~line  625)    */
-/*                                                                            */
-/* Tracing user activity and changes to databases:                            */
-/* - Logging user activities in Standard Wordpress interface  (~line  740)    */
-/* - insert Groen Productions asset files into admin pages    (~line  860)    */
-/*                                                                            */
-/* Plugins needed:                                                            */
-/* - Groen Productions Mailing plugin to change registration mails            */
-/* - WP-Mail-SMTP plugin to use groenproductions.com for registration mail    */
-/*                                                                            */
-/* Dashboard Meta Boxes:                                                      */
-/* - Loading of language files pomo                           (~line  920)    */
-/* - Loading of Meta Boxes                                    (~line  980)    */
-/* - Welcome Meta Box                                         (~line  930)    */
-/* - Meta Box's PHP file selection for loading                                */
-/*                                                                            */
-/* Functions used in other Groen Productions PHP files for site management:   */
-/* - Connect to Groen Productions database                    (~line 1040)    */
-/* - Retrieve likely locale when user's logged out            (~line  540)    */
-/* - Upload pictures                                          (~line  570)    */
-/* - Input/output functions for database, forms, web page     (~line  650)    */
-/*   . Sanitization of input data                               (~line  650)  */
-/*   . Sanitization of input for prepared statements            (~line  730)  */
-/*   . Display (escaping and formatting) of database data       (~line  820)  */
-/* - Search (json) arrays for key <=> value pair              (~line  910)    */
-/*                                                                            */
-/******************************************************************************/
+/********************************************************************************************/
+/*                                                                            Pieter Groen  */
+/*  Version 0.1 - June 27, 2020                                                             */
+/*                                                                                          */
+/*  PHP for Groen Productions website CMS in WordPress                                      */
+/*                                                                                          */
+/* SECTION: Debug functions                                                                 */
+/* - Debugging into debug.log                                               (~line   55)    */
+/* - Logging into user_activity_log_{year}_{month}.txt                      (~line   75)    */
+/*                                                                                          */
+/* SECTION: User Management and Session Security                                            */ 
+/* - Custom Admin Dashboard functions:                                      (~line  100)    */
+/* - based on twentytwenty theme                                                            */
+/* - add login cookie message                                               (~line  110)    */
+/* - make login links language sensitive                                    (~line  150)    */
+/* - create Manager role based on author and allow User Admin               (~line  180)    */
+/* - simplify Profile pages for non Administrators                          (~line  200)    */
+/* - collapse side menu for Subscriber role                                 (~line  265)    */
+/* - remove unneccesary widgets                                             (~line  300)    */
+/* - stop heartbeat (ajax calls) DISABLED                                   (~line  360)    */
+/*                                                                                          */
+/* SECTION: User mails and msgs are adjusted to user's locale (es, nl, en):                 */
+/* - Redirect blocked users                                                 (~line  375)    */
+/* - Email change notification                                              (~line  440)    */
+/* - Password change notification                                           (~line  570)    */
+/* - New password request                                                   (~line  625)    */
+/*                                                                                          */
+/* SECTION: Tracing user activity and changes to databases                  (~line  740)    */
+/* - Logging user activities in Standard Wordpress interface                (~line  740)    */
+/* SECTION: insertion of asset files into head                              (~line  860)    */
+/* - pomo setup for i18n                                                    (~line  920)    */
+/*                                                                                          */
+/* Plugins needed:                                                                          */
+/* - Groen Productions Mailing plugin to change registration mails                          */
+/* - WP-Mail-SMTP plugin to use groenproductions.com for registration mail                  */
+/*                                                                                          */
+/* SECTION: Creation of Meta Boxes and linking of files:                                    */
+/* - Require PHP files based on user privileges                             (~line  940)    */
+/* - Welcome Meta Box                                                       (~line  950)    */
+/* - Settings Meta Box                                                      (~line 1000)    */
+/*                                                                                          */
+/* Functions used in other Groen Productions PHP files for site management:                 */
+/* - Determine User's privileges for PHP file                               (~line 1080)    */
+/* - Get project data based on PHP file                                     (~line 1125)    */
+/* - Get project data based on page slug                                    (~line 1150)    */
+/* - Create menu entry and page (generic)                                   (~line 1190)    */
+/*                                                                                          */
+/* SECTION: General helper functions                                                        */
+/* - Connect to Groen Productions database                                  (~line 1270)    */
+/* - Retrieve likely locale when user's logged out                          (~line 1300)    */
+/* - Upload pictures                                                        (~line 1330)    */
+/* - Input/output functions for database, forms, web page                   (~line 1420)    */
+/*   . Sanitization of input data                                             (~line 1450)  */
+/*   . Sanitization of input for prepared statements                          (~line 1515)  */
+/*   . Display (escaping and formatting) of database data                     (~line 1620)  */
+/* - Search (json) arrays for key <=> value pair                            (~line 1700)    */
+/*                                                                                          */
+/********************************************************************************************/
+// namespace groenp;
 
-// ****************************************************************
+// *****************************************************************************************    
 // DEBUGGING, use: _log(). Arrays need to go into separate call
-// ****************************************************************
+// *****************************************************************************************    
 if(!function_exists('_log')){
 	function _log( $message ) 
     {
@@ -70,9 +78,9 @@ if(!function_exists('_log')){
 	}
 }
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions - Logging in User Activity Log
-// ****************************************************************
+// *****************************************************************************************    
 if(!function_exists('_lua')){
     function _lua( $mod = "", $message = "") 
     {
@@ -90,21 +98,21 @@ if(!function_exists('_lua')){
     }
 } 
 
+// ***************************************************************************************** //
+// Groen Production                                                                          //
+// SECTION: User Management and Session Security                                             //
+//                                                                                           //
+// ***************************************************************************************** //
 
-/******************************************************************************/
-/* Common Dashboard management functions                                      */
-/*                                                                            */
-/******************************************************************************/
-
-// ****************************************************************
+// *****************************************************************************************    
 // Attach admin login header logo and removal of return-to-blog link by CSS
-// ****************************************************************
+// *****************************************************************************************    
 // see: function groenp_include_in_head()
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Custom admin login message
-// ****************************************************************
+// *****************************************************************************************    
 add_filter('login_message', 'groenp_cookie_warning_login');
 function groenp_cookie_warning_login() {
 
@@ -139,18 +147,18 @@ function groenp_cookie_warning_login() {
 }
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Change admin login logo link
-// ****************************************************************
+// *****************************************************************************************    
 add_filter('login_headerurl', 'groenp_change_wp_login_url');
 function groenp_change_wp_login_url()
 {
     return trailingslashit(admin_url());
 }
 
-// ****************************************************************
+// *****************************************************************************************    
 // Make Forgot password link and login link language sensitive
-// ****************************************************************
+// *****************************************************************************************    
 add_filter('lostpassword_url', 'groenp_lostpassword_url', 10, 2);
 function groenp_lostpassword_url()
 {
@@ -164,20 +172,20 @@ function groenp_login_url()
 }
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Reset the login page to be main Dashboard page (not profile page)
-// ****************************************************************'
+// *****************************************************************************************    
 add_filter('login_redirect', 'groenp_login_to_dashboard', 10, 2);
 function groenp_login_to_dashboard( $redirect_to, $request ) {
     return admin_url('index.php');
 }
 
-// ****************************************************************
+// *****************************************************************************************    
 // ONLY ON CHANGE OF THEME:
 // Simplify capabilities of Admin and others, so not to clutter the U/I
 // Allow Manager role (somebody working for Groen Productions) to do user admin 
 // Remove Editor and Contributor roles
-// ****************************************************************
+// *****************************************************************************************    
 // this is saved in the DB so only do this once...
 // add_action( 'after_switch_theme', 'groenp_create_manager_role', 10 ,  2);
 
@@ -216,11 +224,11 @@ function groenp_create_manager_role($oldname, $oldtheme=false) {
 }
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Clean up Profile pages for non Admin (subscriber and author roles)
 //
 // (jQuery adjustments in footer: check with each update to WP)
-// ****************************************************************
+// *****************************************************************************************    
 add_action('admin_init', 'groenp_user_profile_fields_disable');
 function groenp_user_profile_fields_disable() {
     global $pagenow;
@@ -260,9 +268,9 @@ function groenp_user_profile_fields_disable_js() {
 <?php
 }
 
-// ****************************************************************
+// *****************************************************************************************    
 // Collapse side menu for Subscriber role
-// ****************************************************************
+// *****************************************************************************************    
 add_action('admin_init', 'groenp_collapse_side_menu_for_subscriber');
 function groenp_collapse_side_menu_for_subscriber() {
     if ( !current_user_can('list_users') ) { // this is the least a manager and administrator can do
@@ -277,9 +285,9 @@ function groenp_add_collapse_js() {
 <?php
 }
 
-// ****************************************************************
+// *****************************************************************************************    
 // Admin footer modification
-// ****************************************************************
+// *****************************************************************************************    
 add_filter('admin_footer_text', 'groenp_change_footer_admin');
 function groenp_change_footer_admin ()
 {
@@ -287,18 +295,15 @@ function groenp_change_footer_admin ()
     echo "<span id='footer-thankyou'>". sprintf( __('Developed in WordPress by %s', 'groenp'), 'Groen Productions') ."</span>";
 }
 
-// ****************************************************************
+// *****************************************************************************************    
 // Set upload folder to be uploads/ (just in case somebody changes it in the admin)
-// ****************************************************************
+// *****************************************************************************************    
 define( 'UPLOADS', 'wp-content/uploads' );
 
-// ****************************************************************
 
-
-
-// ****************************************************************
+// *****************************************************************************************    
 // Remove meta boxes from wordpress dashboard for all users
-// ****************************************************************
+// *****************************************************************************************    
 add_action('wp_dashboard_setup', 'groenp_remove_dashboard_widgets' );
 function groenp_remove_dashboard_widgets()
 {
@@ -309,14 +314,16 @@ function groenp_remove_dashboard_widgets()
     remove_meta_box('dashboard_quick_press', 'dashboard', 'side');			// quick press/quick draft
     remove_meta_box('dashboard_primary', 'dashboard', 'side');				// wordpress news and events
 }
-
+// *****************************************************************************************    
 // Remove  WordPress Welcome Panel
 remove_action('welcome_panel', 'wp_welcome_panel');
 
 // Remove Screen Options tab
 // add_filter('screen_options_show_screen', '__return_false');
 
+// *****************************************************************************************    
 // Remove Help tab, Comments count, '+' New widget, Gravatar, and change greeting in admin bar
+// *****************************************************************************************    
 add_action('admin_bar_menu', 'groenp_clean_up_toolbar_items', 999);
 function groenp_clean_up_toolbar_items($wp_admin_bar) {
 
@@ -356,17 +363,23 @@ function groenp_clean_up_toolbar_items($wp_admin_bar) {
 }
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Stop admin-ajax.php making unneccesary calls every 30secs
-// ****************************************************************
+// *****************************************************************************************    
 // add_action( 'init', 'stop_heartbeat', 1 );
 // function stop_heartbeat() {
 //         wp_deregister_script('heartbeat');
 // }
 
-// ****************************************************************
+// ***************************************************************************************** //
+// Groen Production                                                                          //
+// SECTION: User mails and msgs                                                              //
+//                                                                                           //
+// ***************************************************************************************** //
+
+// *****************************************************************************************    
 // Redirect blocked user to login page - close session
-// ****************************************************************
+// *****************************************************************************************    
 add_action( 'admin_init', 'groenp_redirect_blocked_users' );
 function groenp_redirect_blocked_users() {
 
@@ -393,8 +406,9 @@ function groenp_redirect_blocked_users() {
         wp_redirect( site_url('wp-login.php?custom_logout=yes&wp_lang='.$locale) );
     }
 }
-
+// *****************************************************************************************
 // Define custom message for force-out situation
+// *****************************************************************************************
 if(!empty($_GET['custom_logout']) && strtolower($_GET['custom_logout']) == 'yes'){
 
     add_filter('login_message', 'groenp_force_out_message');
@@ -433,15 +447,10 @@ if(!empty($_GET['custom_logout']) && strtolower($_GET['custom_logout']) == 'yes'
     }
 }
 
-
-// *********************************************************************************
-// SECTION: CHANGE EMAILS SENT TO SUBSCRIBER (ADJUST TONE & MULTI LINGUAL)
-// *********************************************************************************
-
-// *********************************************************************************
+// *****************************************************************************************    
 // New email with link to user for confirmation - message  filter hook
 // (Change of msg body only)
-// *********************************************************************************
+// *****************************************************************************************    
 add_filter( 'new_user_email_content',  'groenp_new_email_mail_message', 10, 2);
 function groenp_new_email_mail_message( $message ) 
 {
@@ -494,10 +503,10 @@ function groenp_new_email_mail_message( $message )
   return $message;
 } // end of: groenp_new_email_mail_message()
 
-// *********************************************************************************
+// *****************************************************************************************    
 // Changed email address notification to user - message  filter hook
 // (Change of msg title and body)
-// *********************************************************************************
+// *****************************************************************************************    
 add_filter( 'email_change_email',  'groenp_changed_email_mail_message', 10, 3);
 function groenp_changed_email_mail_message( $email_change_email,  $user,  $userdata ) 
 {
@@ -563,10 +572,10 @@ function groenp_changed_email_mail_message( $email_change_email,  $user,  $userd
 } // end of: groenp_changed_email_mail_message()
 
 
-// *********************************************************************************
+// *****************************************************************************************    
 // Changed password notification to user - message  filter hook
 // (Change of msg title and body)
-// *********************************************************************************
+// *****************************************************************************************    
 add_filter( 'password_change_email',  'groenp_changed_pwd_mail_message', 10, 3);
 function groenp_changed_pwd_mail_message(  $pass_change_email,  $user,  $userdata ) 
 {
@@ -619,10 +628,10 @@ function groenp_changed_pwd_mail_message(  $pass_change_email,  $user,  $userdat
   return $pass_change_email;
 }
 
-// ****************************************************************
+// *****************************************************************************************
 // User requested new password - message filter hook
 // (change msg body only)
-// ****************************************************************
+// *****************************************************************************************
 add_filter( 'retrieve_password_message', 'groenp_retrieve_password_message', 10, 2 );
 function groenp_retrieve_password_message( $message, $key ){
     $user_data = '';
@@ -691,10 +700,10 @@ function groenp_retrieve_password_message( $message, $key ){
     return $message;
 } // end of: groenp_retrieve_password_message()
 
-// ****************************************************************
+// *****************************************************************************************
 // User requested new password - message filter hook
 // (change msg title only)
-// ****************************************************************
+// *****************************************************************************************
 add_filter( 'retrieve_password_title',  'groenp_retrieve_password_title', 10, 2);
 function groenp_retrieve_password_title(  $title,  $user_login ) 
 {
@@ -730,13 +739,14 @@ function groenp_retrieve_password_title(  $title,  $user_login )
 } // end of: groenp_retrieve_password_title()
 
 
-// ****************************************************************
-// Groen Productions - Log database actions in monthly log files
-//                     For standard  WordPress interface: 
-//                     'Add New User', 'Edit', 'Delete', 'Forgot password', 
-//                     'Start session', 'Close session' 
-//
-// ****************************************************************
+// **************************************************************************************** //   
+// Groen Production                                                                         //
+// SECTION: Log database actions in monthly log files                                       //
+//                                                                                          //
+// **************************************************************************************** //    
+//  For standard WordPress interface: 
+//  'Add New User', 'Edit', 'Delete', 'Forgot password', 'Start session', 'Close session' 
+// *****************************************************************************************
 add_action( 'user_register', 'groenp_log_add_user', 10, 1); // hooked right after creation
 function groenp_log_add_user( $user_id ) 
 {
@@ -807,8 +817,6 @@ function groenp_log_deleted_user( $user_id )
     _lua("WPuser", "User delete successful.");
 }
 
-// check_passwords
-
 add_action( 'retrieve_password_key', 'groenp_log_user_forgot', 10, 1);
 function groenp_log_user_forgot( $user_login ) 
 {
@@ -851,15 +859,17 @@ function groenp_log_logout()
 }
 
 
-// ****************************************************************
-// Insert Assets files into Dashboard pages
-// ****************************************************************
+// **************************************************************************** //
+// Groen Production                                                             //
+// SECTION: Insert Assets files into Management pages                           //
+//                                                                              //
+// **************************************************************************** //
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions  - groenp_script_enqueuer()
 //                    - Includes jQuery (ajax) javascript at the right spot, and 
 //                      non-subscriber javascript only for GP admin
-// ****************************************************************
+// *****************************************************************************************    
 
 function groenp_script_enqueuer() 
 {
@@ -879,26 +889,19 @@ function groenp_script_enqueuer()
 add_action( 'init', 'groenp_script_enqueuer' );
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions  - groenp_include_in_head()
 //                    - Includes in head: 
 //                      groenp-sites-cms(.min).css
-//                      font-awesome.min.css
 //
-// ****************************************************************
+// *****************************************************************************************    
 function groenp_include_in_head() 
 { 
-    // global vars driven by server
-    // echo "<script type='text/javascript'>
-    //     var TZsrvr = '". sprintf('%+03d', get_option('gmt_offset')) ."' + ':00'; // get server time-zone (from WordPress)
-    // </script>";
-
     // default SSL port number OR http: port number; use minimized version, otherwise not
     $min_url = ($_SERVER['SERVER_PORT'] == '443' || $_SERVER['SERVER_PORT'] == '80') ? '.min' : '';
 
-    // include style sheets
-    echo "<script src='https://kit.fontawesome.com/a02f8b3e52.js' crossorigin='anonymous'></script>
-        <link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "assets/groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
+    // include style sheet (use dashicons instead of font awesome)
+    echo "<link type='text/css' href='" . trailingslashit( get_stylesheet_directory_uri() ) . "assets/groenp-sites-cms" . $min_url . ".css' rel='stylesheet' media='all' />";
 } 
 add_action('admin_head','groenp_include_in_head');
 add_action('login_head','groenp_include_in_head');
@@ -915,10 +918,10 @@ function groenp_print_script_in_footer() {
         });
         </script>";
 }
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions  - groenp_pomo_setup()
 //                    - Load the groenp mo files from /wp-content/languages/themes
-// ****************************************************************
+// *****************************************************************************************    
 add_action( 'after_setup_theme', 'groenp_pomo_setup' );
 function groenp_pomo_setup(){
 
@@ -926,9 +929,31 @@ function groenp_pomo_setup(){
 }
 
 
-// ****************************************************************
+
+// **************************************************************************** //
+// Groen Production                                                             //
+// SECTION: Require PHP files depending on user privileges                      //
+//          - Define common Meta Boxes: WELCOME, SETTINGS                       //
+//          - Helper functions                                                  //
+//                                                                              //
+// **************************************************************************** //
+
+
+// *****************************************************************************************    
+// Groen Productions - Require other project's PHP files
+//                     - Depending on role or Prjct/Sbscrbr assignment
+// *****************************************************************************************    
+/* all meta boxes for the Subscribers page have been defined in: 'groenp_subscribers.php' */
+if ( current_user_can('list_users') )                           require_once( 'groenp_subscribers.php' );
+
+// Check user privileges and determine which sections can be loaded (ADMIN has always access)
+if ( groenp_load_on_privileges( 'groenp_test_mgmt.php' ) > 0 )  require_once( 'groenp_test_mgmt.php' );
+if ( groenp_load_on_privileges( 'groenp_test2_mgmt.php' ) > 0 )  require_once( 'groenp_test2_mgmt.php' );
+
+
+// *****************************************************************************************    
 // Groen Productions - Create WELCOME Meta Box for Dashboard  
-// ****************************************************************
+// *****************************************************************************************    
 add_action( 'wp_dashboard_setup', 'groenp_dashboard_meta_boxes_add' );  
 function groenp_dashboard_meta_boxes_add()  
 {  
@@ -936,9 +961,10 @@ function groenp_dashboard_meta_boxes_add()
     wp_add_dashboard_widget( 'welcome-mb', sprintf( __("Welcome to the %s", 'groenp'), __("Groen Productions | Site Management Tool", 'groenp')) , 'groenp_welcome_meta_box_cb');
 }
 
-// ****************************************************************
-// Callback for WELCOME Meta Box
-// ****************************************************************
+// *****************************************************************************************    
+// Groen Productions - Callback for WELCOME Meta Box 
+//                      - i19n translatable
+// *****************************************************************************************    
 function groenp_welcome_meta_box_cb()
 {  
     // Retrieve user's locale 
@@ -974,24 +1000,93 @@ function groenp_welcome_meta_box_cb()
     
 } // End of: groenp_welcome_meta_box_cb()
 
-/******************************************************************************/
-/* Groen Productions site management functions for all Dashboard pages        */
-/*                                                                            */
-/******************************************************************************/
 
-/* all meta boxes for the Subscribers page have been defined in: 'groenp_subscribers.php' */
-if ( current_user_can('list_users') ) require_once( 'groenp_subscribers.php' );
+// *****************************************************************************************    
+// Groen Productions - Callback for general SETTINGS Meta Box  
+//                      - Projects table driven 
+//                      - $php_file = name of php file (basename())
+// *****************************************************************************************    
+function groenp_settings_meta_box_cb()
+{  
+    // retrieve project information
+    global $plugin_page;
+    if ( isset($plugin_page) ) {
 
-// Check user privileges and determine which sections can be loaded (ADMIN has always access)
-groenp_load_on_privileges( 'groenp_test_mgmt.php' );
+        // should be only 1 settings box per page; make box unique per page = project
+        $project = groenp_get_project_from_slug( $plugin_page );
+
+    } else {
+        // it's on dashboard, so most likely Subscriber; it may only have one project assigned
+        global $project; 
+    }
+
+    // retrieve user's locale 
+    $user = wp_get_current_user();
+    $locale = ($user)? get_user_locale( $user->ID ) : get_user_locale();
+
+    // make this form unique
+    $func = 'Rfrsh';
+    
+    // default SSL port number; use https version, otherwise not
+    $protocol = ($_SERVER['SERVER_PORT'] == '443') ? 'https://' : 'http://';
+
+    // create form url for this meta box
+	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '#' . $func;
+
+    // store the switch setting on load of form 
+    // switch can be set ("on" = TEST), can be off and not showing in $_POST ( "" = LIVE), or simply not set (other form loaded etc.)
+    // for this last alternative, $test_set is created that always stores the setting on load. it shows in every form
+    // 1) check if any form is submitted. if not, just load as not set, so LIVE
+    // 2) check if switch is set (by pushbutton: 'RefreshLT') and then check switch ('live-test') ignores everything else
+    // 3) check test_set field (switch is not used, simply copy over from previous submit)
+    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
+
+    // Meta box introduction
+    // TRANSLATORS: Please review the + Privacy Statement and Terms of Use 
+    echo "<a class='anchr' name=" . $func . "></a>
+    <form action='" . $form_url . "' method='post' enctype='multipart/form-data'>
+        <p>". __("Please review the",'groenp') . " <a href= '". site_url('privacy_and_terms_of_use.php?wp_lang=' . $locale) ."'>".  __("Privacy Statement and Terms of Use", 'groenp') ."</a>.</p>";
+
+        // switch and buttons only shown if there is a test version
+        // create hidden field that contains the state of the switch as the page loads
+        // the custom switch does not necessarily show the correct state at load, so needs to be set through jquery 
+        if ( $project['is_test_active'] ) echo "
+        <input type='hidden' name='test_set' id='test_set' value='". $test_set ."' />
+        <p class='hor-form test-switch'>
+            <span class='prompt'>Choose here which version of your CMS you want to work on:<br />
+            <span class='context testver'>Only those that have access to the test version will see it. It is a great way to try things out, before everybody sees it.</span>
+            <span class='context livever'>The live version is directly connected to the live site.</span></span>
+            <label class='test-switch'>
+                <input id='live-test' name='live-test' type='checkbox' " . dis($test_set,"chk_ctrl") . ">
+                <span class='test-slider'></span>
+            </label>
+            <span class='context'>(these versions are not connected in any way, the data is not copied over)</span> 
+        </p>
+        <p class='hor-form'>
+            <label for='refresh'>Retrieve data for selected version (Live/Test):</label><span>(reload page in order to retrieve the data for all the lists on this page)</span><button type='submit' class='button-primary' name='RefreshLT'>Reload entire page  <i class='wpicon'>&#xf463;</i></button>
+        </p>
+        <p class='hor-form livever'"; if ($test_set == "on") echo "style=' display: none;'"; echo ">
+            <label for='open_site'>Verify the results on LIVE:</label><span>(website will open in a separate window or tab)</span><a type='button' class='button-primary launch' name='open_site' target='_blank' href='https://". $project['base_url'] ."'>Open LIVE website</a>
+        </p>
+        <p class='hor-form testver'"; if ($test_set == "") echo "style=' display: none;'"; echo ">
+            <label for='open_site'>Verify the results on TEST:</label><span>(website will open in a separate window or tab)</span><a type='button' class='button-primary launch' name='open_site' target='_blank' href='https://". $project['test_url'] ."'>Open TEST website</a>
+        </p>";
+
+    // in any case echo this
+    echo "</form>
+    <p class='button-row btt'><a href='#'>back to top</a>
+    </p>";
+
+} // End: groenp_settings_meta_box_cb()
 
 
-// **************************************************************** 
+// *****************************************************************************************    
 //  Groen Productions - Determine whether php file should be loaded based on
 //                      the sbscrbr/project pairing in groenp_subscribers.php
 //                      - $php_file = name of php file with project and MBs
+//                      -> returns the number of hits of sbscrbr/project (PHP) pairing: 0 or 1
 //
-// **************************************************************** 
+// *****************************************************************************************    
 function groenp_load_on_privileges( $php_file )
 {
     if ( current_user_can('list_users') ) 
@@ -1008,7 +1103,7 @@ function groenp_load_on_privileges( $php_file )
         $con = groenp_open_database();
 
         // query: prjct_php-> pk = fk_prjct_id | fk_sbscrbr_id = pk <- sbscrbr_login
-        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id, sub.sbscrbr_login, prj.prjct_php, prj.prjct_name, prj.base_url, prj.is_test_active, prj.test_url' .
+        $stmt = mysqli_prepare($con, 'SELECT spp.pk_sppair_id' .
             ' FROM gp_sbscrbr_prjct_pairings spp'.
             ' LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
             ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
@@ -1020,18 +1115,155 @@ function groenp_load_on_privileges( $php_file )
         // record the number of hits, this can be zero, one or more
         $load = mysqli_stmt_num_rows($stmt);
         mysqli_stmt_close($stmt); 
-        // close database
-        mysqli_close($con);
-    }
 
-    // _log("gp_sbscrbr_prjct_pairings - num of result rows: " . $load);
-    if ( $load > 0 ) {
-        require_once( $php_file );
+        // close database
+        mysqli_close($con);   
     }
+    return $load;
 }  // end of: groenp_load_on_privileges( $php_file )
 
 
-// **************************************************************** 
+// *****************************************************************************************    
+// Function to get Projects data from groenp_sites_cms database
+// - Based on $php_file (basename() of __FILE__ )
+// - Queries Projects table in groenp_sites_cms
+// *****************************************************************************************    
+function groenp_get_project_from_file( $php_file )
+{
+    // open database
+    $con = groenp_open_database();
+
+    // query projects and store in array
+    // $result = mysqli_query($con, 'SELECT prjct_name, prjct_php, base_url, is_test_active, test_url FROM gp_projects WHERE prjct_php = "'. $php_file .'";');
+    $result = mysqli_query($con, 'SELECT * FROM gp_projects WHERE prjct_php = "'. $php_file .'";');
+
+    // there can only be one result row. In any case; only get the first one
+    $row = mysqli_fetch_assoc($result);
+
+    // $row will be null if there was no result, load error instead
+    if (!isset($row)) $row = array('error'=>"Could not get project data for php file: ". $php_file .".");
+
+    // free result and close database
+    mysqli_free_result($result);
+    mysqli_close($con);
+
+    return $row;
+} // end of: groenp_get_project_from_file()
+
+
+// *****************************************************************************************    
+// Function to get Projects data from groenp_sites_cms database
+// - Based on global $plugin_page
+// - Queries Projects table in groenp_sites_cms
+// *****************************************************************************************    
+function groenp_get_project_from_slug( $plugin_page )
+{
+    // open database
+    $con = groenp_open_database();
+
+    // query projects and store in array
+    // $result = mysqli_query($con, 'SELECT prjct_name, prjct_php, base_url, is_test_active, test_url FROM gp_projects WHERE prjct_php = "'. $php_file .'";');
+    $result = mysqli_query($con, 'SELECT * FROM gp_projects WHERE page_slug = "'. $plugin_page .'";');
+
+    // there can only be one result row. In any case; only get the first one
+    $row = mysqli_fetch_assoc($result);
+
+    // $row will be null if there was no result, load error instead
+    if (!isset($row)) $row = array('error'=>"Could not get project data for slug: ". $plugin_page .".");
+
+    // free result and close database
+    mysqli_free_result($result);
+    mysqli_close($con);
+
+    return $row;
+} // end of: groenp_get_project_from_slug()
+
+
+
+// *****************************************************************************************    
+// Callback for sub menu page framework creation based on add_submenu_page() call
+//
+//        - third step in the meta box creation (do, specifically in own page)
+//          (meta boxes: register -> add (creation in mem) -> do (placement))
+//        - allows the metaboxes to be spread over 1 or 2 columns.
+//        - Uses: 
+//          global $title (page title)
+//          global $plugin_page (page slug)
+// *****************************************************************************************    
+function groenp_create_page_cb() 
+{
+    // Retrieve project information
+    global $title;
+    global $plugin_page;
+
+    echo "<div class='wrap'>
+        <h2>". $title ."</h2>";
+ 
+        // wp_nonce_field used to save closed meta boxes and their order. 
+        // This is not working, because a form will interfere with the other forms in the Groen Productions Meta Boxes.
+        // They are placed here, so the manipulation of these post boxes work during the page display.
+
+		echo "<form method='post'>";
+        wp_nonce_field($plugin_page);
+        wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+        wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
+		echo "</form>";
+
+        echo "<div id='poststuff'>
+ 
+            <div id='post-body' class='metabox-holder columns-2'>
+
+                <!-- #post-body-content -->
+                <div id='postbox-container-1' class='postbox-container'>
+                    <!-- second column stays empty -->
+                    <div class='meta-box-sortables ui-sortable empty-container' id='side-sortables'></div>
+                </div>
+ 
+                <div id='postbox-container-2' class='postbox-container'>
+
+                    <!-- all metaboxes go into the first column -->";
+
+        do_meta_boxes($plugin_page, 'normal', null); 
+
+                echo "</div>
+
+            </div> <!-- #post-body --> 
+ 
+        </div> <!-- #poststuff -->
+
+    </div>  <!-- wrap -->";
+}
+
+// *****************************************************************************************    
+// Groen Productions  - groenp_register_meta_boxes()
+//                      registers metaboxes based on unique global $plugin_page
+//                    - first step in generic inclusion of a project's metaboxes
+//                      meta boxes: register -> add (creation in mem) -> do (placement)
+// *****************************************************************************************   
+function groenp_register_meta_boxes() 
+{
+    // make sure to load the correct meta boxes for the page
+    global $plugin_page;
+
+    // trigger the add_meta_boxes hooks to allow meta boxes to be added 
+    do_action('add_meta_boxes_' . $plugin_page, null);
+    do_action('add_meta_boxes'  , $plugin_page, null);
+ 
+    // enqueue WordPress' script for handling the meta boxes 
+    wp_enqueue_script('postbox');
+ 
+    // Add screen option: set to 1 in jQuery (groenp-sites-admin.js) 
+}
+
+
+
+// **************************************************************************** //
+// Groen Production                                                             //
+// SECTION: GENERAL HELPER FUNCTIONS                                            //
+//                                                                              //
+// **************************************************************************** //
+
+// *****************************************************************************************    
 //  Groen Productions - Open GROENP_SITES_CMS database 
 //
 //  There are 2 groenp users, one for each level of access:
@@ -1039,7 +1271,7 @@ function groenp_load_on_privileges( $php_file )
 //    - Database is named groenp_sites_cms local and on Groen Productions server
 //    - There is no separate database on test server
 //
-// ****************************************************************
+// *****************************************************************************************    
 function groenp_open_database() 
 {
     // connect with correct user and select correct db
@@ -1071,10 +1303,10 @@ function groenp_open_database()
 }
 
 
-// ****************************************************************
+// *****************************************************************************************    
 //  Groen Productions - retrieve locale from url or <html>
 //                      ONLY use when user is not logged in
-// ****************************************************************
+// *****************************************************************************************    
 function groenp_anon_locale()
 {
     // _log('wp_lang: '. $_GET['wp_lang']);                                                                                                // DEBUG //
@@ -1088,7 +1320,7 @@ function groenp_anon_locale()
     // return substr($locale, 0, 2);
 }
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions - Upload Picture to Stroomt directory (optionally set max filesize and exact dimensions)
 //
 // $photo_file	= local path as it has been defined in the <input type='file'>
@@ -1096,7 +1328,7 @@ function groenp_anon_locale()
 // $width		= image width in pixels (optional)
 // &height		= image height in pixels (optional)
 //
-// ****************************************************************
+// *****************************************************************************************    
 
 function groenp_upload_pic($photo_file, $maxsize_kb = NULL, $width = NULL, $height = NULL)
 {
@@ -1198,7 +1430,7 @@ function groenp_upload_pic($photo_file, $maxsize_kb = NULL, $width = NULL, $heig
 // ************************************************************************** //
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions - Sanitizes user input; magic quotes are on, so 
 //                     places all input inside quotes, except for "chk" and "b",
 //                     returns string with "NULL" when empty input.
@@ -1216,7 +1448,7 @@ function groenp_upload_pic($photo_file, $maxsize_kb = NULL, $width = NULL, $heig
 //   "m"			    = monetary amount
 //   "wp"			    = string for wp_user, san handled by wp
 //
-// ****************************************************************
+// *****************************************************************************************    
 function san(&$input, $m = "s")
 {
     if( $m=="wp" ) return $input; // don't do anything, wp will take care of san
@@ -1263,7 +1495,7 @@ function san(&$input, $m = "s")
     }
 } // end of: san()
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions - Sanitizes user input FOR PREPARED STATEMENTS (no qoutes),
 //                     returns NULL when empty input.
 //
@@ -1283,7 +1515,7 @@ function san(&$input, $m = "s")
 //   'tel'			    = telephone number as 9-digit integer (INT(9))
 //   's'			    = string (default, escape slashes stripped)
 //
-// ****************************************************************
+// *****************************************************************************************    
 function prep(&$input, $m = 's', $acc = '')
 {
     if( $m=='wp' ) return $input; // don't do anything, wp will take care of san
@@ -1312,19 +1544,13 @@ function prep(&$input, $m = 's', $acc = '')
         case 'tr':
         $amt = preg_replace( '/[^0-9\.,]/', '', $input );                           // strip off anything that's not a digit or potential delimiter
         $posp = strrpos( $amt, '.');                                                // last occurrence of .
-        //_log("posp: " . $posp);                                                     // DEBUG //
         $posc = strrpos( $amt, ',');                                                // last occurrence of ,
-        //_log("posc: " . $posc);                                                     // DEBUG //
         if($posp === false && $posc === false ) return floatval($amt);              // if no delimeters found, then return number
+
         $dec = ($posc > $posp)? substr($amt,$posc + 1) : substr($amt,$posp + 1);    // get decimal section (. or , used as decimal?)
-        //_log("dec: " . $dec);                                                       // DEBUG //
-        //_log("amt: " . $amt);                                                       // DEBUG //
         $amt = preg_replace( '/[\.,]/', '', $amt );                                 // strip off any delimeters
-        //_log("amt: " . $amt);                                                       // DEBUG //
         $amt = preg_replace('/'.$dec.'$/', '', $amt);                               // strip off $dec part
-        //_log("amt: " . $amt);                                                       // DEBUG //
-        $amt = round( floatval($amt . '.' . $dec), 2);                                  // create float and round it to 2 decimals
-        //_log("amt: " . $amt);                                                       // DEBUG //
+        $amt = round( floatval($amt . '.' . $dec), 2);                              // create float and round it to 2 decimals
         if (strtolower($m) == 'm') return $amt;
 
         // case "tr" only:
@@ -1368,7 +1594,7 @@ function prep(&$input, $m = 's', $acc = '')
 } // end of: prep()
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions - Displays sanitized data (from database or straight from $_POST) 
 //                    to be used in filter fields 
 //                    or from database (for specific display format)
@@ -1389,7 +1615,7 @@ function prep(&$input, $m = 's', $acc = '')
 //   'd'			    =  date (dd-mm-yyyy), used for input controls, etc.
 //   'dl'			    =  date in language (dd-MMM-yyyy)
 //
-// ****************************************************************
+// *****************************************************************************************    
 function dis(&$output, $f = 'a', $rad = NULL)
 {
     // boolean always returns true or false 
@@ -1459,7 +1685,7 @@ function dis(&$output, $f = 'a', $rad = NULL)
 } // end of: dis()
 
 
-// ****************************************************************
+// *****************************************************************************************    
 // Groen Productions - Search (json style) array for specific key <=> value pair 
 //                     first pair encountered will be returned, so pair has to be unique 
 //
@@ -1469,7 +1695,7 @@ function dis(&$output, $f = 'a', $rad = NULL)
 //
 // returns array containing the found pair
 //
-// ****************************************************************
+// *****************************************************************************************    
 function find_array_in_json(Array $json, $key, $value) 
 {   
     foreach ($json as $subarray){  

@@ -1,107 +1,51 @@
 <?php
 /******************************************************************************/
 /*                                                              Pieter Groen  */
-/*  Version 0.1 - May 23, 2020 (conversion from cusconow)                     */
-/*  Version 0.2 - June 5, 2020 (project mgmt)                                 */
-/*  Version 0.3 - June 9, 2020 (subscriber-project pairing)                   */
+/*  Version 0.1 - May  23, 2020 (conversion from cusconow)                    */
+/*  Version 0.2 - June  5, 2020 (project mgmt)                                */
+/*  Version 0.3 - June  9, 2020 (subscriber-project pairing)                  */
+/*  Version 0.4 - June 25, 2020 (use of general functions for page creation)  */
 /*                                                                            */
 /*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                    */
-/*   - subscriber management                 (~line  125)                     */
+/*   - subscriber management                 (~line   80)                     */
 /*   - project management                    (~line  660)                     */
-/*   - subscriber-project pairing            (~line  930)                     */
+/*   - subscriber-project pairing            (~line  990)                     */
 /*                                                                            */
 /******************************************************************************/
-
+// namespace groenp;
 
 /******************************************************************************/
 /*  Groen Productions - Add Subscribers page to the WordPress Dashboard       */
 /******************************************************************************/
 
+
 // ****************************************************************
-// Define this screen globally: 'groenp_subscribers'
+// Define this screen globally: 'groenp_subscribers' 
 // ****************************************************************
-$struct_screen = 'groenp_subscribers';
+// $page_slug = 'groenp_subscribers'; // << avoid using global vars >>
+
+// Globals > AVOID
+$project = groenp_get_project_from_file( basename(__FILE__) );
+$page_slug = $project['page_slug'];
 
 // ****************************************************************
 // Add callbacks for this screen only
 // ****************************************************************
-// add_action('admin_footer-dashboard_page_' . $struct_screen,'groenp_print_script_in_footer');
+add_action('load-dashboard_page_' . $page_slug, 'groenp_register_meta_boxes');
+// groenp_register_meta_boxes() defined in functions.php
 
-// remove screen option tab, but only for this page <= NOT NECCESSARY 
-// add_filter('screen_options_show_screen', 'groenp_remove_these_options', 10, 2);
-// function groenp_remove_these_options( $struct_screen, \WP_Screen $screen ) {
-
-//     global $struct_screen;
-
-//     return ('dashboard_page_' . $struct_screen) === $screen->base ? false : true; 
-// }
-
-add_action('load-dashboard_page_' . $struct_screen, 'groenp_insert_subscribers_meta_boxes');
-function groenp_insert_subscribers_meta_boxes( $struct_screen ) {
- 
-    global $struct_screen;
-    // $struct_screen = 'groenp_subscribers';
-
-    /* Trigger the add_meta_boxes hooks to allow meta boxes to be added */
-    do_action('add_meta_boxes_' . $struct_screen, null);
-    do_action('add_meta_boxes'  , $struct_screen, null);
- 
-    /* Enqueue WordPress' script for handling the meta boxes */
-    wp_enqueue_script('postbox');
- 
-    /* Add screen option: set to 1 in jQuery (groenp-sites-admin.js) */
-}
  
 /* Create page content */
 add_action('admin_menu', 'groenp_register_subscribers_submenu_page');
-function groenp_register_subscribers_submenu_page() {
-	add_submenu_page( 'index.php', 'Subscribers', 'GP: Subscribers', 'create_users', 'groenp_subscribers', 'groenp_subscribers_page_cb' ); 
+
+function groenp_register_subscribers_submenu_page() 
+{
+    $project = groenp_get_project_from_file( basename(__FILE__) );
+
+    // add_submenu_page( 'index.php', 'Subscribers', 'GP: Subscribers', 'create_users', 'groenp_subscribers', 'groenp_create_page_cb' ); 
+	add_submenu_page( 'index.php', $project['prjct_name'], 'GP: '. $project['prjct_name'] , 'create_users', $project['page_slug'], 'groenp_create_page_cb' ); 
 }
-
-function groenp_subscribers_page_cb( $struct_screen ) {
-	
-    global $struct_screen;
-    // $struct_screen = 'groenp_subscribers';
-
-    echo "<div class='wrap'>
-        <h2>Subscribers and their projects</h2>";
- 
-        /* Used to save closed meta boxes and their order. 
-		   This is not working, because a form will interfere with the other forms in the Groen Productions Meta Boxes. */
-
-		echo "<form method='post'>";
-        wp_nonce_field($struct_screen);
-        wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
-        wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
-		echo "</form>";
-
-        echo "<div id='poststuff'>
- 
-            <div id='post-body' class='metabox-holder columns-2'>
-
-                <!-- #post-body-content -->
-                <div id='postbox-container-1' class='postbox-container'>
-                    <!-- second column stays empty -->
-                    <div class='meta-box-sortables ui-sortable empty-container' id='side-sortables'></div>
-                </div>
- 
-                <div id='postbox-container-2' class='postbox-container'>
-
-                    <!-- all metaboxes go into the first column -->";
-
-        do_meta_boxes($struct_screen, 'normal', null); 
-
-                echo "</div>
-
-            </div> <!-- #post-body --> 
- 
-        </div> <!-- #poststuff -->";
- 
-//		echo "</form>";
- 
-    echo "</div>  <!-- wrap -->";
-
-}
+// groenp_create_page_cb() defined in functions.php
 
 
 /******************************************************************************/
@@ -109,18 +53,19 @@ function groenp_subscribers_page_cb( $struct_screen ) {
 /*                                                                            */
 /******************************************************************************/
 
-function groenp_subscribers_meta_boxes_add( $struct_screen ) 
-{
-    global $struct_screen; 
-    // $struct_screen = 'groenp_subscribers';
+// pattern: add_action('add_meta_boxes_'. $page_slug, $page_slug .'_meta_boxes_add')
+add_action('add_meta_boxes_groenp_subscribers', 'groenp_subscribers_meta_boxes_add');
 
-    add_meta_box( 'gp-sbscrbr-cnt-mb', 'This page supports the following tasks:', 'groenp_sbscrbr_content_meta_box_cb', $struct_screen, 'normal' );
-    add_meta_box( 'gp-subscribers-mb', 'Manage subscribers',                      'groenp_subscribers_meta_box_cb',     $struct_screen, 'normal' );
-    add_meta_box( 'gp-projects-mb',    'Manage projects',                         'groenp_projects_meta_box_cb',        $struct_screen, 'normal' );
-    add_meta_box( 'gp-subpro-mb',      'Manage subscriber / project pairing',     'groenp_subpro_pairing_meta_box_cb',  $struct_screen, 'normal' );
+function groenp_subscribers_meta_boxes_add() 
+{
+    global $plugin_page;
+
+    add_meta_box( 'gp-sbscrbr-cnt-mb', 'This page supports the following tasks:', 'groenp_sbscrbr_content_meta_box_cb', $plugin_page, 'normal' );
+    add_meta_box( 'gp-subscribers-mb', 'Manage subscribers',                      'groenp_subscribers_meta_box_cb',     $plugin_page, 'normal' );
+    add_meta_box( 'gp-projects-mb',    'Manage projects',                         'groenp_projects_meta_box_cb',        $plugin_page, 'normal' );
+    add_meta_box( 'gp-subpro-mb',      'Manage subscriber / project pairing',     'groenp_subpro_pairing_meta_box_cb',  $plugin_page, 'normal' );
 
 }
-add_action('add_meta_boxes_' . $struct_screen, $struct_screen . '_meta_boxes_add');
 
 
 // ****************************************************************
@@ -743,7 +688,7 @@ function groenp_projects_meta_box_cb()
     // ************************************************************
     {
 		// Check if all mandatory fields have been entered
-		if ( empty($_POST['prjct_name']) || empty($_POST['prjct_php']) || empty($_POST['base_url']) ) // empty($_POST['upload_dir']) left out: upload is optional, also test is optional
+		if ( empty($_POST['prjct_name']) || empty($_POST['page_slug']) || empty($_POST['prjct_php']) || empty($_POST['base_url']) ) // empty($_POST['upload_dir']) left out: upload is optional, also test is optional
 		{
             //_log("*** input error ***");
     		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
@@ -762,6 +707,7 @@ function groenp_projects_meta_box_cb()
         else {
                 // define and sanitize vars
                 $prjct_name       = prep($_POST['prjct_name'], 's');
+                $page_slug        = prep($_POST['page_slug'], 's');
                 $prjct_php        = prep($_POST['prjct_php'], 's');
                 $base_url       = prep($_POST['base_url'], 's');
                 $upload_dir     = prep($_POST['upload_dir'], 's');
@@ -776,15 +722,15 @@ function groenp_projects_meta_box_cb()
 			{
                 // create a prepared statement 
                 $query_string = 'INSERT INTO gp_projects ' .
-                    '(prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) ' . 
-                    'VALUES (?, ?, ?, ?, ?, ?, ?)';
+                    '(prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir) ' . 
+                    'VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
                 // _log("Add query for ". $func .": ". $query_string);                // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string
-                    $bind = mysqli_stmt_bind_param($stmt, 'ssssiss', $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir);
+                    $bind = mysqli_stmt_bind_param($stmt, 'sssssiss', $prjct_name, $page_slug, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -804,7 +750,7 @@ function groenp_projects_meta_box_cb()
 
                 // create a prepared statement 
                 $query_string = 'UPDATE LOW_PRIORITY gp_projects SET ' .
-                    'prjct_name = ?, prjct_php = ?, base_url = ?, upload_dir = ?, is_test_active = ?, test_url = ?, test_upl_dir = ? ' . 
+                    'prjct_name = ?, page_slug = ?, prjct_php = ?, base_url = ?, upload_dir = ?, is_test_active = ?, test_url = ?, test_upl_dir = ? ' . 
                     'WHERE pk_prjct_id = ?';
                 //_log("Edit query for ". $func .": ". $query_string);              // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
@@ -812,7 +758,7 @@ function groenp_projects_meta_box_cb()
                 if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
-                    $bind = mysqli_stmt_bind_param($stmt, 'ssssissi', $prjct_name, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir, $pk_prjct_id);
+                    $bind = mysqli_stmt_bind_param($stmt, 'sssssissi', $prjct_name, $page_slug, $prjct_php, $base_url, $upload_dir, $is_test_active, $test_url, $test_upl_dir, $pk_prjct_id);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         // execute query 
@@ -874,8 +820,8 @@ function groenp_projects_meta_box_cb()
 
     // For now not used in this Meta Box, but use in Subscriber/Project Pairing
     // Create query for all Projects
-    $query_string = 'SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
-                    ' FROM gp_projects ORDER BY prjct_name, prjct_php;';
+    $query_string = 'SELECT pk_prjct_id, prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
+                    ' FROM gp_projects ORDER BY prjct_name, page_slug;';
 
     // store in different temp array
     $projects = array();
@@ -922,7 +868,7 @@ function groenp_projects_meta_box_cb()
     <p>If there is a test version of the product, it will reside in a different directory at GoDaddy which may mean a different relative upload directory. 
     This is stored in the Test upload directory.</p>
 
-    <p>Projects cannot be deleted when they are assigned to one or more subscribers. Entry fields marked with a '*' are mandatory.</p>";
+    <p>Projects cannot be deleted when they are assigned to one or more subscribers. Entry fields marked with a '*' are mandatory. Entry fields marked with '**' have to be unique as well.</p>";
     
     // Start of form
 	echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'><p>
@@ -933,6 +879,7 @@ function groenp_projects_meta_box_cb()
             <tr style='text-align: left'>
                 <th class='numb'>ID</th>
                 <th>Project name</th>
+                <th>Page slug</th>
                 <th>Base url</th>
                 <th>PHP filename</th>
                 <th>Upload dir</th>
@@ -947,17 +894,17 @@ function groenp_projects_meta_box_cb()
     if (isset($editkey))
     {
         // prepare statement excluding item to be edited
-        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url' .
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url' .
                              ' FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name, prjct_php');
         mysqli_stmt_bind_param($stmt, 'i', $editkey);
     } else {
         // prepare statement in similar way as edit, but no parameters
-        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url' .
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url' .
                              ' FROM gp_projects ORDER BY prjct_name, prjct_php');
     } // End of: not set editkey
 
     mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name'], $row['prjct_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
+    mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name'], $row['page_slug'], $row['prjct_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
 
     // Retrieve row by row the project data in the DB
     while ( mysqli_stmt_fetch($stmt) )
@@ -966,6 +913,7 @@ function groenp_projects_meta_box_cb()
         echo "<tr>
                 <td class='numb'>" . dis($row['pk_prjct_id'],'i') . "</td>
                 <td>" . dis($row['prjct_name'],'s') . "</td>
+                <td>" . dis($row['page_slug'],'s') . "</td>
                 <td>" . dis($row['base_url'],'s') . "</td>
                 <td>" . dis($row['prjct_php'],'s') . "</td>
                 <td>" . dis($row['upload_dir'],'s') . "</td>
@@ -991,11 +939,11 @@ function groenp_projects_meta_box_cb()
     if ( isset($editkey) )
     {
         unset($stmt);
-        $stmt = mysqli_prepare($con, 'SELECT prjct_name, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
+        $stmt = mysqli_prepare($con, 'SELECT prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
                              ' FROM gp_projects WHERE pk_prjct_id = ?');
         mysqli_stmt_bind_param($stmt, 'i', $editkey);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $editrow['prjct_name'], $editrow['prjct_php'], $editrow['base_url'], $editrow['upload_dir'], $editrow['is_test_active'], $editrow['test_url'], $editrow['test_upl_dir']);
+        mysqli_stmt_bind_result($stmt, $editrow['prjct_name'], $editrow['page_slug'], $editrow['prjct_php'], $editrow['base_url'], $editrow['upload_dir'], $editrow['is_test_active'], $editrow['test_url'], $editrow['test_upl_dir']);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt); 
     }
@@ -1012,7 +960,8 @@ function groenp_projects_meta_box_cb()
         // If Edit populate each field with the present values
         echo "
         <label for='prjct_name'>Project name *</label><span>(max. 50 chars, only for this interface)</span><input type='text' name='prjct_name' id='prjct_name' maxlength='50' value='" . dis($editrow['prjct_name'],"s") . "' />
-        <label for='prjct_php'>PHP file *</label><span>(filename in themes directory)</span><input type='text' name='prjct_php' id='prjct_php' maxlength='50' value='" . dis($editrow['prjct_php'],"s") . "' />
+        <label for='page_slug'>Page slug **</label><span>(unique identifier for possible page)</span><input type='text' name='page_slug' id='page_slug' maxlength='20' value='" . dis($editrow['page_slug'],"s") . "' />
+        <label for='prjct_php'>PHP file **</label><span>(filename in themes directory)</span><input type='text' name='prjct_php' id='prjct_php' maxlength='50' value='" . dis($editrow['prjct_php'],"s") . "' />
         <label for='base_url'>Base url *</label><span>(without protocol)</span><input type='text' name='base_url' id='base_url' maxlength='100' value='" . dis($editrow['base_url'],"s") . "' />
         <label for='upload_dir'>Upload directory</label><span>(relative from public_html)</span><input type='text' name='upload_dir' id='upload_dir' maxlength='100' value='" . dis($editrow['upload_dir'],"s") . "' />
         <label for='is_test_active'>Test version active?</label><input type='checkbox' name='is_test_active' id='is_test_active' " . dis($editrow['is_test_active'],"chk_ctrl") . "/><br />
