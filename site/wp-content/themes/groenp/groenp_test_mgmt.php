@@ -102,7 +102,7 @@ function groenp_test_meta_boxes_add()
     if ( current_user_can('list_users') )
     {
         // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
-        add_meta_box( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings", 'core') .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb', $project['page_slug'], 'normal' );
+        add_meta_box( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb', $project['page_slug'], 'normal' );
         add_meta_box( $project['page_slug'] .'-mb', $project['prjct_name'], 'groenp_test_meta_box_cb', $project['page_slug'], 'normal' ); 
         add_meta_box( 'groenp_name-mb', $project['prjct_name'], 'groenp_name_meta_box_cb', $project['page_slug'], 'normal' );
     }
@@ -119,8 +119,9 @@ function groenp_test_meta_boxes_add_dash()
 
     // Add metaboxes to the dashboard
     // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
-    wp_add_dashboard_widget( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings", 'core') .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb');
+    wp_add_dashboard_widget( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb');
     wp_add_dashboard_widget( $project['page_slug'] .'-mb', $project['prjct_name'], 'groenp_test_meta_box_cb');
+    wp_add_dashboard_widget( 'groenp_name-mb', $project['prjct_name'], 'groenp_name_meta_box_cb' );
 } //end of: groenp_test_meta_boxes_add_dash()
 
 

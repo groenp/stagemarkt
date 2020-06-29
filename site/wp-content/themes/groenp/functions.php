@@ -982,11 +982,11 @@ function groenp_welcome_meta_box_cb()
     // text + Profile page (separately translated)
     "<p>". __("If this is your first time using this tool, please change your password as soon as is convenient to you. You can change it on your",'groenp') ." <i class='wpicon'>&#xf110;</i>&nbsp;<a href= '". admin_url('profile.php') ."'>". 
     // TRANSLATORS: %s: Profile (part of core po-file)
-    sprintf( __("%s page", 'groenp'), /* TRANSLATORS: DO NOT TRANSLATE; part of core po-file*/ __("Profile", 'core')). "</a>. ".
+    sprintf( __("%s page", 'groenp'), /* TRANSLATORS: DO NOT TRANSLATE; part of core po-file*/ __("Profile")). "</a>. ".
     // TRANSLATORS: Copy over code as is; %s: [icon] 'Dashboard' (part of core po-file)
     sprintf( __("You can return to this page by selecting <i class='wpicon'>&#xf226;</i>&nbsp;&lsquo;%s&rsquo; in the side menu.", 'groenp'), 
     // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
-    __("Dashboard", 'core'))."</p>".
+    __("Dashboard"))."</p>".
 
     // TRANSLATORS: text + email link to admin@groenproductions.com
     "<p>". __("I hope that you enjoy using the tool. If you have any questions and/or suggestions, please do not hesitate to contact me at: ",'groenp') . 
@@ -1050,27 +1050,29 @@ function groenp_settings_meta_box_cb()
         // switch and buttons only shown if there is a test version
         // create hidden field that contains the state of the switch as the page loads
         // the custom switch does not necessarily show the correct state at load, so needs to be set through jquery 
-        if ( $project['is_test_active'] ) echo "
-        <input type='hidden' name='test_set' id='test_set' value='". $test_set ."' />
-        <p class='hor-form test-switch'>
-            <span class='prompt'>Choose here which version of your CMS you want to work on:<br />
-            <span class='context testver'>Only those that have access to the test version will see it. It is a great way to try things out, before everybody sees it.</span>
-            <span class='context livever'>The live version is directly connected to the live site.</span></span>
-            <label class='test-switch'>
-                <input id='live-test' name='live-test' type='checkbox' " . dis($test_set,"chk_ctrl") . ">
-                <span class='test-slider'></span>
-            </label>
-            <span class='context'>(these versions are not connected in any way, the data is not copied over)</span> 
-        </p>
-        <p class='hor-form'>
-            <label for='refresh'>Retrieve data for selected version (Live/Test):</label><span>(reload page in order to retrieve the data for all the lists on this page)</span><button type='submit' class='button-primary' name='RefreshLT'>Reload entire page  <i class='wpicon'>&#xf463;</i></button>
-        </p>
-        <p class='hor-form livever'"; if ($test_set == "on") echo "style=' display: none;'"; echo ">
-            <label for='open_site'>Verify the results on LIVE:</label><span>(website will open in a separate window or tab)</span><a type='button' class='button-primary launch' name='open_site' target='_blank' href='https://". $project['base_url'] ."'>Open LIVE website</a>
-        </p>
-        <p class='hor-form testver'"; if ($test_set == "") echo "style=' display: none;'"; echo ">
-            <label for='open_site'>Verify the results on TEST:</label><span>(website will open in a separate window or tab)</span><a type='button' class='button-primary launch' name='open_site' target='_blank' href='https://". $project['test_url'] ."'>Open TEST website</a>
-        </p>";
+        if ( $project['is_test_active'] ) {
+            echo "
+            <input type='hidden' name='test_set' id='test_set' value='". $test_set ."' />
+            <p class='hor-form test-switch'>
+                <span class='prompt'>Choose here which version of your CMS you want to work on:<br />
+                <span class='context testver'>Only those that have access to the test version will see it. It is a great way to try things out, before everybody sees it.</span>
+                <span class='context livever'>The live version is directly connected to the live site.</span></span>
+                <label class='test-switch'>
+                    <input id='live-test' name='live-test' type='checkbox' " . dis($test_set,"chk_ctrl") . ">
+                    <span class='test-slider'></span>
+                </label>
+                <span class='context'>(these versions are not connected in any way, the data is not copied over)</span> 
+            </p>
+            <p class='hor-form'>
+                <label for='refresh'>Retrieve data for selected version (Live/Test):</label><span>(reload page in order to retrieve the data for all the lists on this page)</span><button type='submit' class='button-primary' name='RefreshLT'>Reload entire page  <i class='wpicon'>&#xf463;</i></button>
+            </p>
+            <p class='hor-form livever'"; if ($test_set == "on") echo "style=' display: none;'"; echo ">
+                <label for='open_site'>Verify the results on LIVE:</label><span>(website will open in a separate window or tab)</span><a type='button' class='button-primary launch' name='open_site' target='_blank' href='https://". $project['base_url'] ."'>Open LIVE website</a>
+            </p>
+            <p class='hor-form testver'"; if ($test_set == "") echo "style=' display: none;'"; echo ">
+                <label for='open_site'>Verify the results on TEST:</label><span>(website will open in a separate window or tab)</span><a type='button' class='button-primary launch' name='open_site' target='_blank' href='https://". $project['test_url'] ."'>Open TEST website</a>
+            </p>";
+        }
 
     // in any case echo this
     echo "</form>
