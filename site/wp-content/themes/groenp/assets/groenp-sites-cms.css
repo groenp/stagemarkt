@@ -714,6 +714,7 @@ div.postbox .test-display + .lbl {
     top: -44px;
     right: 40px;
     color: transparent;
+    cursor: default;
 }
 div.postbox .test-display + .lbl {
     font-weight: 500;

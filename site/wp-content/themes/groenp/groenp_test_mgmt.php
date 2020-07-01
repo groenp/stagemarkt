@@ -9,12 +9,31 @@
 /********************************************************************************************/
 // namespace groenp;
 
-
-
 // *****************************************************************************************    
-/*** FROM HERE ON IN THIS FILE ***/
+// Function to open database depending on whether switch is set to Live or Test
+// $test comes straight out of switch setting in form ("" or "on")
 // *****************************************************************************************    
+function testDB_open_database($test = false)
+{
+    // connect with CRUD user (always for CMS!) and select correct db
+    if ($test)
+    {
+        $connect = mysqli_connect('localhost','gp_testCRUDuser','testCRUDpwd', 'gp_testdb_test_cms');   // TEST db
+    } else {
+        $connect = mysqli_connect('localhost','gp_testCRUDuser','testCRUDpwd', 'gp_testdb_live_cms');   // LIVE db
+    }
 
+    if (!$connect)
+    {
+        die('Could not connect to MySQL server: ' . mysqli_connect_error());
+    }    
+    // change character set to utf8 
+    if (mysqli_set_charset($connect, 'utf8')) {
+        return $connect;
+    } else {
+        _log("Error loading character set utf8: " . mysqli_error($connect));
+    }
+}
 
 // *****************************************************************************************    
 // Function for sub menu creation based on $project
@@ -104,7 +123,7 @@ function groenp_test_meta_boxes_add()
         // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
         add_meta_box( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb', $project['page_slug'], 'normal' );
         add_meta_box( $project['page_slug'] .'-mb', $project['prjct_name'], 'groenp_test_meta_box_cb', $project['page_slug'], 'normal' ); 
-        add_meta_box( 'groenp_name-mb', $project['prjct_name'], 'groenp_name_meta_box_cb', $project['page_slug'], 'normal' );
+        add_meta_box( 'groenp_testDB-mb', $project['prjct_name'], 'groenp_testDB_meta_box_cb', $project['page_slug'], 'normal' );
     }
     add_meta_box( $project['page_slug'] .'2-mb', 'This is the second coming of the box', 'groenp_anothertest_meta_box_cb', $project['page_slug'], 'normal' );
 
@@ -121,7 +140,7 @@ function groenp_test_meta_boxes_add_dash()
     // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
     wp_add_dashboard_widget( 'gp-'. $project['page_slug'] .'-settings-mb', '<i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'], 'groenp_settings_meta_box_cb');
     wp_add_dashboard_widget( $project['page_slug'] .'-mb', $project['prjct_name'], 'groenp_test_meta_box_cb');
-    wp_add_dashboard_widget( 'groenp_name-mb', $project['prjct_name'], 'groenp_name_meta_box_cb' );
+    wp_add_dashboard_widget( 'groenp_testDB-mb', $project['prjct_name'], 'groenp_testDB_meta_box_cb' );
 } //end of: groenp_test_meta_boxes_add_dash()
 
 
@@ -154,19 +173,23 @@ function groenp_anothertest_meta_box_cb()
 
 
 // ****************************************************************
-// Callback for <name> Meta Box
+// Callback for testDB Meta Box
 // ****************************************************************
-function groenp_name_meta_box_cb()  
-{  
+function groenp_testDB_meta_box_cb()  
+{     
+    // retrieve Live/Test selection for database connection  
+    // (first check if any form submitted, then switch operated, otherwise read from test_set field)
+    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
+    
     // open database
-    $con = groenp_open_database();
+    $con = testDB_open_database($test_set);
 
     // ************************************************************
     // 1. Process any form data
     // ************************************************************
 
     // Make this form unique
-    $func = 'Tst2';
+    $func = 'TstDB';
     
     // If no Edit button pressed inside the table of this meta box
     if ( !array_search('Edit', $_POST) ) echo "<a class='anchr' name=" . $func . "></a>";  // Set anchor
@@ -183,22 +206,22 @@ function groenp_name_meta_box_cb()
     // ************************************************************
     {
 		// Check if all mandatory fields have been entered
-		if ( !empty($_POST['prjct_name']) ) 
+		if ( empty($_POST['test_name']) ) 
 		{
             //_log("*** input error ***");
     		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
         }
         else {
                 // define and sanitize vars
-                $prjct_name       = prep($_POST['prjct_name'], 's');
+                $test_name = prep($_POST['test_name'], 's');
 
             // ************************************************************
 		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
 			// ************************************************************
 			{
                 // create a prepared statement 
-                $query_string = 'INSERT INTO gp_projects ' .
-                    '(prjct_name) ' . 
+                $query_string = 'INSERT INTO gp_test ' .
+                    '(test_name) ' . 
                     'VALUES (?)';
                 // _log("Add query for ". $func .": ". $query_string);                // DEBUG //
                 $stmt = mysqli_prepare($con, $query_string);
@@ -206,12 +229,12 @@ function groenp_name_meta_box_cb()
                 if ($stmt ===  FALSE) { _log("Invalid insertion query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string
-                    $bind = mysqli_stmt_bind_param($stmt, 's', $prjct_name);
+                    $bind = mysqli_stmt_bind_param($stmt, 's', $test_name);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         $exec = mysqli_stmt_execute($stmt);
                         if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not add item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>";  }
-                        else { _lua($func, "Project (ID: ". mysqli_insert_id($con) .", ". $prjct_name .") created."); }
+                        else { _lua($func, "Test item (ID: ". mysqli_insert_id($con) .", ". $test_name .") created."); }
                         mysqli_stmt_close($stmt); 
                     } // end of: binding successful
                 } // end of: stmt prepared successful
@@ -222,23 +245,23 @@ function groenp_name_meta_box_cb()
 			// ************************************************************
 			{
                 // sanitize editkey
-                $pk_prjct_id= prep($_POST['editkey'], 'i');
+                $pk_test_id= prep($_POST['editkey'], 'i');
 
                 // create a prepared statement 
-                $query_string = 'UPDATE LOW_PRIORITY gp_projects SET ' .
-                    'prjct_name = ? ' . 
-                    'WHERE pk_prjct_id = ?';
+                $query_string = 'UPDATE LOW_PRIORITY gp_test SET ' .
+                    'test_name = ? ' . 
+                    'WHERE pk_test_id = ?';
                 $stmt = mysqli_prepare($con, $query_string);
 
                 if ($stmt ===  FALSE) { _log("Invalid update query for " . $func . ": " . mysqli_error($con)); }
                 else {
                     // bind stmt = i: integer, d: double, s: string, b: blob and will be sent in packets
-                    $bind = mysqli_stmt_bind_param($stmt, 'si', $prjct_name, $pk_prjct_id);
+                    $bind = mysqli_stmt_bind_param($stmt, 'si', $test_name, $pk_test_id);
                     if ($bind ===  FALSE) { _log("Bind parameters failed for add query in " . $func); }
                     else {
                         $exec = mysqli_stmt_execute($stmt);
                         if ($exec ===  FALSE) { echo "<p class='err-msg'>Could not update item: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                        else { _lua($func, "Project (ID: ". $pk_prjct_id .", ". $prjct_name .") updated."); }
+                        else { _lua($func, "Project (ID: ". $pk_test_id .", ". $test_name .") updated."); }
                         mysqli_stmt_close($stmt); 
                     } // end of: binding successful
                 } // end of: stmt prepared successful
@@ -258,53 +281,51 @@ function groenp_name_meta_box_cb()
         if ( isset($delkey) && isset($_POST[$delkey]) && isset($_POST['sure_'. $func]) && $_POST['sure_'. $func]=='yes')
         {
             // Create a prepared statement and delete row
-            $query_string = 'DELETE LOW_PRIORITY FROM gp_projects WHERE pk_prjct_id = ?';
+            $query_string = 'DELETE LOW_PRIORITY FROM gp_test WHERE pk_test_id = ?';
             $stmt = mysqli_prepare($con, $query_string);
             if ($stmt ===  FALSE) { _log("Invalid delete query for " . $func . ": " . mysqli_error($con)); }
             else {
                 $bind = mysqli_stmt_bind_param($stmt, 'i', $delkey);
                 $exec = mysqli_stmt_execute($stmt);
-                if ($exec ===  FALSE) { echo "<p class='err-msg'><name> could not be deleted: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
-                else { _lua($func, "<name> (ID: ". $delkey .") deleted."); }
+                if ($exec ===  FALSE) { echo "<p class='err-msg'><Test> could not be deleted: " . htmlspecialchars(mysqli_stmt_error($stmt)) . "</p>"; }
+                else { _lua($func, "<Test> (ID: ". $delkey .") deleted."); }
                 mysqli_stmt_close($stmt); 
             } // end of: stmt prepared successful
 	    } // End of: deletion
     } // End of: checking for form submits
 
     // ************************************************************
-    // 2. Create jQuery object holding all <name>
+    // 2. Create jQuery object holding all <Test>s
     // ************************************************************
 
     // For now not used in this Meta Box
-    // Create query for all <name>
-    $query_string = 'SELECT pk_prjct_id, prjct_name FROM gp_projects ORDER BY prjct_name;';
+    // Create query for all <Test>s
+    $query_string = 'SELECT pk_test_id, test_name FROM gp_test ORDER BY test_name;';
 
     // store in different temp array
-    // $names = array();
+    $tests = array();
 
-    // $result = mysqli_query($con, $query_string);
-    // if ( $result ) { 
-    //     while($r = mysqli_fetch_assoc($result)) {
-    //         $names[] = $r;
-    //     }
-    //     mysqli_free_result($result);
-    // }
+    $result = mysqli_query($con, $query_string);
+    if ( $result ) { 
+        while($r = mysqli_fetch_assoc($result)) {
+            $tests[] = $r;
+        }
+        mysqli_free_result($result);
+    }
 
-    // Create javascript Object: Projects
-    // echo "<script type='text/javascript'>
+    // Create javascript Object: <Test>s
+    echo "<script type='text/javascript'>
 
-    //     var Names = "; echo json_encode($projects); echo ";
+        var Tests = "; echo json_encode($tests); echo ";
 
-    // </script>";
+    </script>";
 
     // ************************************************************
-    //  3. Build updated table with <name>
+    //  3. Build updated table with <Test>s
     // ************************************************************
-
-    // keep loaded Live/Test selection in read-only field (first check if any form submitted, then switch operated, otherwise read from test_set field)
-    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
 
     // Start of form;  hidden input field to store RUsure? response and display of LIVEvsTEST
+    // keep loaded Live/Test selection in read-only field (first check if any form submitted, then switch operated, otherwise read from test_set field)
     echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'>
     <p>
         <input type='hidden' name='sure_" . $func . "' id='sure_" . $func . "' value='maybe' />
@@ -319,7 +340,7 @@ function groenp_name_meta_box_cb()
     echo "<table class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'><thead style='text-align: left'>
             <tr style='text-align: left'>
                 <th class='numb'>ID</th>
-                <th>Project name</th>
+                <th>Test name</th>
                 <th>Action</th>
             </tr></thead><tbody>";
 
@@ -329,31 +350,31 @@ function groenp_name_meta_box_cb()
     if (isset($editkey))
     {
         // prepare statement excluding item to be edited
-        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name' .
-                             ' FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name');
+        $stmt = mysqli_prepare($con, 'SELECT pk_test_id, test_name' .
+                             ' FROM gp_test WHERE pk_test_id != ? ORDER BY test_name');
         mysqli_stmt_bind_param($stmt, 'i', $editkey);
     } else {
         // prepare statement in similar way as edit, but no parameters
-        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name' .
-                             ' FROM gp_projects ORDER BY prjct_name');
+        $stmt = mysqli_prepare($con, 'SELECT pk_test_id, test_name' .
+                             ' FROM gp_test ORDER BY test_name');
     } // End of: not set editkey
 
-    // mysqli_stmt_execute($stmt);
-    // mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name']);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $row['pk_test_id'], $row['test_name']);
 
-    // // Retrieve row by row the project data in the DB
-    // while ( mysqli_stmt_fetch($stmt) )
-    // {
-    //     // Build row
-    //     echo "<tr>
-    //             <td class='numb'>" . dis($row['pk_prjct_id'],'i') . "</td>
-    //             <td>" . dis($row['prjct_name'],'s') . "</td>";
+    // Retrieve row by row the project data in the DB
+    while ( mysqli_stmt_fetch($stmt) )
+    {
+        // Build row
+        echo "<tr>
+                <td class='numb'>" . dis($row['pk_test_id'],'i') . "</td>
+                <td>" . dis($row['test_name'],'s') . "</td>";
 
-    //             // Add final cell with button section and link to javascript pop-up
-    //             echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
-    //                         <input type='submit' class='button-secondary' name='" . $row['pk_prjct_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
-    //             </tr>";
-    // } // End of: while result
+                // Add final cell with button section and link to javascript pop-up
+                echo "<td><input type='submit' class='button-primary' name='" . $row['pk_test_id'] . "' value='Edit'> 
+                            <input type='submit' class='button-secondary' name='" . $row['pk_test_id'] . "' onclick='confirm_deletion(\"sure_" . $func . "\");' value='Delete'></td>
+                </tr>";
+    } // End of: while result
     mysqli_stmt_close($stmt);
 
     // finalize table
@@ -368,16 +389,16 @@ function groenp_name_meta_box_cb()
     if ( isset($editkey) )
     {
         unset($stmt);
-        $stmt = mysqli_prepare($con, 'SELECT prjct_name FROM gp_projects WHERE pk_prjct_id = ?');
+        $stmt = mysqli_prepare($con, 'SELECT test_name FROM gp_test WHERE pk_test_id = ?');
         mysqli_stmt_bind_param($stmt, 'i', $editkey);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $editrow['prjct_name']);
+        mysqli_stmt_bind_result($stmt, $editrow['test_name']);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt); 
     }
     
     // Start rendering the form
-    echo "<h4>Add or edit <name></h4>
+    echo "<h4>Add or edit [test]</h4>
     <p class='hor-form'>
         <a class='anchr' name=add_" . $func . "></a>";
     
@@ -387,17 +408,17 @@ function groenp_name_meta_box_cb()
         
         // If Edit populate each field with the present values
         echo "
-        <label for='prjct_name'>Name *</label><span>(max. 20 chars)</span><input type='text' name='prjct_name' id='prjct_name' maxlength='20' value='" . dis($editrow['prjct_name'],"s") . "' />
+        <label for='test_name'>Name *</label><span>(max. 50 chars)</span><input type='text' name='test_name' id='test_name' maxlength='50' value='" . dis($editrow['test_name'],"s") . "' />
     </p>
     <p class='button-row'>";
 
     if ( isset($editkey) )
     {
         // Edit form, so create Edit and Cancel buttons  
-        echo "<input type='submit'  class='button-primary' name='edit_" . $func . "' value='Edit <name>'> <input type='submit' class='button-secondary' name='cancel' value='Cancel'>";
+        echo "<input type='submit'  class='button-primary' name='edit_" . $func . "' value='Edit <Test>'> <input type='submit' class='button-secondary' name='cancel' value='Cancel'>";
     } else {
         // Normal (Add) form, so only Add button needed
-        echo "<input type='submit'  class='button-primary' name='XXX_" . $func . "' value='Add <name>'>";
+        echo "<input type='submit'  class='button-primary' name='add_" . $func . "' value='Add <Test>'>";
     }
      echo "
     </p>
@@ -411,8 +432,6 @@ function groenp_name_meta_box_cb()
     unset($editrow);
 	unset($projects);
 
-}  // End: groenp_name_meta_box_cb() 
-
-
+}  // End: groenp_testDB_meta_box_cb() 
 
 ?>
