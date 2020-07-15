@@ -14,21 +14,21 @@
 /* - based on twentytwenty theme                                                            */
 /* - add login cookie message                                               (~line  110)    */
 /* - make login links language sensitive                                    (~line  150)    */
-/* - create Manager role based on author and allow User Admin               (~line  180)    */
-/* - simplify Profile pages for non Administrators                          (~line  200)    */
-/* - collapse side menu for Subscriber role                                 (~line  265)    */
-/* - remove unneccesary widgets                                             (~line  300)    */
-/* - stop heartbeat (ajax calls) DISABLED                                   (~line  360)    */
+/* - create Manager role based on Author and allow User Admin               (~line  190)    */
+/* - simplify Profile pages for non Administrators                          (~line  230)    */
+/* - collapse side menu for Subscriber role                                 (~line  275)    */
+/* - remove unneccesary widgets                                             (~line  310)    */
+/* - stop heartbeat (ajax calls) DISABLED                                   (~line  370)    */
 /*                                                                                          */
 /* SECTION: User mails and msgs are adjusted to user's locale (es, nl, en):                 */
-/* - Redirect blocked users                                                 (~line  375)    */
-/* - Email change notification                                              (~line  440)    */
-/* - Password change notification                                           (~line  570)    */
-/* - New password request                                                   (~line  625)    */
+/* - Redirect blocked users                                                 (~line  385)    */
+/* - Email change notification                                              (~line  450)    */
+/* - Password change notification                                           (~line  580)    */
+/* - New password request                                                   (~line  635)    */
 /*                                                                                          */
 /* SECTION: Tracing user activity and changes to databases                  (~line  740)    */
-/* - Logging user activities in Standard Wordpress interface                (~line  740)    */
-/* SECTION: insertion of asset files into head                              (~line  860)    */
+/* - Logging user activities in Standard Wordpress interface                (~line  750)    */
+/* SECTION: insertion of asset files into head                              (~line  870)    */
 /* - pomo setup for i18n                                                    (~line  920)    */
 /*                                                                                          */
 /* Plugins needed:                                                                          */
@@ -187,41 +187,54 @@ function groenp_login_to_dashboard( $redirect_to, $request ) {
 // Remove Editor and Contributor roles
 // *****************************************************************************************    
 // this is saved in the DB so only do this once...
-// add_action( 'after_switch_theme', 'groenp_create_manager_role', 10 ,  2);
+add_action( 'after_switch_theme', 'groenp_create_manager_role', 10,  2);
 
 function groenp_create_manager_role($oldname, $oldtheme=false) {
     global $wp_roles;
 
     if ( ! isset( $wp_roles ) ) $wp_roles = new WP_Roles();
 
-    // Manager role will be based on Author 
-    // rename the author role in U/I only
-    $wp_roles->roles['author']['name'] = 'Manager';
-    $wp_roles->role_names['author'] = 'Manager';     
-    
-    // remove superfluous roles: THIS IS REMOVED FROM THE WP-DB! There is no turning back! 
-    remove_role( 'editor' );
-    remove_role( 'contributor' );
-
     // list all currently available roles
     $roles = $wp_roles->get_names();
     _log("present roles: "); _log($roles);                             /* DEBUG */
 
-    // get the author role
-    // see https://codex.wordpress.org/Roles_and_Capabilities
-    $role = get_role( 'author' );
+    // Check to see if Manager role already exists (this is reset on theme change)
+    if ( $wp_roles->roles['author']['name'] != 'Manager' )
+    {
+        // Manager role will be based on Author 
+        // rename the author role in U/I only
+        $wp_roles->roles['author']['name'] = 'Manager';
+        $wp_roles->role_names['author'] = 'Manager';     
+        
+        // get the author role
+        // see https://codex.wordpress.org/Roles_and_Capabilities
+        $role = get_role( 'author' );
 
-    // This only works, because it accesses the class instance.
-    $role->add_cap( 'list_users' ); 
-    $role->add_cap( 'edit_users' ); 
-    $role->add_cap( 'create_users' ); 
+        // This only works, because it accesses the class instance.
+        if ( !$role->has_cap( 'list_users' ) )   $role->add_cap( 'list_users' ); 
+        if ( !$role->has_cap( 'edit_users' ) )   $role->add_cap( 'edit_users' ); 
+        if ( !$role->has_cap( 'create_users' ) ) $role->add_cap( 'create_users' ); 
+        // for safety reasons 'delete_users' is not part of this. groenp will have to manage that, since it could destroy all
 
-    // simplify the left-hand menu
-    $role->remove_cap( 'upload_files' );    // Media menu item
-    $role->remove_cap( 'edit_posts' );      // Pages and Comments menu items
-    //$role->remove_cap( 'promote_users' ); // not necessary; profile box is removed from edit form instead
+        // simplify the left-hand menu
+        if ( $role->has_cap( 'upload_files' ) ) $role->remove_cap( 'upload_files' );    // Media menu item
+        if ( $role->has_cap( 'edit_posts' ) )   $role->remove_cap( 'edit_posts' );      // Pages and Comments menu items
+        //$role->remove_cap( 'promote_users' ); // not necessary; profile box is removed from edit form instead
 
-}
+    } // end of: if Manager role exists
+
+    // remove superfluous role(s): THIS IS REMOVED FROM THE WP-DB! There is no turning back! 
+    if ( isset( $wp_roles->roles['contributor'] ) )
+    {
+        // remove_role( 'editor' );
+        remove_role( 'contributor' );
+
+        // list all currently available roles
+        $roles = $wp_roles->get_names();
+        _log("present roles after removal: "); _log($roles);                             /* DEBUG */
+    }
+
+} // end of: groenp_create_manager_role()
 
 
 // *****************************************************************************************    
@@ -753,14 +766,14 @@ function groenp_log_add_user( $user_id )
     if ( isset($_POST['user_login']) )
     {
         if ( isset($_POST['email']) ) {
-            _lua("WPuser", "User (wpID:". $userid .", ". $_POST['user_login'] . ", email: ". $_POST['email'] . ") created through the standard WordPress interface.");
+            _lua("WPuser", "User (wpID:". $user_id .", ". $_POST['user_login'] . ", email: ". $_POST['email'] . ") created through the standard WordPress interface.");
         } elseif ( isset($_POST['user_email']) ) {
             _lua("WPuser", "User (". $_POST['user_login'] . ", email: ". $_POST['user_email'] . ") created through the Subscribers interface.");
         } else {
             _lua("WPuser", "User (". $_POST['user_login'] . ") created.");
         }
     } else {
-        _lua("WPuser", "User (wpID:". $userid .") created through the standard WordPress interface.");
+        _lua("WPuser", "User (wpID:". $user_id .") created through the standard WordPress interface.");
     }
 }
 
@@ -948,7 +961,7 @@ if ( current_user_can('list_users') )                           require_once( 'g
 
 // Check user privileges and determine which sections can be loaded (ADMIN has always access)
 if ( groenp_load_on_privileges( 'groenp_test_mgmt.php' ) > 0 )  require_once( 'groenp_test_mgmt.php' );
-if ( groenp_load_on_privileges( 'groenp_test2_mgmt.php' ) > 0 )  require_once( 'groenp_test2_mgmt.php' );
+if ( groenp_load_on_privileges( 'groenp_test2_mgmt.php' ) > 0 ) require_once( 'groenp_test2_mgmt.php' );
 
 
 // *****************************************************************************************    
@@ -1091,9 +1104,11 @@ function groenp_settings_meta_box_cb()
 // *****************************************************************************************    
 function groenp_load_on_privileges( $php_file )
 {
-    if ( current_user_can('list_users') ) 
+    // if ( current_user_can('list_users') ) 
+    // only me - mr. admin - gets automatic access to all
+    if ( current_user_can('administrator') )
     {
-        // Part of Mgmt team, so always load MB but in separate page
+        // groenp, so always load MB but in separate page
         $load = 1;
 
     } else {

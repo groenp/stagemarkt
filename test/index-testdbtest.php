@@ -77,7 +77,7 @@
                     <a class="" href="./wp-admin/">
                         <h1><img src="./assets/GroenProductionsPath.svg" alt="Groen Productions | Site Management Tool" /><br /></h1>
                     </a>
-                    <p><a type="button" class="btn float-right" href="https://admin.groenproductions.com">To Live</a></p>
+                    <p><a type="button" class="btn float-right" href="https://admin.groenproductions.com/test/">To Live</a></p>
 
                     <h2>Test Database</h2>
                     <h3>Contents</h3>

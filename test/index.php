@@ -20,7 +20,7 @@
     // This file contains all language versions of the text, for readablity reasons. Use the main language code as a switch
     $lng = strtolower( substr($locale, 0, 2) );
 
-    $connect = mysqli_connect('localhost','gp_testROuser','testROpwd', 'gp_testdb_live_cms');   // LIVE db
+    $connect = mysqli_connect('localhost','gp_testROuser','testROpwd', 'gp_testdb_test_cms');   // TEST db
     if (!$connect)
     {
         die("Could not connect to MySQL server: " . mysqli_connect_error());
@@ -75,13 +75,13 @@
             <div class="row py-2">
                 <div class="intro col-12">
                     <a class="" href="./wp-admin/">
-                        <h1><img src="../assets/GroenProductionsPath.svg" alt="Groen Productions | Site Management Tool" /><br /></h1>
+                        <h1><img src="./assets/GroenProductionsPath.svg" alt="Groen Productions | Site Management Tool" /><br /></h1>
                     </a>
-                    <p><a type="button" class="btn float-right" href="./site/wp-admin/">To site</a></p>
+                    <p><a type="button" class="btn float-right" href="https://admin.groenproductions.com/test/">To Live</a></p>
 
                     <h2>Test Database</h2>
                     <h3>Contents</h3>
-                    <p>These are the contents of gp_test in the LIVE database:</p>
+                    <p>These are the contents of gp_test in the TEST database:</p>
 
                     <table class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'><thead style='text-align: left'>
                         <tr style='text-align: left'>

@@ -7,7 +7,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: GlotPress/3.0.0-alpha\n"
+"X-Generator: GlotPress/3.0.0-alpha.2\n"
 "Language: nl\n"
 "Project-Id-Version: WordPress - 5.4.x - Development - Administration\n"
 
@@ -35,11 +35,11 @@ msgstr "Brede blokken"
 msgid "Block Editor Styles"
 msgstr "Stijlen van de blok-editor"
 
-#: wp-admin/about.php:163
+#: wp-admin/about.php:188
 msgid "See progress as you process export and erasure requests through the privacy tools."
 msgstr "Zie de voortgang van export en verwijderverzoeken via de privacy gereedschap."
 
-#: wp-admin/about.php:162
+#: wp-admin/about.php:187
 msgid "Now personal data exports include users session information and users location data from the community events widget. Plus, a table of contents!"
 msgstr "Persoonlijke data exports zijn nu inclusief informatie over gebruikerssessies en gebruikers locatie data van de community evenementen widget. Plus, een overzichtstabel."
 
@@ -57,138 +57,138 @@ msgid "Unable to write to %s file."
 msgstr "Kon niet schrijven naar %s bestand."
 
 #. translators: %s: WordPress 5.4 Field Guide link.
-#: wp-admin/about.php:234
+#: wp-admin/about.php:259
 msgid "There&#8217;s lots more for developers to love in WordPress 5.4. To discover more and learn how to make these changes shine on your sites, themes, plugins and more, check the <a href=\"%s\">WordPress 5.4 Field Guide</a>."
 msgstr "Er zit ontzettend vele fijne verbeteringen voor ontwikkelaars in WordPress 5.4. Als u meer wilt weten hoe u uw websites, thema's en plugins beter kunt maken, bekijk dan de <a href=\"%s\">WordPress 5.4 Field Guide</a>."
 
-#: wp-admin/about.php:221
+#: wp-admin/about.php:246
 msgid "In embeds, now the block editor supports TikTok—and CollegeHumor is gone."
 msgstr "De blokeditor (Gutenberg) ondersteunt nu TikTok in ingesloten code. CollegeHumor is verwijderd."
 
-#: wp-admin/about.php:220
+#: wp-admin/about.php:245
 msgid "Let users do more with two new APIs: block variations and gradients."
 msgstr "Twee nieuwe API's bieden gebruikers meer mogelijkheden: blokvarianten en kleurverlopen."
 
-#: wp-admin/about.php:219
+#: wp-admin/about.php:244
 msgid "If you build plugins, now you can register collections of your blocks by namespace across categories—a great way to get more brand visibility."
 msgstr "Als u plugins ontwikkelt, dan kunt u nu verzamelingen van uw blocks registeren via de namespace over verschillende categorieën. Een mooie manier om uw merk meer zichtbaarheid te geven."
 
-#: wp-admin/about.php:218
+#: wp-admin/about.php:243
 msgid "<strong>Radically</strong> simpler block styling. Negative margins and default padding are gone! Now you can style blocks the way you need them. And, a refactor got rid of four redundant wrapper divs."
 msgstr "Blokvormgeving is <strong>drastisch</strong> vereenvoudigd. Negatieve margins en standaard padding zijn verdwenen! U kunt blokken nu vormgeven zoals u wenst. Ook zijn vier onnodige wrapper div's opgeschoond."
 
-#: wp-admin/about.php:216
+#: wp-admin/about.php:241
 msgid "Blocks! Simpler styling, new APIs and embeds"
 msgstr "Blokken! Eenvoudiger vormgeving, nieuwe API's en insluitingen"
 
-#: wp-admin/about.php:212
+#: wp-admin/about.php:237
 msgid "Check your code and see where these new actions can replace your custom code, and if you&#8217;re concerned about duplication, add a check for the WordPress version."
 msgstr "Controleer uw code en bekijk of deze nieuwe acties uw code kunnen vervangen. Als u bezorgt bent voor duplicatie, voeg dan een WordPress versie controle toe."
 
 #. translators: %s: 'wp_nav_menu_item_custom_fields_customize_template' action
 #. name.
-#: wp-admin/about.php:206
+#: wp-admin/about.php:231
 msgid "In the Customizer, %s fires at the end of the menu-items form-fields template."
 msgstr "In de Customizer, %s wordt uitgevoerd aan het eind van de menu onderdelen form-fields template."
 
 #. translators: %s: 'wp_nav_menu_item_custom_fields' action name.
-#: wp-admin/about.php:197
+#: wp-admin/about.php:222
 msgid "On the Menus admin screen, %s fires just before the move buttons of a nav menu item in the menu editor."
 msgstr "Op het Menu admin scherm, wordt %s uitgevoerd net voor de verschuifknoppen van een  navigatie menu item in de menu editor."
 
-#: wp-admin/about.php:191
+#: wp-admin/about.php:216
 msgid "Two new actions let you add custom fields to menu items&mdash;without a plugin and without writing custom walkers."
 msgstr "Twee nieuwe acties maken het u mogelijk om aangepaste velden aan het menu toe te voegen. Zonder aparte plugin en zonder maatwerk code."
 
-#: wp-admin/about.php:189
+#: wp-admin/about.php:214
 msgid "Add custom fields to menu items—natively"
 msgstr "Voeg aangepaste velden toe aan menu-items--standaard"
 
-#: wp-admin/about.php:173
+#: wp-admin/about.php:198
 msgid "Just for developers"
 msgstr "Speciaal voor ontwikkelaars"
 
-#: wp-admin/about.php:164
+#: wp-admin/about.php:189
 msgid "Plus, little enhancements throughout give the privacy tools a little cleaner look. Your eyes will thank you!"
 msgstr "Aanvullend, kleine verbeteringen waardoor de Privacy Tools er net even wat strakker uit zien."
 
-#: wp-admin/about.php:160
+#: wp-admin/about.php:185
 msgid "Take a look:"
 msgstr "Neem een kijkje:"
 
-#: wp-admin/about.php:159
+#: wp-admin/about.php:184
 msgid "5.4 helps with a variety of privacy issues around the world. So when users and stakeholders ask about regulatory compliance, or how your team handles user data, the answers should be a lot easier to get right."
 msgstr "5.4 helpt met een verscheidenheid aan privacy kwesties over de hele wereld. Dus wanneer gebruikers en belanghebbenden vragen stellen over naleving van de regelgeving, of hoe uw team omgaat met gebruikersgegevens, moeten de antwoorden een stuk gemakkelijker zijn om goed te krijgen."
 
-#: wp-admin/about.php:158
+#: wp-admin/about.php:183
 msgid "Your fundamental right: privacy"
 msgstr "Uw grondrecht: privacy"
 
-#: wp-admin/about.php:142
+#: wp-admin/about.php:167
 msgid "Of course, if you want to work with the very latest tools and features, install the <a href=\"https://wordpress.org/plugins/gutenberg/\">Gutenberg plugin</a>. You&#8217;ll get to be the first to use new and exciting features in the block editor, before anyone else has seen them!"
 msgstr "Natuurlijk, als je wilt werken met de allernieuwste tools en functies, installeer dan de <a href=\"https://wordpress.org/plugins/gutenberg/\">Gutenberg plugin.</a> Je als eerste nieuwe en spannende functies gebruiken in de blokeditor, voordat iemand anders ze heeft gezien!"
 
-#: wp-admin/about.php:140
+#: wp-admin/about.php:165
 msgid "Know at a glance whether you&#8217;re in a block&#8217;s Edit or Navigation mode. Or, if you have restricted vision, your screen reader will tell you which mode you&#8217;re in."
 msgstr "Weet in één oogopslag of je&#8217;re in een blok&#8217;s Edit- of Navigatiemodus. Of, als je slechtziend bent, zal je schermlezer je vertellen in welke modus je #8217;re."
 
-#: wp-admin/about.php:139
+#: wp-admin/about.php:164
 msgid "Tips are gone. In their place, a Welcome Guide window you can bring up when you need it&mdash;and only when you need it&mdash;again and again."
 msgstr "Tips zijn weg. In hun plaats, een Welkomstgids venster u brengen wanneer u het nodig hebt&mdash;en alleen wanneer u het nodig hebt&mdash;opnieuw en opnieuw."
 
-#: wp-admin/about.php:138
+#: wp-admin/about.php:163
 msgid "Speed! 14% faster loading of the editor, 51% faster time-to-type!"
 msgstr "Snelheid! 14 %sneller laden van de editor, 51 %sneller time-to-type!"
 
-#: wp-admin/about.php:137
+#: wp-admin/about.php:162
 msgid "For when you need to navigate with the keyboard, better tabbing and focus. Plus, you can tab over to the sidebar of nearly any block."
 msgstr "Voor wanneer u met het toetsenbord moet navigeren, u kunt beter tabben en scherpstellen. Bovendien kunt u tab over naar de zijbalk van bijna elk blok."
 
-#: wp-admin/about.php:136
+#: wp-admin/about.php:161
 msgid "Clearer block navigation with block breadcrumbs. And easier selection once you get there."
 msgstr "Duidelijkere bloknavigatie met blokpaneermeel. En gemakkelijker selectie als je er eenmaal bent."
 
-#: wp-admin/about.php:134
+#: wp-admin/about.php:159
 msgid "Cleaner UI, clearer navigation—and easier tabbing!"
 msgstr "Schonere gebruikersinterface, duidelijkere navigatie en eenvoudiger tabben!"
 
-#: wp-admin/about.php:127
+#: wp-admin/about.php:152
 msgid "And if you&#8217;ve ever thought your image in the Media+Text block should link to something else&mdash;perhaps a picture of a brochure should download that brochure as a document? Well, now it can."
 msgstr "En als je ooit #8217 dacht dat je afbeelding in het Media+Text-blok naar iets anders&mdash moet linken;misschien moet een foto van een brochure die brochure als document downloaden? Nu kan het wel."
 
-#: wp-admin/about.php:126
+#: wp-admin/about.php:151
 msgid "Guess a whole lot less! Version 5.4 streamlines the whole process for placing and replacing multimedia in every block. Now it works the same way in almost every block!"
 msgstr "Denk een heel stuk minder! Versie 5.4 stroomlijnt het hele proces voor het plaatsen en vervangen van multimedia in elk blok. Nu werkt het op dezelfde manier in bijna elk blok!"
 
-#: wp-admin/about.php:125
+#: wp-admin/about.php:150
 msgid "New ways with color: Gradients in the Buttons and Cover block, toolbar access to color options in Rich Text blocks, and for the first time, color options in the Group and Columns blocks."
 msgstr "Nieuwe manieren met kleur: verlopen in het blok Knoppen en omslag, werkbalktoegang tot kleuropties in rich text-blokken en voor het eerst kleuropties in de blokken Groep en Kolommen."
 
-#: wp-admin/about.php:124
+#: wp-admin/about.php:149
 msgid "Two brand-new blocks: Social Icons and Buttons make adding interactive features fast and easy."
 msgstr "Twee gloednieuwe blokken: Sociale pictogrammen en knoppen maken het toevoegen van interactieve functies snel en eenvoudig."
 
-#: wp-admin/about.php:122
+#: wp-admin/about.php:147
 msgid "Two new blocks. And better blocks overall."
 msgstr "Twee nieuwe blokken. En betere blokken in het algemeen."
 
-#: wp-admin/about.php:108
+#: wp-admin/about.php:133
 msgid "And more speed everywhere, so as you build sections or galleries, or just type in a line of prose, you can feel how much faster your work flows."
 msgstr "En meer snelheid overal, dus als je secties of galerijen te bouwen, of gewoon typen in een lijn van proza, u voelen hoeveel sneller uw werk stroomt."
 
-#: wp-admin/about.php:105
+#: wp-admin/about.php:130
 msgid "More ways to make your vision real, and put blocks in the perfect place&mdash;even if a particular kind of block is new to you. More efficient processes."
 msgstr "Meer manieren om je visie echt te maken en blokken op de perfecte plek te zetten&mdash;zelfs als een bepaald soort blok nieuw voor je is. Efficiëntere processen."
 
-#: wp-admin/about.php:100
+#: wp-admin/about.php:125
 msgid "More ways to bring your visitors in, and keep them engaged, with the richness of embedded media from the web&#8217;s top services."
 msgstr "Meer manieren om uw bezoekers binnen te halen en betrokken te houden, met de rijkdom van embedded media van de web&#8217;s topservices."
 
-#: wp-admin/about.php:99
+#: wp-admin/about.php:124
 msgid "More ways to make posts and pages come alive with your best images."
 msgstr "Meer manieren om berichten en pagina's tot leven te laten komen met je beste afbeeldingen."
 
-#: wp-admin/about.php:96
+#: wp-admin/about.php:121
 msgid "Every major release adds more to the block editor."
 msgstr "Elke grote release voegt meer toe aan de blokeditor."
 
@@ -2558,6 +2558,7 @@ msgstr "Kan niet installeren"
 #. translators: %s: WordPress version
 #: wp-admin/includes/update.php:300 wp-admin/install.php:239
 #: wp-admin/update-core.php:82 wp-admin/upgrade.php:83 wp-admin/about.php:73
+#: wp-admin/about.php:98
 msgid "https://wordpress.org/support/wordpress-version/version-%s/"
 msgstr "https://wordpress.org/support/wordpress-version/version-%s/"
 
@@ -2782,7 +2783,7 @@ msgid "Privacy Policy Page"
 msgstr "Privacybeleidspagina"
 
 #. translators: %s: Page title.
-#: wp-admin/includes/misc.php:1408
+#: wp-admin/includes/misc.php:1410
 msgid "%s (Draft)"
 msgstr "%s (Concept)"
 
@@ -5055,7 +5056,7 @@ msgid "(Currently set to: %s)"
 msgstr "(Nu ingesteld op: %s)"
 
 #. translators: %s: WordPress version number.
-#: wp-admin/about.php:270
+#: wp-admin/about.php:295
 msgid "<strong>Version %s</strong> addressed one security issue."
 msgstr "<strong>Versie %s</strong> heeft een beveiligingsprobleem opgelost."
 
@@ -5067,15 +5068,15 @@ msgstr "https://en.gravatar.com/"
 msgid "Profile Picture"
 msgstr "Profiel foto"
 
-#: wp-admin/about.php:53 wp-admin/about.php:267
+#: wp-admin/about.php:53 wp-admin/about.php:292
 msgid "Maintenance and Security Releases"
 msgstr "Onderhoud en beveiligingsreleases"
 
-#: wp-admin/about.php:264
+#: wp-admin/about.php:289
 msgid "Security Releases"
 msgstr "Beveiligingsreleases"
 
-#: wp-admin/about.php:261
+#: wp-admin/about.php:286
 msgid "Maintenance Releases"
 msgstr "Onderhoudsreleases"
 
@@ -6017,7 +6018,7 @@ msgstr ""
 
 #. translators: Do not translate USERNAME, ADMIN_URL, EMAIL, SITENAME, SITEURL:
 #. those are placeholders.
-#: wp-admin/includes/misc.php:1329
+#: wp-admin/includes/misc.php:1331
 msgid ""
 "Howdy ###USERNAME###,\n"
 "\n"
@@ -7570,7 +7571,7 @@ msgid "You cannot move this item to the Trash. %s is currently editing."
 msgstr "U kunt dit item niet verplaatsen naar de prullenbak. %s is hem nu aan het bewerken."
 
 #. translators: %s: User's display name.
-#: wp-admin/includes/misc.php:1098
+#: wp-admin/includes/misc.php:1100
 msgid "%s has taken over and is currently editing."
 msgstr "%s is het bericht nu aan het bewerken."
 
@@ -7624,7 +7625,7 @@ msgid "The Documentation menu below the editor lists the PHP functions recognize
 msgstr "Het Documentatiemenu onder de editor toont de PHP functies die worden herkend in het pluginbestand. Klikken op 'Zoek Op' leidt u naar een webpagina over die specifieke functie."
 
 #. translators: %s: User's display name.
-#: wp-admin/includes/misc.php:1048
+#: wp-admin/includes/misc.php:1050
 #: wp-admin/includes/class-wp-posts-list-table.php:1003
 msgid "%s is currently editing"
 msgstr "%s is aan het bewerken"
@@ -8370,7 +8371,7 @@ msgstr[1] "Gepauzeerd <span class=\"count\">(%s)</span>"
 
 #. translators: New admin email address notification email subject. %s: Site
 #. title.
-#: wp-admin/includes/misc.php:1382
+#: wp-admin/includes/misc.php:1384
 msgid "[%s] New Admin Email Address"
 msgstr "[%s] Nieuw admin e-mailadres"
 
@@ -8580,7 +8581,7 @@ msgid "Show Toolbar when viewing site"
 msgstr "Toon toolbar tijdens bekijken van de site"
 
 #. translators: 1: WordPress version number, 2: Plural number of bugs.
-#: wp-admin/about.php:275
+#: wp-admin/about.php:300
 msgid "<strong>Version %1$s</strong> addressed %2$s bug."
 msgid_plural "<strong>Version %1$s</strong> addressed %2$s bugs."
 msgstr[0] "<strong>Versie %1$s</strong> bevat %2$s bugfix."
@@ -8590,7 +8591,7 @@ msgstr[1] "<strong>Versie %1$s</strong> bevat %2$s bugfixes."
 #. than one security issue.
 #. translators: 1: WordPress version number, 2: Plural number of bugs. More
 #. than one security issue.
-#: wp-admin/about.php:58 wp-admin/about.php:287
+#: wp-admin/about.php:58 wp-admin/about.php:83 wp-admin/about.php:312
 msgid "<strong>Version %1$s</strong> addressed some security issues and fixed %2$s bug."
 msgid_plural "<strong>Version %1$s</strong> addressed some security issues and fixed %2$s bugs."
 msgstr[0] "<strong>Versie%1$s</strong> was gericht op enkele beveiligingsproblemen en herstelde %2$s bug."
@@ -8598,13 +8599,13 @@ msgstr[1] "<strong>Versie %1$s</strong> was gericht op enkele beveiligingsproble
 
 #. translators: %s: HelpHub URL
 #. translators: %s: Documentation URL.
-#: wp-admin/about.php:70 wp-admin/about.php:293
+#: wp-admin/about.php:70 wp-admin/about.php:95 wp-admin/about.php:318
 msgid "For more information, see <a href=\"%s\">the release notes</a>."
 msgstr "Voor meer informatie, bezoek de <a href=\"%s\">versie opmerkingen</a>."
 
 #. translators: 1: WordPress version number, 2: Plural number of bugs. Singular
 #. security issue.
-#: wp-admin/about.php:281
+#: wp-admin/about.php:306
 msgid "<strong>Version %1$s</strong> addressed a security issue and fixed %2$s bug."
 msgid_plural "<strong>Version %1$s</strong> addressed a security issue and fixed %2$s bugs."
 msgstr[0] "<strong>Versie %1$s</strong> was gericht op een beveiligingsprobleem en een bepaalde %2$s bug."
@@ -8615,15 +8616,15 @@ msgid "Welcome to your WordPress Dashboard! This is the screen you will see when
 msgstr "Welkom bij uw WordPress Dashboard. Dit is het scherm dat u krijgt te zien zodra u inlogt op uw website. Het geeft u toegang tot alle beheerfuncties van WordPress. Wanneer u klikt op de Hulp tab rechtsboven de schermtitel, krijgt u meer informatie te zien over de functionaliteiten en werking van het betreffende onderdeel."
 
 #. translators: %s: WordPress version number.
-#: wp-admin/about.php:272
+#: wp-admin/about.php:297
 msgid "<strong>Version %s</strong> addressed some security issues."
 msgstr "<strong>Versie %s</strong> lost enkele beveiligingsproblemen op."
 
-#: wp-admin/about.php:260
+#: wp-admin/about.php:285
 msgid "Maintenance Release"
 msgstr "Onderhoudsversie"
 
-#: wp-admin/about.php:263
+#: wp-admin/about.php:288
 msgid "Security Release"
 msgstr "Beveiligingsversie"
 
@@ -8632,7 +8633,7 @@ msgstr "Beveiligingsversie"
 msgid "What&#8217;s New"
 msgstr "Wat is nieuw"
 
-#: wp-admin/about.php:266
+#: wp-admin/about.php:291
 msgid "Maintenance and Security Release"
 msgstr "Onderhouds- en veiligheidsversie"
 
@@ -8645,7 +8646,7 @@ msgstr "Dit scherm stelt u in staat om uw permalinkstructuur te kiezen. U kunt u
 msgid "Welcome to WordPress %1$s. <a href=\"%2$s\">Learn more</a>."
 msgstr "Welkom bij WordPress %1$s. <a href=\"%2$s\">Meer lezen</a>."
 
-#: wp-admin/about.php:247
+#: wp-admin/about.php:272
 msgid "Return to Updates"
 msgstr "Terug naar updates"
 
@@ -8917,15 +8918,15 @@ msgid "Because this is a multisite installation, you may add accounts that alrea
 msgstr "Omdat dit een multisite installatie is, kunt u accounts toevoegen die al bestaan op het netwerk door een gebruikersnaam of e-mail te specificeren en een rol toe te wijzen. Voor meer opties, zoals een wachtwoord instellen moet u Netwerk Admin zijn en op de hoverlink onder een bestaande gebruiksnaam klikken om het gebruikersprofiel te bewerken via Netwerk Admin -> Alle gebruikers."
 
 #. translators: %s: The current WordPress version number.
-#: wp-admin/about.php:89
+#: wp-admin/about.php:114
 msgid "Welcome to WordPress %s."
 msgstr "Welkom bij WordPress %s."
 
-#: wp-admin/about.php:247
+#: wp-admin/about.php:272
 msgid "Return to Dashboard &rarr; Updates"
 msgstr "Terugkeren naar het Dashboard &rarr; Updates"
 
-#: wp-admin/about.php:250
+#: wp-admin/about.php:275
 msgid "Go to Dashboard &rarr; Home"
 msgstr "Ga naar Dashboard &rarr; Home"
 
@@ -10771,7 +10772,7 @@ msgstr "Menu item"
 msgid "Please enter a valid menu name."
 msgstr "Voer een geldige menu-naam in."
 
-#: wp-admin/about.php:250
+#: wp-admin/about.php:275
 msgid "Go to Dashboard"
 msgstr "Naar het dashboard"
 
@@ -10896,7 +10897,7 @@ msgstr "Beschikbare widgets"
 msgid "Error in displaying the widget settings form."
 msgstr "Fout bij het tonen van het widget instellingen formulier."
 
-#: wp-admin/includes/misc.php:1218 wp-admin/includes/post.php:1941
+#: wp-admin/includes/misc.php:1220 wp-admin/includes/post.php:1941
 #: wp-admin/widgets.php:378
 msgid "Error while saving."
 msgstr "Fout tijdens het opslaan."
@@ -11039,7 +11040,7 @@ msgstr "Voornaam"
 msgid "Enable keyboard shortcuts for comment moderation."
 msgstr "Inschakelen toetsenbord snelkoppelingen voor het modereren van reacties."
 
-#: wp-admin/includes/misc.php:947 wp-admin/user-edit.php:295
+#: wp-admin/includes/misc.php:949 wp-admin/user-edit.php:295
 msgid "Admin Color Scheme"
 msgstr "Kleurenschema beheren"
 
@@ -12624,10 +12625,6 @@ msgstr "<strong>Onmiddellijk</strong> publiceren"
 msgid "Stick this post to the front page"
 msgstr "Op de voorpagina plakken (sticky)"
 
-#: wp-admin/includes/meta-boxes.php:166 wp-admin/includes/meta-boxes.php:191
-msgid "Password protected"
-msgstr "Beschermd met wachtwoord"
-
 #: wp-admin/includes/meta-boxes.php:99 wp-admin/edit-form-comment.php:98
 #: wp-admin/export.php:222 wp-admin/export.php:269
 msgid "Status:"
@@ -13862,12 +13859,12 @@ msgid "Someone"
 msgstr "Iemand"
 
 #. translators: %s: Date and time.
-#: wp-admin/includes/misc.php:1226
+#: wp-admin/includes/misc.php:1228
 msgid "Draft saved at %s."
 msgstr "Concept opgeslagen op %s."
 
 #. translators: Draft saved date format, see https://www.php.net/date
-#: wp-admin/includes/misc.php:1222
+#: wp-admin/includes/misc.php:1224
 msgid "g:i:s a"
 msgstr "H:i"
 
