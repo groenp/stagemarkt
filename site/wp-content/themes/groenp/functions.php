@@ -194,45 +194,42 @@ function groenp_create_manager_role($oldname, $oldtheme=false) {
 
     if ( ! isset( $wp_roles ) ) $wp_roles = new WP_Roles();
 
-    // list all currently available roles
-    $roles = $wp_roles->get_names();
-    _log("present roles: "); _log($roles);                             /* DEBUG */
+    // list all currently available roles                                                   // DEBUG //
+    // $roles = $wp_roles->get_names();                                                     // DEBUG //
+    // _log("previous roles: "); _log($roles);                                              // DEBUG //
 
-    // Check to see if Manager role already exists (this is reset on theme change)
-    if ( $wp_roles->roles['author']['name'] != 'Manager' )
-    {
-        // Manager role will be based on Author 
-        // rename the author role in U/I only
-        $wp_roles->roles['author']['name'] = 'Manager';
-        $wp_roles->role_names['author'] = 'Manager';     
-        
-        // get the author role
-        // see https://codex.wordpress.org/Roles_and_Capabilities
-        $role = get_role( 'author' );
+    // (Re)set Manager role just in case)
 
-        // This only works, because it accesses the class instance.
-        if ( !$role->has_cap( 'list_users' ) )   $role->add_cap( 'list_users' ); 
-        if ( !$role->has_cap( 'edit_users' ) )   $role->add_cap( 'edit_users' ); 
-        if ( !$role->has_cap( 'create_users' ) ) $role->add_cap( 'create_users' ); 
-        // for safety reasons 'delete_users' is not part of this. groenp will have to manage that, since it could destroy all
+    // Manager role is based on Author 
+    // rename the author role in U/I only
+    $wp_roles->roles['author']['name'] = 'Manager';
+    $wp_roles->role_names['author'] = 'Manager';     
+    
+    // get the author role
+    // see https://codex.wordpress.org/Roles_and_Capabilities
+    $role = get_role( 'author' );
 
-        // simplify the left-hand menu
-        if ( $role->has_cap( 'upload_files' ) ) $role->remove_cap( 'upload_files' );    // Media menu item
-        if ( $role->has_cap( 'edit_posts' ) )   $role->remove_cap( 'edit_posts' );      // Pages and Comments menu items
-        //$role->remove_cap( 'promote_users' ); // not necessary; profile box is removed from edit form instead
+    // This only works, because it accesses the class instance.
+    if ( !$role->has_cap( 'list_users' ) )   $role->add_cap( 'list_users' ); 
+    // if ( !$role->has_cap( 'edit_users' ) )   $role->add_cap( 'edit_users' ); 
+    if ( !$role->has_cap( 'create_users' ) ) $role->add_cap( 'create_users' ); 
+    // for safety reasons 'delete_users' and 'edit_users' are not part of this. groenp will have to manage that, since it could destroy all
 
-    } // end of: if Manager role exists
+    // simplify the left-hand menu
+    if ( $role->has_cap( 'upload_files' ) ) $role->remove_cap( 'upload_files' );            // Media menu item
+    if ( $role->has_cap( 'edit_users' ) )   $role->remove_cap( 'edit_users' );              // Edit users allows anybody's pwd to be changed. 
+    // NB: View causes irregular behaviour! This has no cap, and this bug needs a CSS fix.
+    if ( $role->has_cap( 'edit_posts' ) )   $role->remove_cap( 'edit_posts' );              // Pages and Comments menu items
+    //$role->remove_cap( 'promote_users' );                                                 // not necessary; profile box is removed from edit form instead
+
 
     // remove superfluous role(s): THIS IS REMOVED FROM THE WP-DB! There is no turning back! 
-    if ( isset( $wp_roles->roles['contributor'] ) )
-    {
-        // remove_role( 'editor' );
-        remove_role( 'contributor' );
-
-        // list all currently available roles
-        $roles = $wp_roles->get_names();
-        _log("present roles after removal: "); _log($roles);                             /* DEBUG */
-    }
+    if ( isset($wp_roles->roles['contributor']) )  remove_role( 'contributor' );
+    // if ( isset($wp_roles->roles['editor']) )  remove_role( 'editor' );                   // it is not really in the way, so leave it alone
+      
+    // list all currently available roles                                                   // DEBUG //
+    // $roles = $wp_roles->get_names();                                                     // DEBUG //
+    // _log("present roles after removal: "); _log($roles);                                 // DEBUG //
 
 } // end of: groenp_create_manager_role()
 
@@ -1338,81 +1335,118 @@ function groenp_anon_locale()
 }
 
 // *****************************************************************************************    
-// Groen Productions - Upload Picture to Stroomt directory (optionally set max filesize and exact dimensions)
+// Groen Productions - Upload Picture to uploads directory (optionally set max filesize and exact dimensions)
 //
-// $photo_file	= local path as it has been defined in the <input type='file'>
+// $img_file	= array of image and image data as it has been defined in the <input type='file'>
+// $uploads_dir = directory in which the image file needs to be placed, relative from:
+//              - on GoDaddy: /home/notgrumpy/public_html/
+//              - local: "C:\Users\groen_000.000\Documents\My Web Sites - local only\"
 // $maxsize_kb	= maximum file size in KB (optional)
 // $width		= image width in pixels (optional)
-// &height		= image height in pixels (optional)
+// $height		= image height in pixels (optional)
 //
+// wrapper around wp_handle_upload()
+// takes image array with:
+//   [name] => full local path to file that was selected to be uploaded
+//   [tmp_name] => actual file in local temporary directory
+//   [size] => size of file in bytes
+//   [type] => image/svg+xml
+//   [error] => optional; any errors
+// 
+// returns uploaded file with:
+//   [file] => full local path to file that was selected to be uploaded
+//   [url] => url (path with file) to uploaded file in case of success
+//   [type] => image/svg+xml
+//   [error] => optional; any errors
+// 
 // *****************************************************************************************    
-
-function groenp_upload_pic($photo_file, $maxsize_kb = NULL, $width = NULL, $height = NULL)
+function groenp_upload_pic($img_file, $uploads_dir = '', $maxsize_kb = NULL, $width = NULL, $height = NULL)
 {
 	 // Initialize
 	 $allowedExts = array('jpg', 'jpeg', 'gif', 'png', 'JPG', 'JPEG', 'GIF', 'PNG');
-	 $extension = end(explode('.', $photo_file['name']));
-	 if ( is_null($maxsize_kb) ) {$size = 500 * 1024;} else {$size = $maxsize_kb * 1024;}
+     $tmp = explode('.', $img_file['name']);
+     $ext = end($tmp);	 
+     if ( is_null($maxsize_kb) ) {$size = 500 * 1024;} else {$size = $maxsize_kb * 1024;}
+    // _log("ABSPATH: " . ABSPATH);                                                                                                     // DEBUG //
+    // _log("img_file:");                                                                                                               // DEBUG //
+    // _log($img_file);                                                                                                                 // DEBUG //
 
-     $photo_info = getimagesize($photo_file['tmp_name']);
-	 //_log('photo dims: '. $photo_info[0].'px x '.$photo_info[1].'px (wxh)');
-     $photo_width = $photo_info[0];
-     $photo_height = $photo_info[1];
+    $img_info = getimagesize($img_file['tmp_name']);                                // this is the actual file in a temp directory
+    // _log('photo dims: '. $img_info[0].'px x '.$img_info[1].'px (wxh)');                                                              // DEBUG //
+    $img_width = $img_info[0];
+    $img_height = $img_info[1];
     
      // Check if file adheres to restrictions
-	 if (  (   ($photo_file['type'] == 'image/gif')
-	        || ($photo_file['type'] == 'image/jpeg')
-	        || ($photo_file['type'] == 'image/png')
-	        || ($photo_file['type'] == 'image/pjpeg') ) 
-	     && in_array($extension, $allowedExts)
-	     && ( $photo_file['size'] < $size )
-         && ( is_null($width) || $width == $photo_width )
-         && ( is_null($height) || $height == $photo_height ) )
+	 if (  (   ($img_file['type'] == 'image/gif')
+	        || ($img_file['type'] == 'image/jpeg')
+	        || ($img_file['type'] == 'image/png')
+	        || ($img_file['type'] == 'image/pjpeg') ) 
+	     && in_array($ext, $allowedExts)
+	     && ( $img_file['size'] < $size )
+         && ( is_null($width) || $width == $img_width )
+         && ( is_null($height) || $height == $img_height ) )
 	 {  
-	     if ( $photo_file['error'] > 0 )
+	     if ( $img_file['error'] > 0 )
 	     {
 			 // Something went wrong in the actual transfer to the temp directory, most likely no path specified
-	         echo "<p class='err-msg'>Upload error: " . $photo_file['error'] . "</p>";
+	         echo "<p class='err-msg'>Upload error: " . $img_file['error'] . "</p>";
 	     } 
 		 else 
 		 {
 			// Load in file.php for std. upload function
 			if ( ! function_exists( 'wp_handle_upload' ) ) require_once( admin_url('/includes/file.php') );
-			$upload_overrides = array( 'test_form' => false );	// No post form has been used, so don't test for it.
+			$upload_overrides = array( 'test_form' => false );	                    // No post form has been used, so don't test for it.
 
 			// Test for anything suspicious that hasn't been caught already
-			$movefile = wp_handle_upload( $photo_file, $upload_overrides );
-            _log("$movefile: " . $movefile['file']);                             // DEBUG //
-            _log($movefile);                                                    // DEBUG //
+            $move_file = wp_handle_upload( $img_file, $upload_overrides );
+            // _log("move_file:");                                                                                                      // DEBUG //
+            // _log($move_file);                                                                                                        // DEBUG //
 
-			if (isset( $movefile['url'])) 
+			if (isset( $move_file['url'])) 
 			{
                 // Server url is set, so upload testing was successful 
-				_log('Upload successful: ' . $movefile['url']);	/* DEBUG */
+				// _log('Ready for upload: ' . $move_file['url']);	                                                                    // DEBUG //
 
-                // TEST: move the file to another dir                           // DEBUG //
-                // __DIR__: root\CuscoNow\wp-content\themes\CuscoNow
-                // Trgt dir: admin.groenproductions/site
+                if ( !isset($uploads_dir) ) 
+                {
+                    // $uploads could not be set in $project array, then use groenp upload dir
+                    $uploads_dir = trailingslashit(ABSPATH . UPLOADS);
+                }
+                else 
+                {
+                    // first strip the path to the root directory for all sites
+                    // groenp site resides in /admin/site/, so go two levels up
+                    $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, ABSPATH . "../../");
+                    $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+                    $normalized = array();
+                    foreach ($parts as $part) {
+                        if ('.' == $part) continue;
+                        if ('..' == $part) {
+                            array_pop($normalized);
+                        } else {
+                            $normalized[] = $part;
+                        }
+                    }
+                    $path = trailingslashit( implode(DIRECTORY_SEPARATOR, $normalized) );
+                    $uploads_dir = trailingslashit( $path . $uploads_dir );
+                    // _log("root of all sites: ". $path);                                                                              // DEBUG //
+                }
+                _log("uploads_dir: ". $uploads_dir);                                                                                    // DEBUG //
 
-                // _log("present directory: " . __DIR__);                          // DEBUG //
-                // $uploads_dir = '/home/notgrumpy/public_html/test/bloem-consultants/uploads/';
-                // _log("uploads_dir: " . $uploads_dir);                           // DEBUG //
+                // extract new filename after upload (WordPress exception handling has taken place)
+                $url_parts = explode( '/', $move_file['file'] );
+                $filename = $url_parts[sizeof($url_parts)-1];
+                // _log("filename: ". $img_file['name'] . ", became: ". $filename );                                                    // DEBUG //
 
-                // // extract new filename after upload
-                // $url_parts = explode( '/', $movefile['file'] );
-                // $filename = $url_parts[sizeof($url_parts)-1];
-                // _log("filename: ". $photo_file['name'] . ", became: ". $filename ); // DEBUG //
-                
-                // rename($movefile['file'], $uploads_dir . $filename );
-
-
-				@ chmod( $movefile['file'], 0000644 );			// Force rw-r--r-- access on uploaded files
-				return($movefile['url']);
+                // move file to new destination $uploads_dir
+                rename($move_file['file'], $uploads_dir . $filename );              // move the file to the right directory
+				@ chmod( $move_file['file'], 0000644 );			                    // Force rw-r--r-- access on uploaded files
+				return($move_file['url']);                                          // return url to be stored in database
 
 			} else { 
 				// Some error occurred inside wp_handle_upload; just perculate it up
-				echo "<p class='err-msg'>File \"" . $photo_file['name'] . "\": " . $movefile['error'] . "</p>";
-//				_log('Upload failed: ' . $movefile['error']);	/* DEBUG */
+				echo "<p class='err-msg'>File \"" . $img_file['name'] . "\": " . $move_file['error'] . "</p>";
+				_log('Upload failed: ' . $move_file['error']);	                                                                        // DEBUG //
 				return(FALSE);
 			}
 		} // end: if error in actual transfer
@@ -1420,13 +1454,13 @@ function groenp_upload_pic($photo_file, $maxsize_kb = NULL, $width = NULL, $heig
 	else 
 	{ 
 		// File did not adhere to restrictions inside this function
-		if ($photo_file['name'])
+		if ($img_file['name'])
 		{
 			// Specify file that has been attempted (more than one pic can be tried inside form)
-			echo "<p class='err-msg'>File \"" . $photo_file['name'] . "\" has not been uploaded.";
-			if ( !$height && ( $width != $photo_width && $width ) ) { echo " Image must be " . $width . "px wide."; }
-			elseif ( !$width && ( $height != $photo_height && $height ) ) { echo " Image must be " . $height . "px high."; }
-			elseif ( ( $width != $photo_width && $width ) || ( $height != $photo_height && $height ) ) { echo " Image dimensions must be " . $width . "px by " . $height . "px."; }
+			echo "<p class='err-msg'>File \"" . $img_file['name'] . "\" has not been uploaded.";
+			if ( !$height && ( $width != $img_width && $width ) ) { echo " Image must be " . $width . "px wide."; }
+			elseif ( !$width && ( $height != $img_height && $height ) ) { echo " Image must be " . $height . "px high."; }
+			elseif ( ( $width != $img_width && $width ) || ( $height != $img_height && $height ) ) { echo " Image dimensions must be " . $width . "px by " . $height . "px."; }
 			echo  " Only image files (.jpg, .gif, .png) smaller than " . round($size/1024) . "KB are allowed.</p>";
 		} 
 		else 
@@ -1436,7 +1470,117 @@ function groenp_upload_pic($photo_file, $maxsize_kb = NULL, $width = NULL, $heig
 		}
 		return(FALSE);
 	} // end: if adheres to these function restrictions or not
+} // end of: groenp_upload_pic()
+
+
+
+// ************************************************************************** //
+//  Groen Productions - enable upload of svg (for admin only)                 //
+//                    - $mimes = global array with all allowed mime-types     //
+//                      mime-types are restricted in the upload functions:    //
+//                      - groenp_upload_pic() = no svg allowed                //
+//                      - groenp_upload_svg() = svg only, no dim              //
+//                                                                            //
+// ************************************************************************** //
+function groenp_allow_svg( $mimes )
+{
+  $mimes['svg'] = 'image/svg+xml';
+  return $mimes;
 }
+if (current_user_can('administrator')) add_filter( 'upload_mimes', 'groenp_allow_svg' );
+
+
+// *****************************************************************************************    
+// Groen Productions - Upload SVG to $uploads directory (optionally set max filesize)
+//
+// $img_file	= array of image and image data as it has been defined in the <input type='file'>
+// $uploads_dir = directory in which the image file needs to be placed, relative to the groenp upload dir
+// $maxsize_kb	= maximum file size in KB (optional)
+//
+// wrapper around wp_handle_upload()
+// takes image array with:
+//   [name] => full local path to file that was selected to be uploaded
+//   [tmp_name] => actual file in local temporary directory
+//   [size] => size of file in bytes
+//   [type] => image/svg+xml
+//   [error] => any errors ('0' means none)
+// 
+// returns uploaded file with:
+//   [file] => full local path to file that was selected to be uploaded
+//   [url] => url (path with file) to uploaded file in case of success
+//   [type] => image/svg+xml
+//   [error] => optional; any errors
+// 
+// *****************************************************************************************    
+// define( 'UPLOADS', 'wp-content/uploads/' );
+
+function groenp_upload_svg($img_file, $uploads_dir = '', $maxsize_kb = NULL)
+{
+	 // Initialize
+	 $allowedExts = array('svg', 'SVG');
+     $tmp = explode('.', $img_file['name']);
+     $ext = end($tmp);	 
+	 if ( is_null($maxsize_kb) ) {$size = 500 * 1024;} else {$size = $maxsize_kb * 1024;}
+    
+     // Check if file adheres to restrictions
+	 if (  ( $img_file['type'] == 'image/svg' )
+	     && in_array($ext, $allowedExts)
+	     && ( $img_file['size'] < $size ) )
+	 {  
+	     if ( $img_file['error'] > 0 )
+	     {
+			 // Something went wrong in the actual transfer to the temp directory, most likely no path specified
+	         echo "<p class='err-msg'>Upload error: " . $img_file['error'] . "</p>";
+	     } 
+		 else 
+		 {
+			// Load in file.php for std. upload function
+			if ( ! function_exists( 'wp_handle_upload' ) ) require_once( admin_url('/includes/file.php') );
+			$upload_overrides = array( 'test_form' => false );	// No post form has been used, so don't test for it.
+
+			// Test for anything suspicious that hasn't been caught already
+			$move_file = wp_handle_upload( $img_file, $upload_overrides );
+
+			if (isset( $move_file['url'])) 
+			{
+                // Server url is set, so upload testing was successful 
+                if ( !isset($uploads_dir) ) $uploads_dir = '';
+                _log("uploads_dir: ". ABSPATH . UPLOADS . $uploads_dir);                                                                // DEBUG //
+                $uploads_dir = trailingslashit(ABSPATH . UPLOADS . $uploads_dir);
+
+                // extract new filename after upload (WordPress exception handling has taken place)
+                $url_parts = explode( '/', $move_file['file'] );
+                $filename = $url_parts[sizeof($url_parts)-1];
+                _log("filename: ". $img_file['name'] . ", became: ". $filename );                                                       // DEBUG //
+
+                // move file to new destination $uploads_dir
+                rename($move_file['file'], $uploads_dir . $filename );
+				@ chmod( $move_file['file'], 0000644 );			                            // Force rw-r--r-- access on uploaded files
+				return($move_file['url']);                                                  // return url to be stored in database
+
+			} else { 
+				// Some error occurred inside wp_handle_upload; just perculate it up
+				echo "<p class='err-msg'>File \"" . $img_file['name'] . "\": " . $move_file['error'] . "</p>";
+				_log('Upload failed: ' . $move_file['error']);	                                                                        // DEBUG //
+				return(FALSE);
+			}
+		} // end: if error in actual transfer
+	} 
+	else 
+	{ 
+		// File did not adhere to restrictions inside this function
+		if ($img_file['name'])
+		{
+			// Specify file that has been attempted (more than one pic can be tried inside form)
+			echo "<p class='err-msg'>File \"" . $img_file['name'] . "\" has not been uploaded. Only svg files smaller than " . round($size/1024) . "KB are allowed.</p>";
+		} else {
+			// File was not read correctly. Just state general requirements.
+	        echo "<p class='err-msg'>No image file has been selected for upload. Only svg files smaller than " . round($size/1024) . "KB are allowed.</p>";
+		}
+		return(FALSE);
+	} // end: if adheres to these function restrictions or not
+} // end of: groenp_upload_svg()
+
 
 // ************************************************************************** //
 //  Groen Productions - input/output functions to handle:                     //

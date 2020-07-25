@@ -205,15 +205,26 @@ function groenp_testDB_meta_box_cb()
 	if ( isset($_POST[('add_'. $func)]) || isset($_POST[('edit_'. $func)]) )  // THIS form has been submitted
     // ************************************************************
     {
-		// Check if all mandatory fields have been entered
-		if ( empty($_POST['test_name']) ) 
+		// Check if all mandatory fields have been entered, file uploads only can be mandatory during 'add' submit
+		if ( empty($_POST['test_name']) || (  isset($_POST['add_'.$func]) && empty($_FILES['img_url']['name'])  ) ) 
 		{
-            //_log("*** input error ***");
     		echo "<p class='err-msg'>All input fields marked with a '*' must be completed.</p>";
         }
-        else {
+        else 
+        {
                 // define and sanitize vars
                 $test_name = prep($_POST['test_name'], 's');
+
+                // Upload image if defined 
+                if ( $_FILES['img_url']['name'] ) 
+                {
+                    // get project info for directory slug
+                    $project = groenp_get_project_from_file( basename(__FILE__) );
+                    $upload_dir = $test_set ? $project['test_upl_dir'] : $project['upload_dir'];
+
+                    // upload image and retrieve url (filename, upload_dir, size, width, height)
+                    $upl_img = groenp_upload_pic($_FILES['img_url'], $upload_dir);
+                }
 
             // ************************************************************
 		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
@@ -409,6 +420,7 @@ function groenp_testDB_meta_box_cb()
         // If Edit populate each field with the present values
         echo "
         <label for='test_name'>Name *</label><span>(max. 50 chars)</span><input type='text' name='test_name' id='test_name' maxlength='50' value='" . dis($editrow['test_name'],"s") . "' />
+        <label for='img_url'>Image"; if(!isset($editkey)) echo " *"; echo "</label><input type='file' name='img_url' id='img_url' />
     </p>
     <p class='button-row'>";
 

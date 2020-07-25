@@ -10,6 +10,15 @@ html {
 }
 
 /* ************************************************************************** */
+/* fix for list users page (users.php):                                       */
+/*  - View menu item has wrong url and should be hidden                       */
+/* ************************************************************************** */
+.users-php span.view {
+    display: none;
+}
+
+
+/* ************************************************************************** */
 /* only for groenp pages:                                                     */
 /*  created space at the bottom of the page to scroll properly to last form   */ 
 /*  padding is 100% of the screen height                                      */

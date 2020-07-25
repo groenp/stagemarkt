@@ -7,9 +7,9 @@
 /*  Version 0.4 - June 25, 2020 (use of general functions for page creation)  */
 /*                                                                            */
 /*  PHP for Groen Productions Sites Mgmt CMS in WordPress:                    */
-/*   - subscriber management                 (~line   80)                     */
+/*   - subscriber management                 (~line   85)                     */
 /*   - project management                    (~line  660)                     */
-/*   - subscriber-project pairing            (~line  990)                     */
+/*   - subscriber-project pairing            (~line 1000)                     */
 /*                                                                            */
 /******************************************************************************/
 // namespace groenp;
@@ -963,7 +963,7 @@ function groenp_projects_meta_box_cb()
         <label for='page_slug'>Page slug **</label><span>(unique identifier for possible page)</span><input type='text' name='page_slug' id='page_slug' maxlength='20' value='" . dis($editrow['page_slug'],"s") . "' />
         <label for='prjct_php'>PHP file **</label><span>(filename in themes directory)</span><input type='text' name='prjct_php' id='prjct_php' maxlength='50' value='" . dis($editrow['prjct_php'],"s") . "' />
         <label for='base_url'>Base url *</label><span>(without protocol)</span><input type='text' name='base_url' id='base_url' maxlength='100' value='" . dis($editrow['base_url'],"s") . "' />
-        <label for='upload_dir'>Upload directory</label><span>(relative from public_html)</span><input type='text' name='upload_dir' id='upload_dir' maxlength='100' value='" . dis($editrow['upload_dir'],"s") . "' />
+        <label for='upload_dir'>Upload directory</label><span>(relative to root for all sites - public_html)</span><input type='text' name='upload_dir' id='upload_dir' maxlength='100' value='" . dis($editrow['upload_dir'],"s") . "' />
         <label for='is_test_active'>Test version active?</label><input type='checkbox' name='is_test_active' id='is_test_active' " . dis($editrow['is_test_active'],"chk_ctrl") . "/><br />
         <label for='test_url'>Test url †</label><span>(† mandatory if test version is active)</span><input type='text' name='test_url' id='test_url' maxlength='100' value='" . dis($editrow['test_url'],"s") . "' />
         <label for='test_upl_dir'>Test upload directory †</label><span>(† mandatory if upload directory filled out and test version is active)</span><input type='text' name='test_upl_dir' id='test_upl_dir' maxlength='100' value='" . dis($editrow['test_upl_dir'],"s") . "' />
