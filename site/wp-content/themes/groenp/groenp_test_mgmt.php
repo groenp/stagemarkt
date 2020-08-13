@@ -220,10 +220,12 @@ function groenp_testDB_meta_box_cb()
                 {
                     // get project info for directory slug
                     $project = groenp_get_project_from_file( basename(__FILE__) );
-                    $upload_dir = $test_set ? $project['test_upl_dir'] : $project['upload_dir'];
+                    // $upload_dir = $test_set ? $project['test_upl_dir'] : $project['upload_dir'];
+                    $upload_dir = $project['page_slug'];
 
                     // upload image and retrieve url (filename, upload_dir, size, width, height)
-                    $upl_img = groenp_upload_pic($_FILES['img_url'], $upload_dir);
+                    // $upl_img = groenp_upload_pic($_FILES['img_url'], $upload_dir);
+                    $upl_img = groenp_upload_svg($_FILES['img_url'], $upload_dir);
                 }
 
             // ************************************************************

@@ -12,7 +12,7 @@ wp-*
 site/wp-content/upgrade
 site/wp-content/themes/*
 !site/wp-content/themes/groenp
-site/wp-content/uploads/2020
+site/wp-content/uploads
 debug.log
 site/logs/*.txt
 *).js

@@ -111,6 +111,9 @@ if ( strpos($_SERVER['SERVER_NAME'], "admin.groenproductions.com") === false ) {
 define( 'WPMS_ON', true );
 define( 'WPMS_SMTP_PASS', 'reggpvYI=ukg5S^Z' );
 
+// SVG support, but be careful - only allow for Admin ie. myself 
+define('ALLOW_UNFILTERED_UPLOADS', true);
+
 /* That's all, stop editing! Happy publishing. */
 
 

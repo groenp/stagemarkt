@@ -164,12 +164,12 @@ function loc(dat_time) {
     }
 }
 
-function goto(target) {
-    // scroll to (form) target with margin
-    $('html, body').animate({
-        scrollTop: $('a[name="add_' + target + '"]').offset().top - 40 // 40 px = top nav bar (32px) + margin
-    }, 700);
-}
+// function goto(target) {
+//     // scroll to (form) target with margin
+//     $('html, body').animate({
+//         scrollTop: $('a[name="add_' + target + '"]').offset().top - 40 // 40 px = top nav bar (32px) + margin
+//     }, 700);
+// }
 
 if(typeof escapeSpecialChars == 'undefined') {
     escapeSpecialChars = function (text) {

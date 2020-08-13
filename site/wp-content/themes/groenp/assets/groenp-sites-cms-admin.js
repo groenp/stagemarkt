@@ -48,9 +48,11 @@ $(document).ready(function () {
 
 
     // **************************************************************************
-    // Projects MB
+    // Subscribers MB
     // **************************************************************************
 
+    // on initial loading of page show entire list
+    $('input[name="srch_Sbscbr"]').click();
 
     // **************************************************************************
     // Subscriber / Project Pairings MB
@@ -86,6 +88,9 @@ $(document).ready(function () {
     $('#test_spp_sbscrbr_login').focus(function () {
         $(this).removeClass('verf-err verf-ok');
     });
+
+    // on initial loading of page show entire list
+    $('input[name="srch_SbsPrj"]').click();
 
 });  // end of document.ready()
 

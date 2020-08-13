@@ -404,18 +404,18 @@ function groenp_redirect_blocked_users() {
     // Close database
     mysqli_close($con);
 
-    
-	if ( $result && $row[0] ) 
+	if ( $result && is_array($row) && $row['is_usr_blocked'] == 1 ) 
     {
         // Retrieve user's locale before user is forced out
         $locale = get_user_locale( $wp_userID );
 
-        _lua("WPuser", "Subscriber (wpID:" . $wp_userID.") is trying to login, but has been BLOCKED!");
+        _lua("WPuser", "User (wpID:" . $wp_userID.") is trying to login, but has been BLOCKED!");
         session_unset(); 
         //session_destroy();
         wp_redirect( site_url('wp-login.php?custom_logout=yes&wp_lang='.$locale) );
     }
 }
+
 // *****************************************************************************************
 // Define custom message for force-out situation
 // *****************************************************************************************
@@ -1102,7 +1102,7 @@ function groenp_settings_meta_box_cb()
 function groenp_load_on_privileges( $php_file )
 {
     // if ( current_user_can('list_users') ) 
-    // only me - mr. admin - gets automatic access to all
+    // only I - mr. groenp - get automatic access to all
     if ( current_user_can('administrator') )
     {
         // groenp, so always load MB but in separate page
@@ -1399,13 +1399,13 @@ function groenp_upload_pic($img_file, $uploads_dir = '', $maxsize_kb = NULL, $wi
 
 			// Test for anything suspicious that hasn't been caught already
             $move_file = wp_handle_upload( $img_file, $upload_overrides );
-            // _log("move_file:");                                                                                                      // DEBUG //
-            // _log($move_file);                                                                                                        // DEBUG //
+            _log("move_file:");                                                                                                      // DEBUG //
+            _log($move_file);                                                                                                        // DEBUG //
 
 			if (isset( $move_file['url'])) 
 			{
                 // Server url is set, so upload testing was successful 
-				// _log('Ready for upload: ' . $move_file['url']);	                                                                    // DEBUG //
+				_log('Ready for upload: ' . $move_file['url']);	                                                                    // DEBUG //
 
                 if ( !isset($uploads_dir) ) 
                 {
@@ -1417,6 +1417,10 @@ function groenp_upload_pic($img_file, $uploads_dir = '', $maxsize_kb = NULL, $wi
                     // first strip the path to the root directory for all sites
                     // groenp site resides in /admin/site/, so go two levels up
                     $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, ABSPATH . "../../");
+
+                    // check for first slash (could also be "C"); if it's there, then it needs to be placed in front of the path again
+                    $first = ( $path[0] == "/" )? "/" : "";
+
                     $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
                     $normalized = array();
                     foreach ($parts as $part) {
@@ -1427,7 +1431,7 @@ function groenp_upload_pic($img_file, $uploads_dir = '', $maxsize_kb = NULL, $wi
                             $normalized[] = $part;
                         }
                     }
-                    $path = trailingslashit( implode(DIRECTORY_SEPARATOR, $normalized) );
+                    $path = $first . trailingslashit( implode(DIRECTORY_SEPARATOR, $normalized) );
                     $uploads_dir = trailingslashit( $path . $uploads_dir );
                     // _log("root of all sites: ". $path);                                                                              // DEBUG //
                 }
@@ -1439,9 +1443,15 @@ function groenp_upload_pic($img_file, $uploads_dir = '', $maxsize_kb = NULL, $wi
                 // _log("filename: ". $img_file['name'] . ", became: ". $filename );                                                    // DEBUG //
 
                 // move file to new destination $uploads_dir
-                rename($move_file['file'], $uploads_dir . $filename );              // move the file to the right directory
-				@ chmod( $move_file['file'], 0000644 );			                    // Force rw-r--r-- access on uploaded files
-				return($move_file['url']);                                          // return url to be stored in database
+                $success = rename($move_file['file'], $uploads_dir . $filename );               // move the file to the right directory
+                if ($success == true) {
+                    @ chmod( $move_file['file'], 0000644 );			                            // Force rw-r--r-- access on uploaded files
+                    return($move_file['url']);                                                  // return url to be stored in database
+                } else {
+				    echo "<p class='err-msg'>File \"" . $filename . "\" could not be moved into upload directory.</p>";
+                    _log('Could not move "'. $filename .'" to: '. $uploads_dir);                                                        // DEBUG //
+				    return(FALSE);
+                }
 
 			} else { 
 				// Some error occurred inside wp_handle_upload; just perculate it up
@@ -1467,7 +1477,8 @@ function groenp_upload_pic($img_file, $uploads_dir = '', $maxsize_kb = NULL, $wi
 		{
 			// File was not read correctly. Just state general requirements.
 	        echo "<p class='err-msg'>No image file has been selected for upload. Only image files (.jpg, .gif, .png) smaller than " . round($size/1024) . "KB are allowed.</p>";
-		}
+        }
+		_log('Upload of image failed restrictions on size, dimension and/or extension.');	                                            // DEBUG //
 		return(FALSE);
 	} // end: if adheres to these function restrictions or not
 } // end of: groenp_upload_pic()
@@ -1523,7 +1534,7 @@ function groenp_upload_svg($img_file, $uploads_dir = '', $maxsize_kb = NULL)
 	 if ( is_null($maxsize_kb) ) {$size = 500 * 1024;} else {$size = $maxsize_kb * 1024;}
     
      // Check if file adheres to restrictions
-	 if (  ( $img_file['type'] == 'image/svg' )
+	 if (  ( $img_file['type'] == 'image/svg+xml' )
 	     && in_array($ext, $allowedExts)
 	     && ( $img_file['size'] < $size ) )
 	 {  
@@ -1545,8 +1556,8 @@ function groenp_upload_svg($img_file, $uploads_dir = '', $maxsize_kb = NULL)
 			{
                 // Server url is set, so upload testing was successful 
                 if ( !isset($uploads_dir) ) $uploads_dir = '';
-                _log("uploads_dir: ". ABSPATH . UPLOADS . $uploads_dir);                                                                // DEBUG //
-                $uploads_dir = trailingslashit(ABSPATH . UPLOADS . $uploads_dir);
+                _log("uploads_dir: ". trailingslashit(ABSPATH . UPLOADS) . trailingslashit($uploads_dir));                              // DEBUG //
+                $uploads_dir = trailingslashit(ABSPATH . UPLOADS) . trailingslashit($uploads_dir);
 
                 // extract new filename after upload (WordPress exception handling has taken place)
                 $url_parts = explode( '/', $move_file['file'] );
@@ -1554,14 +1565,20 @@ function groenp_upload_svg($img_file, $uploads_dir = '', $maxsize_kb = NULL)
                 _log("filename: ". $img_file['name'] . ", became: ". $filename );                                                       // DEBUG //
 
                 // move file to new destination $uploads_dir
-                rename($move_file['file'], $uploads_dir . $filename );
-				@ chmod( $move_file['file'], 0000644 );			                            // Force rw-r--r-- access on uploaded files
-				return($move_file['url']);                                                  // return url to be stored in database
+                $success = rename($move_file['file'], $uploads_dir . $filename );               // move the file to the right directory
+                if ($success == true) {
+                    @ chmod( $move_file['file'], 0000644 );			                            // Force rw-r--r-- access on uploaded files
+                    return($move_file['url']);                                                  // return url to be stored in database
+                } else {
+				    echo "<p class='err-msg'>File \"" . $filename . "\" could not be moved into upload directory.</p>";
+                    _log('Could not move "'. $filename .'" to: '. $uploads_dir);                                                        // DEBUG //
+				    return(FALSE);
+                }
 
 			} else { 
 				// Some error occurred inside wp_handle_upload; just perculate it up
 				echo "<p class='err-msg'>File \"" . $img_file['name'] . "\": " . $move_file['error'] . "</p>";
-				_log('Upload failed: ' . $move_file['error']);	                                                                        // DEBUG //
+				_log('SVG upload failed: ' . $move_file['error']);	                                                                    // DEBUG //
 				return(FALSE);
 			}
 		} // end: if error in actual transfer
@@ -1572,11 +1589,12 @@ function groenp_upload_svg($img_file, $uploads_dir = '', $maxsize_kb = NULL)
 		if ($img_file['name'])
 		{
 			// Specify file that has been attempted (more than one pic can be tried inside form)
-			echo "<p class='err-msg'>File \"" . $img_file['name'] . "\" has not been uploaded. Only svg files smaller than " . round($size/1024) . "KB are allowed.</p>";
+			echo "<p class='err-msg'>File \"" . $img_file['name'] . "\" has not been uploaded. Only Administrators are allowed to upload svg files and only svg files smaller than " . round($size/1024) . "KB are allowed.</p>";
 		} else {
 			// File was not read correctly. Just state general requirements.
-	        echo "<p class='err-msg'>No image file has been selected for upload. Only svg files smaller than " . round($size/1024) . "KB are allowed.</p>";
-		}
+	        echo "<p class='err-msg'>No image file has been selected for upload. Only Administrators are allowed to upload svg files and only svg files smaller than " . round($size/1024) . "KB are allowed.</p>";
+        }
+	    _log('SVG upload failed size or extension restrictions.');	                                                                    // DEBUG //
 		return(FALSE);
 	} // end: if adheres to these function restrictions or not
 } // end of: groenp_upload_svg()
