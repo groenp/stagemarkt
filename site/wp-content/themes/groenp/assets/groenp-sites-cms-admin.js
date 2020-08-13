@@ -72,6 +72,7 @@ $(document).ready(function () {
         var active =  ( $("#spp_prjct_id option:selected").attr("data-active") == "1" )? "Yes": "No";
         $('#spp_is_test_active').html(active);
         $('#spp_dis_prjct_id').html($("#spp_prjct_id option:selected").attr("data-id"));
+        $('#spp_dis_page_slug').html($("#spp_prjct_id option:selected").attr("data-slug"));
 
         // when first item is selected (value=''), then grey and empty read-only below
         if ( $(this).val() ) { 
@@ -80,6 +81,7 @@ $(document).ready(function () {
             $(this).css("color", '#a0a0a0');
             $('#spp_is_test_active').html("");
             $('#spp_dis_prjct_id').html("");
+            $('#spp_dis_page_slug').html("");
         };
     });
     $('#spp_prjct_id').trigger('change');
@@ -239,8 +241,8 @@ function build_fltrd_spp_table(func) {
     $('#sppair_tbl').find("tr:gt(1)").remove();
 
     // define filters in sppair_tbl
-    if ($('#fltr_spp_fk_prjct_id').val() != "") var fltr1 = $('#fltr_spp_fk_prjct_id').val();
-    if ($('#fltr_spp_prjct_name').val() != "") var fltr2 = $('#fltr_spp_prjct_name').val();
+    if ($('#fltr_spp_prjct_name').val() != "") var fltr1 = $('#fltr_spp_prjct_name').val();
+    if ($('#fltr_spp_page_slug').val() != "") var fltr2 = $('#fltr_spp_page_slug').val();
     if ($('#fltr_spp_is_test_active').val().toLowerCase() === "y") {
         var fltr3 = 1;
     } else if ($('#fltr_spp_is_test_active').val().toLowerCase() === "n") {
@@ -269,8 +271,8 @@ function build_fltrd_spp_table(func) {
         ndx = Sbscrbrs.map(function (o) { return o.pk_sbscrbr_id; }).indexOf(SbscrbrPrjctPrngs[i].fk_sbscrbr_id);
 
         // check whether in filter
-        if ((!fltr1 || (SbscrbrPrjctPrngs[i].fk_prjct_id && ((fltr1 == '*' && SbscrbrPrjctPrngs[i].fk_prjct_id) || (fltr1 && SbscrbrPrjctPrngs[i].fk_prjct_id.indexOf(fltr1) >= 0)))) &&
-            (!fltr2 || (SbscrbrPrjctPrngs[i].prjct_name && ((fltr2 == '*' && SbscrbrPrjctPrngs[i].prjct_name) || (fltr2 && SbscrbrPrjctPrngs[i].prjct_name.toLowerCase().indexOf(fltr2.toLowerCase()) >= 0)))) &&
+        if ((!fltr1 || (SbscrbrPrjctPrngs[i].prjct_name && ((fltr1 == '*' && SbscrbrPrjctPrngs[i].prjct_name) || (fltr1 && SbscrbrPrjctPrngs[i].prjct_name.toLowerCase().indexOf(fltr1.toLowerCase()) >= 0)))) &&
+            (!fltr2 || (SbscrbrPrjctPrngs[i].page_slug && ((fltr2 == '*' && SbscrbrPrjctPrngs[i].page_slug) || (fltr2 && SbscrbrPrjctPrngs[i].page_slug.toLowerCase().indexOf(fltr2.toLowerCase()) >= 0)))) &&
             (fltr3 == undefined || (SbscrbrPrjctPrngs[i].is_test_active && ((fltr3 == '*' && SbscrbrPrjctPrngs[i].is_test_active) || (fltr3 != undefined && SbscrbrPrjctPrngs[i].is_test_active == fltr3)))) &&
             (!fltr4 || (SbscrbrPrjctPrngs[i].sbscrbr_login && ((fltr4 == '*' && SbscrbrPrjctPrngs[i].sbscrbr_login) || (fltr4 && SbscrbrPrjctPrngs[i].sbscrbr_login.toLowerCase().indexOf(fltr4.toLowerCase()) >= 0)))) &&
             (fltr5 == undefined || (SbscrbrPrjctPrngs[i].is_usr_blocked && ((fltr5 == '*' && SbscrbrPrjctPrngs[i].is_usr_blocked) || (fltr5 != undefined && SbscrbrPrjctPrngs[i].is_usr_blocked == fltr5)))) &&
@@ -283,8 +285,8 @@ function build_fltrd_spp_table(func) {
             // create table row
             $('#sppair_tbl').find('tbody')
                 .append($('<tr>')
-                    .append($('<td>').text(SbscrbrPrjctPrngs[i].fk_prjct_id).addClass('numb'))
                     .append($('<td>').text(SbscrbrPrjctPrngs[i].prjct_name))
+                    .append($('<td>').text(SbscrbrPrjctPrngs[i].page_slug))
                 );
             if (SbscrbrPrjctPrngs[i].is_test_active == "1") { $('#sppair_tbl tr:last').append($('<td>').text("Y").addClass('chck')); } else { $('#sppair_tbl tr:last').append($('<td>')); }
             $('#sppair_tbl tr:last').append($('<td>').html(escapeSpecialChars(SbscrbrPrjctPrngs[i].sbscrbr_login)));

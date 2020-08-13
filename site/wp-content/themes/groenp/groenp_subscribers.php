@@ -874,17 +874,18 @@ function groenp_projects_meta_box_cb()
 	echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'><p>
             <input type='hidden' name='sure_" . $func . "' id='sure_" . $func . "' value='maybe' /></p>"; // hidden input field to store RUsure? response
 			
-	// Start table build
+    // Start table build
+                // <th class='numb'>ID</th>
     echo "<table class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'><thead style='text-align: left'>
             <tr style='text-align: left'>
-                <th class='numb'>ID</th>
                 <th>Project name</th>
                 <th>Page slug</th>
-                <th>Base url</th>
                 <th>PHP filename</th>
+                <th>Base url</th>
                 <th>Upload dir</th>
                 <th class='chck'>Test active?</th>
                 <th>Test url</th>
+                <th>Test upl dir</th>
                 <th>Action</th>
             </tr></thead><tbody>";
 
@@ -894,31 +895,32 @@ function groenp_projects_meta_box_cb()
     if (isset($editkey))
     {
         // prepare statement excluding item to be edited
-        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url' .
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
                              ' FROM gp_projects WHERE pk_prjct_id != ? ORDER BY prjct_name, prjct_php');
         mysqli_stmt_bind_param($stmt, 'i', $editkey);
     } else {
         // prepare statement in similar way as edit, but no parameters
-        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url' .
+        $stmt = mysqli_prepare($con, 'SELECT pk_prjct_id, prjct_name, page_slug, prjct_php, base_url, upload_dir, is_test_active, test_url, test_upl_dir' .
                              ' FROM gp_projects ORDER BY prjct_name, prjct_php');
     } // End of: not set editkey
 
     mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name'], $row['page_slug'], $row['prjct_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url']);
+    mysqli_stmt_bind_result($stmt, $row['pk_prjct_id'], $row['prjct_name'], $row['page_slug'], $row['prjct_php'], $row['base_url'], $row['upload_dir'], $row['is_test_active'], $row['test_url'], $row['test_upl_dir']);
 
     // Retrieve row by row the project data in the DB
     while ( mysqli_stmt_fetch($stmt) )
     {
         // Build row
+                // <td class='numb'>" . dis($row['pk_prjct_id'],'i') . "</td>
         echo "<tr>
-                <td class='numb'>" . dis($row['pk_prjct_id'],'i') . "</td>
                 <td>" . dis($row['prjct_name'],'s') . "</td>
                 <td>" . dis($row['page_slug'],'s') . "</td>
-                <td>" . dis($row['base_url'],'s') . "</td>
                 <td>" . dis($row['prjct_php'],'s') . "</td>
+                <td>" . dis($row['base_url'],'s') . "</td>
                 <td>" . dis($row['upload_dir'],'s') . "</td>
                 <td class='chck'>" . dis($row['is_test_active'],'chk') . "</td>
-                <td>" . dis($row['test_url'],'s') . "</td>";
+                <td>" . dis($row['test_url'],'s') . "</td>
+                <td>" . dis($row['test_upl_dir'],'s') . "</td>";
 
                 // Add final cell with button section and link to javascript pop-up
                 echo "<td><input type='submit' class='button-primary' name='" . $row['pk_prjct_id'] . "' value='Edit'> 
@@ -1149,7 +1151,7 @@ function groenp_subpro_pairing_meta_box_cb()
     // has already been created in groenp_subscribers_meta_box_cb
 
     // Create query for all Projects
-    $query_string = 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.prjct_php, prj.is_test_active' .
+    $query_string = 'SELECT spp.pk_sppair_id, spp.fk_sbscrbr_id, sub.sbscrbr_login, sub.is_usr_blocked, spp.fk_prjct_id, prj.prjct_name, prj.page_slug, prj.is_test_active' .
                     ' FROM gp_sbscrbr_prjct_pairings spp LEFT JOIN gp_projects prj ON (spp.fk_prjct_id = prj.pk_prjct_id)' .
                     ' LEFT JOIN gp_subscribers sub ON (spp.fk_sbscrbr_id = sub.pk_sbscrbr_id)' . 
                     ' ORDER BY prj.prjct_name, sub.sbscrbr_login';
@@ -1194,12 +1196,13 @@ function groenp_subpro_pairing_meta_box_cb()
 	echo "<form action='" . $form_url . "' method='post' enctype='multipart/form-data'><p>
             <input type='hidden' name='sure_" . $func . "' id='sure_" . $func . "' value='maybe' /></p>"; // hidden input field to store RUsure? response
 			
-	// Start table build
+    // Start table build
+                // <th class='numb'>Prjct ID</th>
     echo "<table id='sppair_tbl' class='manage' style='width: 100%; table-layout: fixed; overflow: hidden; white-space: nowrap;'>
         <thead style='text-align: left'>
             <tr style='text-align: left'>
-                <th class='numb'>Prjct ID</th>
                 <th>Project name</th>
+                <th>Page slug</th>
                 <th class='chck'>Test enabled?</th>
                 <th>Subscriber ID</th>
                 <th class='chck'>Blocked?</th>
@@ -1212,9 +1215,10 @@ function groenp_subpro_pairing_meta_box_cb()
         <tbody>";
 
     // Build filter 
+        // <td class='head'><input class='numb' type='text' value='" . dis($_POST['fltr_spp_fk_prjct_id'],'i') . "' name='fltr_spp_fk_prjct_id' id='fltr_spp_fk_prjct_id' pattern='\d*|\*' /></td>
     echo "<tr>
-        <td class='head'><input class='numb' type='text' value='" . dis($_POST['fltr_spp_fk_prjct_id'],'i') . "' name='fltr_spp_fk_prjct_id' id='fltr_spp_fk_prjct_id' pattern='\d*|\*' /></td>
-        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_prjct_name'],'a') . "' name='fltr_spp_prjct_name' id='fltr_spp_prjct_name' maxlength='100' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_prjct_name'],'a') . "' name='fltr_spp_prjct_name' id='fltr_spp_prjct_name' maxlength='50' /></td>
+        <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_page_slug'],'a') . "' name='fltr_spp_page_slug' id='fltr_spp_page_slug' maxlength='20' /></td>
         <td class='head'><input class='chk' type='text' value='" . dis($_POST['fltr_spp_is_test_active'],'chk') . "' name='fltr_spp_is_test_active' id='fltr_spp_is_test_active' pattern='[YyNn\*]' maxlength='1' /></td>
 
         <td class='head'><input type='text' value='" . dis($_POST['fltr_spp_sbscrbr_login'],'a') . "' name='fltr_spp_sbscrbr_login' id='fltr_spp_sbscrbr_login' pattern='[a-zA-Z0-9_]+|\*' maxlength='60' /></td>
@@ -1320,16 +1324,17 @@ function groenp_subpro_pairing_meta_box_cb()
         unset($result); unset($row); // re-initialize
     
         //  query all projects (projects can be assigned to several subscribers, so should always be available)
-        $result = mysqli_query($con, 'SELECT pk_prjct_id, prjct_name, is_test_active FROM gp_projects ORDER BY prjct_name, pk_prjct_id;');
+        $result = mysqli_query($con, 'SELECT pk_prjct_id, prjct_name, page_slug, is_test_active FROM gp_projects ORDER BY prjct_name, pk_prjct_id;');
         while($row = mysqli_fetch_array($result)) 
         { 
-            echo "<option value='" . $row['pk_prjct_id'] . "' data-id='". $row['pk_prjct_id'] . "' data-active='" . $row['is_test_active']  . "'"; 
+            echo "<option value='" . $row['pk_prjct_id'] . "' data-id='". $row['pk_prjct_id'] . "' data-slug='" . $row['page_slug']  . "' data-active='" . $row['is_test_active']  . "'"; 
             if(isset($editkey) && ($editrow['fk_prjct_id']==$row['pk_prjct_id'])) echo " selected "; 
             echo ">" . $row['prjct_name'] ."</option>";
         }
         mysqli_free_result($result);
 
         echo "</select>
+        <label for='spp_dis_page_slug'>Page slug</label><span class='display-only' id='spp_dis_page_slug' name='spp_dis_page_slug' ></span>
         <label for='spp_is_test_active'>Test version active?</label><span class='display-only' id='spp_is_test_active' name='spp_is_test_active' ></span>
     </p>
 

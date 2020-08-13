@@ -12,6 +12,8 @@ wp-*
 site/wp-content/upgrade
 site/wp-content/themes/*
 !site/wp-content/themes/groenp
+site/wp-content/plugins/*
+!site/wp-content/plugins/groenp-mailing.php
 site/wp-content/uploads
 debug.log
 site/logs/*.txt
@@ -22,3 +24,4 @@ site/logs/*.txt
 *.mo
 *.eml
 site/wp-content/languages/themes/twenty*
+site/wp-content/languages/plugins
