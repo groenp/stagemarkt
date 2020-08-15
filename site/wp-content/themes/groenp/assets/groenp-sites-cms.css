@@ -18,6 +18,16 @@ html {
     display: none;
 }
 
+/* ************************************************************************** */
+/* fix for all metaboxes:                                                     */
+/*  - Too many controls that do not look similar and are unneccesary          */
+/* (- Flex leads to alignment problems; this is solved in HTML by wrapping    */
+/*    title with icon in extra span )                                         */
+/* ************************************************************************** */
+ button[class^="handle-order-"]  {
+    display: none;
+}
+
 
 /* ************************************************************************** */
 /* only for groenp pages:                                                     */
@@ -295,15 +305,19 @@ div.postbox input.numb[type="text"] {
 }
 
 /* Back to top, hide this box buttons */
-p.btt, p.htb {
+div.postbox p.btt, 
+div.postbox p.htb {
     height: 8px;
+    max-width: inherit; /* make sure it is not restricted */
 }
-.btt  a, .htb a {
+div.postbox .btt a, 
+div.postbox .htb a {
     font-size: 8pt;
     float: right;
 }
-.btt a:after, .htb a:after, 
-a.launch:after {
+div.postbox .btt a:after, 
+div.postbox .htb a:after, 
+div.postbox a.launch:after {
     font-family: dashicons;
     font-weight: 200;
     font-size: 12pt;
@@ -314,14 +328,14 @@ a.launch:after {
     /* content: "\f142"; arrow up */
     content: "\f343"; /* chevron up */
 }
-.htb {
+div.postbox .htb {
     display: none;
 }
-.htb a:after {
+div.postbox .htb a:after {
     /* content: "\f153"; times circle */
     content: "\f158"; /* times */
 }
-a.launch:after {
+div.postbox a.launch:after {
     content: "\f504"; /* external link alt */
 }
 
@@ -338,6 +352,7 @@ a.launch:after {
 .awecon {
     font-family: FontAwesome;
 }
+
 
 /* Introduction fixed text on page */
 /* #post-body-content li {
@@ -362,8 +377,13 @@ div.postbox table.editform td {
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-size: 8pt;
 }
+/* intro text - meta box can be too wide for text on wide screens */
+div.postbox p {
+    max-width: 800px;
+}
 div.postbox li {
     margin-bottom: 0;
+    max-width: 800px;
 }
 div.postbox table.editform td input {
 	font-size: 14px;
@@ -650,7 +670,7 @@ div.postbox p.fbk-msg {
 /* ***************************************** */
 /*              live/test switch             */
 /* ***************************************** */
-p.test-switch {
+div.postbox p.test-switch {
     height: 120px;
 }
 div.postbox p label.test-switch {
@@ -661,13 +681,13 @@ div.postbox p label.test-switch {
   margin: 0;
 
 }
-.test-switch input { 
+div.postbox .test-switch input { 
   opacity: 0;
   width: 0;
   height: 0;
 }
 /* this span is the complete background of the slider */
-.test-slider {
+div.postbox .test-slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -683,8 +703,8 @@ div.postbox p label.test-switch {
 }
 
 /* keep backgrounds consistent with slider and display */ 
-.test-display,
-.test-slider:before {
+div.postbox .test-display,
+div.postbox .test-slider:before {
   color: rgba(255, 255, 255, .7);
   text-align: center;
   background-image: linear-gradient(
@@ -701,7 +721,7 @@ div.postbox p label.test-switch {
 
 /* this is the 'off' version of the switch */
 /* the switch button stands to the left */
-.test-slider:before {
+div.postbox .test-slider:before {
   position: absolute;
   content: "LIVE version";
   line-height: 1;
@@ -737,13 +757,13 @@ div.postbox .test-display + .lbl {
 /* input:checked + .test-slider {
 } */
 
-input:focus + .test-slider {
+div.postbox input:focus + .test-slider {
   box-shadow: 0 0 1px #00b03a;
 }
 
 /* keep backgrounds consistent with slider and display */ 
 div.postbox .test-display[value="on"],
-input:checked + .test-slider:before {
+div.postbox input:checked + .test-slider:before {
   /* color: rgb(202,218,169); */
   /* background-color: #00503b; */
   background-image: linear-gradient(
@@ -760,7 +780,7 @@ input:checked + .test-slider:before {
 
 /* this is the 'on' version of the switch */
 /* the switch button stands to the right  */
-input:checked + .test-slider:before {
+div.postbox input:checked + .test-slider:before {
   transform: translateX(72px);
   content: "TEST version";
 }
