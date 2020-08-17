@@ -1316,8 +1316,8 @@ function groenp_subpro_pairing_meta_box_cb()
         <a class='anchr' name=" . $func . "></a>"; 
         
         // If Edit populate each field with the present values
+        // <label for='spp_dis_prjct_id'>Project ID</label><span class='display-only' id='spp_dis_prjct_id' name='spp_dis_prjct_id' ></span>
         echo "
-        <label for='spp_dis_prjct_id'>Project ID</label><span class='display-only' id='spp_dis_prjct_id' name='spp_dis_prjct_id' ></span>
         <label for='spp_prjct_id'>Project name *</label><select class='prompt' name='spp_prjct_id' id='spp_prjct_id'>
             <option value=''"; if( !isset($editkey) ) echo " selected "; echo ">Select project:</option>";
 
