@@ -50,11 +50,12 @@
 /* - Connect to Groen Productions database                                  (~line 1270)    */
 /* - Retrieve likely locale when user's logged out                          (~line 1300)    */
 /* - Upload pictures                                                        (~line 1330)    */
-/* - Input/output functions for database, forms, web page                   (~line 1420)    */
-/*   . Sanitization of input data                                             (~line 1450)  */
-/*   . Sanitization of input for prepared statements                          (~line 1515)  */
-/*   . Display (escaping and formatting) of database data                     (~line 1620)  */
-/* - Search (json) arrays for key <=> value pair                            (~line 1700)    */
+/* - Upload svgs                                                            (~line 1530)    */
+/* - Input/output functions for database, forms, web page                   (~line 1600)    */
+/*   . Sanitization of input data                                             (~line 1630)  */
+/*   . Sanitization of input for prepared statements                          (~line 1700)  */
+/*   . Display (escaping and formatting) of database data                     (~line 1800)  */
+/* - Search (json) arrays for key <=> value pair                            (~line 1880)    */
 /*                                                                                          */
 /********************************************************************************************/
 // namespace groenp;
@@ -334,7 +335,7 @@ remove_action('welcome_panel', 'wp_welcome_panel');
 // *****************************************************************************************    
 // Remove Help tab, Comments count, '+' New widget, Gravatar, and change greeting in admin bar
 // *****************************************************************************************    
-add_action('admin_bar_menu', 'groenp_clean_up_toolbar_items', 999);
+add_action('admin_bar_menu', 'groenp_clean_up_toolbar_items', 20);
 function groenp_clean_up_toolbar_items($wp_admin_bar) {
 
     $screen = get_current_screen();
@@ -957,6 +958,7 @@ function groenp_pomo_setup(){
 if ( current_user_can('list_users') )                           require_once( 'groenp_subscribers.php' );
 
 // Check user privileges and determine which sections can be loaded (ADMIN has always access)
+if ( groenp_load_on_privileges( 'bloem_consultants.php' ) > 0 ) require_once( 'bloem_consultants.php' );
 if ( groenp_load_on_privileges( 'groenp_test_mgmt.php' ) > 0 )  require_once( 'groenp_test_mgmt.php' );
 if ( groenp_load_on_privileges( 'groenp_test2_mgmt.php' ) > 0 ) require_once( 'groenp_test2_mgmt.php' );
 
@@ -1246,7 +1248,7 @@ function groenp_create_page_cb()
         </div> <!-- #poststuff -->
 
     </div>  <!-- wrap -->";
-}
+} // end of: groenp_create_page_cb()
 
 // *****************************************************************************************    
 // Groen Productions  - groenp_register_meta_boxes()
@@ -1338,7 +1340,7 @@ function groenp_anon_locale()
 // Groen Productions - Upload Picture to uploads directory (optionally set max filesize and exact dimensions)
 //
 // $img_file	= array of image and image data as it has been defined in the <input type='file'>
-// $uploads_dir = directory in which the image file needs to be placed, relative from:
+// $uploads_dir = directory in which the image file needs to be placed, relative to:
 //              - on GoDaddy: /home/notgrumpy/public_html/
 //              - local: "C:\Users\groen_000.000\Documents\My Web Sites - local only\"
 // $maxsize_kb	= maximum file size in KB (optional)
@@ -1505,7 +1507,8 @@ if (current_user_can('administrator')) add_filter( 'upload_mimes', 'groenp_allow
 // Groen Productions - Upload SVG to $uploads directory (optionally set max filesize)
 //
 // $img_file	= array of image and image data as it has been defined in the <input type='file'>
-// $uploads_dir = directory in which the image file needs to be placed, relative to the groenp upload dir
+// $uploads_dir = directory in which the image file needs to be placed, 
+//                RELATIVE TO: {server}/site/wp-content/uploads/
 // $maxsize_kb	= maximum file size in KB (optional)
 //
 // wrapper around wp_handle_upload()
@@ -1516,11 +1519,7 @@ if (current_user_can('administrator')) add_filter( 'upload_mimes', 'groenp_allow
 //   [type] => image/svg+xml
 //   [error] => any errors ('0' means none)
 // 
-// returns uploaded file with:
-//   [file] => full local path to file that was selected to be uploaded
-//   [url] => url (path with file) to uploaded file in case of success
-//   [type] => image/svg+xml
-//   [error] => optional; any errors
+// returns: url to file on success, otherwise false
 // 
 // *****************************************************************************************    
 // define( 'UPLOADS', 'wp-content/uploads/' );
@@ -1554,21 +1553,26 @@ function groenp_upload_svg($img_file, $uploads_dir = '', $maxsize_kb = NULL)
 
 			if (isset( $move_file['url'])) 
 			{
-                // Server url is set, so upload testing was successful 
+                // Server url is set, so upload testing was successful, 
+                
+                // derive new destination directory and its url 
                 if ( !isset($uploads_dir) ) $uploads_dir = '';
-                _log("uploads_dir: ". trailingslashit(ABSPATH . UPLOADS) . trailingslashit($uploads_dir));                              // DEBUG //
+                $uploads_url = site_url( trailingslashit(UPLOADS) . trailingslashit($uploads_dir) );
                 $uploads_dir = trailingslashit(ABSPATH . UPLOADS) . trailingslashit($uploads_dir);
 
                 // extract new filename after upload (WordPress exception handling has taken place)
                 $url_parts = explode( '/', $move_file['file'] );
                 $filename = $url_parts[sizeof($url_parts)-1];
-                _log("filename: ". $img_file['name'] . ", became: ". $filename );                                                       // DEBUG //
+
+                // _log("filename: ". $img_file['name'] . ", becomes: ". $filename );                                                      // DEBUG //
+                // _log("target directory: ". $uploads_dir);                                                                               // DEBUG //
+                // _log("target url: ". $uploads_url);                                                                                     // DEBUG //
 
                 // move file to new destination $uploads_dir
                 $success = rename($move_file['file'], $uploads_dir . $filename );               // move the file to the right directory
                 if ($success == true) {
                     @ chmod( $move_file['file'], 0000644 );			                            // Force rw-r--r-- access on uploaded files
-                    return($move_file['url']);                                                  // return url to be stored in database
+                    return($uploads_url. $filename);                                            // return url to be stored in database
                 } else {
 				    echo "<p class='err-msg'>File \"" . $filename . "\" could not be moved into upload directory.</p>";
                     _log('Could not move "'. $filename .'" to: '. $uploads_dir);                                                        // DEBUG //

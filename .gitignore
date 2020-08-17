@@ -23,5 +23,6 @@ site/logs/*.txt
 *.json
 *.mo
 *.eml
+*).sql
 site/wp-content/languages/themes/twenty*
 site/wp-content/languages/plugins

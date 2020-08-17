@@ -535,10 +535,13 @@ textarea[readonly="readonly"] {
     background-color: #eee;
 }
 
-div.postbox p.button-row, div.postbox p.alone {
+div.postbox p.button-row, 
+div.postbox p.alone {
 	display: inline-block;
-	width: 100%;
+    width: 100%;
+    max-width: inherit;
 }
+
 div.postbox .ctr {
     text-align: center;
 }
@@ -589,7 +592,8 @@ div.postbox input.dbl-lbl, div.postbox p span.display-only.dbl-lbl {
 /* (file upload does not work well with some browsers sometimes, better give smaller width) */
 div.postbox input[type="file"] {
 	display: block;
-	width: 200px;
+    width: 200px;
+    height: 30px;
 	margin-bottom: 10px;
     font-size: 8pt;
     padding: 0;

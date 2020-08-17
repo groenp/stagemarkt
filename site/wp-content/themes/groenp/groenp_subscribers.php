@@ -711,7 +711,6 @@ function groenp_projects_meta_box_cb()
                 $prjct_php        = prep($_POST['prjct_php'], 's');
                 $base_url       = prep($_POST['base_url'], 's');
                 $upload_dir     = prep($_POST['upload_dir'], 's');
-                // $upload_dir     = ( isset($_POST['upload_dir']) )? prep($_POST['upload_dir'], 's') : 'NULL';
                 $is_test_active = prep($_POST['is_test_active'], 'chk');
                 $test_url       = prep($_POST['test_url'], 's');
                 $test_upl_dir   = prep($_POST['test_upl_dir'], 's');
