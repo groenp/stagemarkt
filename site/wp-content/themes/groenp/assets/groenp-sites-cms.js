@@ -69,6 +69,7 @@ $(document).ready(function () {
 
     }
 
+    // ************************************************************************
     // Test vs. Live switch is a checkbox
 
     // initial value (for now always false when not explicitly set)
@@ -98,8 +99,140 @@ $(document).ready(function () {
     
 //     // Remove screen options tab
 //     // $('#screen-options-link-wrap').hide();
+
+    // ************************************************************************
+    // Bloem - Consultants
+    // ************************************************************************
+
+    // Focus type selection, depends on global defined json array FcsTypes
+    $('#fk_fcs_type_id').change(function() {
+        // show selected focus type in image #fcs_type_img (label)
+        var indx = FcsTypes.findIndex(item => item.pk_fcs_type_id == $("#fk_fcs_type_id option:selected").val() );
+        if (indx != -1) {
+            $('#fcs_type_spn img').attr('src', FcsTypes[indx].fcs_img_url);
+            $('#fcs_type_spn').show();
+        } else {
+            $('#fcs_type_spn img').attr('src', '');
+            $('#fcs_type_spn').hide();
+        }
+    });
+
+    // Focus Items form has contextual help
+    $('#F1_icon').click(function() { $('.F1_help').toggle(600) });
+
+    // CLose the div when selected
+    $('.F1_help').click(function () { $(this).hide(300) });
+
+    // on initial loading of page show entire Focus Items list
+    $('input[name="srch_FcsItms"]').click();
 });
 
+
+// **************************************************************************
+// Bloem - Consultants = Focus Items  MB
+// **************************************************************************
+
+// build the #fcsitems_table table body (heading and filter are already there)
+// and apply and fill the filters, use json array FcsItems[]
+function build_fltrd_fcsitems_table(func) {
+
+    var indx = -1;
+    var max_pin = $('#fcs_pinned_max').data('max');
+
+    // set checkbox fltr fields 
+    $('#fcsitems_table td.fltr input.chk').each(function () {
+        $(this).val($(this).val().toUpperCase());
+    });
+
+    // clean out table except for filter
+    $('#fcsitems_table').find("tr:gt(1)").remove();
+
+    // define filters in fcsitems_table
+    if ($('#fltr_pk_fcs_id').val() != "") var fltr1 = $('#fltr_pk_fcs_id').val();
+    if ($('#fltr_fk_fcs_type_id').val() != "") var fltr2 = $('#fltr_fk_fcs_type_id').val();
+    if ($('#fltr_fcs_title').val() != "") var fltr3 = $('#fltr_fcs_title').val();
+    if ($('#fltr_fcs_creat_date').val() != "") var fltr4 = $('#fltr_fcs_creat_date').val();
+    if ($('#fltr_fcs_link_txt').val() != "") var fltr5 = $('#fltr_fcs_link_txt').val();
+    if ($('#fltr_fcs_is_link_ext').val().toLowerCase() === "y") {
+        var fltr6 = 1;
+    } else if ($('#fltr_fcs_is_link_ext').val().toLowerCase() === "n") {
+        var fltr6 = 0;
+    } else if ($('#fltr_fcs_is_link_ext').val() === "*") {
+        var fltr6 = "*";
+    }
+    if ($('#fltr_fcs_exp_date').val() != "") var fltr7 = $('#fltr_fcs_exp_date').val();
+    if ($('#fltr_fcs_is_pinned').val().toLowerCase() === "y") {
+        var fltr8 = 1;
+    } else if ($('#fltr_fcs_is_pinned').val().toLowerCase() === "n") {
+        var fltr8 = 0;
+    } else if ($('#fltr_fcs_is_pinned').val() === "*") {
+        var fltr8 = "*";
+    }
+
+    // build table, first row is already there
+    for (var i = 0; i < FcsItems.length; i++) {
+
+        // check whether in filter
+        if ((!fltr1 || (FcsItems[i].pk_fcs_id && ((fltr1 == '*' && FcsItems[i].pk_fcs_id) || (fltr1 && FcsItems[i].pk_fcs_id.indexOf(fltr1) >= 0))) ) && 
+            (!fltr2 || (FcsItems[i].fk_fcs_type_id && ((fltr2 == '*' && FcsItems[i].fk_fcs_type_id) || (fltr2 && FcsItems[i].fk_fcs_type_id.indexOf(fltr2) >= 0))) ) &&
+            (!fltr3 || (FcsItems[i].fcs_title && ((fltr3 == '*' && FcsItems[i].fcs_title) || fltr3 && FcsItems[i].fcs_title.toLowerCase().indexOf(fltr3.toLowerCase()) >= 0))) &&
+            (!fltr4 || (FcsItems[i].fcs_creat_date && ((fltr4 == '*' && FcsItems[i].fcs_creat_date) || (fltr4 && disp_date(FcsItems[i].fcs_creat_date).toLowerCase().indexOf(fltr4.toLowerCase()) >= 0)))) &&
+            (!fltr5 || (FcsItems[i].fcs_link_txt && ((fltr5 == '*' && FcsItems[i].fcs_link_txt) || (fltr5 && FcsItems[i].fcs_link_txt.toLowerCase().indexOf(fltr5.toLowerCase()) >= 0))) ) &&
+            (fltr6 == undefined || (FcsItems[i].fcs_is_link_ext && ((fltr6 == '*' && FcsItems[i].fcs_is_link_ext) || (fltr6 != undefined && FcsItems[i].fcs_is_link_ext == fltr6))) ) &&
+            (!fltr7 || ( (fltr7 == '*' && FcsItems[i].fcs_exp_date) || (fltr7 && fltr7 !== 'N' && disp_date(FcsItems[i].fcs_exp_date).toLowerCase().indexOf(fltr7.toLowerCase()) >= 0) || (fltr7 === 'N' && !FcsItems[i].fcs_exp_date))) &&
+            (fltr8 == undefined || (FcsItems[i].fcs_is_pinned && ((fltr8 == '*' && FcsItems[i].fcs_is_pinned) || (fltr8 != undefined && FcsItems[i].fcs_is_pinned == fltr8))) ) 
+           ) {
+
+            indx = FcsTypes.findIndex(item => item.pk_fcs_type_id == FcsItems[i].fk_fcs_type_id);
+            
+            // create table row
+            $('#fcsitems_table').find('tbody')
+                .append($('<tr>')
+                    .append($('<td>').text(FcsItems[i].pk_fcs_id).addClass('numb'))
+                    .append($('<td>').html('<img src="' + FcsTypes[indx].fcs_img_url + '" height="16px"> ' + FcsTypes[indx].fcs_type_name))
+                    .append($('<td>').html(escapeSpecialChars(FcsItems[i].fcs_title)))
+                    .append($('<td>').text(disp_date(FcsItems[i].fcs_creat_date)))
+                    .append($('<td>').html(escapeSpecialChars(FcsItems[i].fcs_link_txt)))
+            );
+            if (FcsItems[i].fcs_is_link_ext == "1") { $('#fcsitems_table tr:last').append($('<td>').text("Y").addClass('chck')); } else { $('#fcsitems_table tr:last').append($('<td>')); } 
+            $('#fcsitems_table tr:last').append($('<td>').text(disp_date(FcsItems[i].fcs_exp_date)));
+            if (FcsItems[i].fcs_is_pinned == "1") { $('#fcsitems_table tr:last').append($('<td>').text("Y").addClass('chck')); } else { $('#fcsitems_table tr:last').append($('<td>')); } 
+
+            // create pin order or pin button
+            if (FcsItems[i].fcs_is_pinned == "1") {
+                if (i == 0) {
+                    $('#fcsitems_table tr:last').append($('<td>').append($('<div>').text("top").addClass('pin-top')));
+                } else { 
+                    // $('#fcsitems_table tr:last').append($('<td>').append("<input type='submit' class='up-btn' name='" + FcsItems[i].pk_fcs_id + "' value='Up'/>"));
+                    $('#fcsitems_table tr:last').append($('<td>').append("<button type='submit' name='" + FcsItems[i].fcs_pin_order + "' value='Up'><i class='wpicon'>&#xf343;</i></button>"));
+                }
+                $('#fcsitems_table tr:last td:last').append("<input type='submit' name='" + FcsItems[i].pk_fcs_id + "' value='Unpin'/>");
+            } else {
+                $('#fcsitems_table tr:last').append($('<td>').append("<input type='submit' name='" + FcsItems[i].pk_fcs_id + "' value='Pin to top'/>"));
+            }
+
+            // when all (if any) pinned rows have been drawn, make a divider
+            if (i == (max_pin - 1)) $('#fcsitems_table tr:last').addClass('dvdr');
+
+            //  create buttons for this row
+            $('#fcsitems_table tr:last').append($('<td>').append("<input type='submit' name='" + FcsItems[i].pk_fcs_id + "' value='Edit'/>"));
+            $('#fcsitems_table tr:last td:last').append("&nbsp;<input type='submit' name='" + FcsItems[i].pk_fcs_id + "' value='Delete'/>");
+
+        } // end: filter check
+
+    } // end: for FcsItems[i]
+
+    // clean up 'undefined's in full name field
+    $('#fcsitems_table td').html().replace(/(undefined)*/g, '');
+
+    // all created buttons need to be styled and working
+    $('#fcsitems_table input[type="submit"][value="Edit"]').addClass('button-primary');
+    $('#fcsitems_table input[type="submit"][value="Pin to top"], #fcsitems_table input[type="submit"][value="Unpin"], #fcsitems_table button[type="submit"]').addClass('button-secondary');
+    $('#fcsitems_table input[type="submit"][value="Delete"]').addClass('button-secondary').click(function () {
+        confirm_deletion('sure_' + func);
+    });
+
+} // end: build_fltrd_fcsitems_table();
 
 // ****************************************************************************
 // Helper functions
@@ -116,6 +249,7 @@ function confirm_attachment(inp) {
 function clear_filter(tbl) {
     $('#' + tbl + ' td.fltr>input[type="text"], #' + tbl + ' td.fltr>select').val("");
     $('#' + tbl + ' td.head>input[type="text"], #' + tbl + ' td.head>select').val("");
+    $('#' + tbl + ' td.head>input[name^="srch_"]').click();
 }
 
 function srt_by(propA, propB, propC) {
@@ -158,11 +292,26 @@ function loc(dat_time) {
         // }
         // just take the GMT time that was put in (this has the SAME RESULT!)
         var loc_dt = new Date((dat_time).replace(" ", "T") + "+00:00").toString().split("GMT")[0]; // any server, seems to be a wp update? 
+        loc_dt = loc_dt.substring(0, loc_dt.length - 10); //  = " xx:00:00 "
         return loc_dt;
     } else {
         return ""; // fail silently, so no "undefined" shown
     }
 }
+
+function disp_date(dat_time) {
+
+    if (dat_time != undefined) {
+
+        // create a date given dat_time from database, then format it according to British rules (dmy)
+        var loc_dat = new Date(dat_time); 
+        return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(loc_dat);
+        
+    } else {
+        return ""; // fail silently, so no "undefined" shown
+    }
+}
+
 
 // function goto(target) {
 //     // scroll to (form) target with margin

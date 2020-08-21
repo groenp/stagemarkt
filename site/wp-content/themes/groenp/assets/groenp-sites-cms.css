@@ -149,6 +149,7 @@ div.postbox th {
 	padding: .1875rem;
 }
 
+div.postbox table.manage th.action,
 div.postbox table.manage th:last-child {
 	width: 7.25rem;
 }
@@ -226,6 +227,21 @@ div.postbox td {
     border-bottom: 1px solid #dfdfdf;
 
 }
+/* Focus Items have two groups */
+div.postbox tr.dvdr td {
+    border-bottom: 3px solid #dfdfdf;
+}
+
+/* Focus Items top row has no up bottom */
+#fcsitems_table div.pin-top {
+    display: inline-block;
+    width: 52px;
+    height: 33px;
+    background-color: #ecf1f3;
+    text-align: center;
+    line-height: 2.2;
+    color: #a0a0a0;
+}
 
 /* wrap content when hovering, and break anywhere so large names and urls show entirely */
 div.postbox td:hover {
@@ -242,22 +258,34 @@ div.postbox .inside tr {
 div.postbox td:last-child:hover {
     white-space: nowrap;
 }
+/* only used in CuscoNow? */
 div.postbox td.dvdr {
-    border-bottom: 1px solid #aaaaaa;
+    border-bottom: 3px solid #aaaaaa;
 }
+
 /* div.postbox td input[type="button"], */
+div.postbox td button[type="submit"],
 div.postbox td .button-primary, 
 div.postbox td .button-secondary
 {
     min-width: 3rem;
+    width: auto;
     margin: .125rem 0 .125rem .25rem;
+    display: inline-block;
+}
+/* up buttons have dashicons */ 
+div.postbox td button[type="submit"] i {
+    font-weight: 900;
+    font-size: 18px;
+    vertical-align: text-top;
 }
 
 /* filter section */
 div.postbox td.head {
     background-color: #e0e0e0;
 }
-div.postbox td.head input[type="text"]{
+div.postbox td.head input[type="text"],
+div.postbox td.head select {
     width: calc(100% - .125rem);
     margin: .25rem auto;    
 }
@@ -352,7 +380,15 @@ div.postbox a.launch:after {
 .awecon {
     font-family: FontAwesome;
 }
-
+/* F1_icon is a button with .wpicon class */
+#F1_icon {
+    cursor: pointer;
+    vertical-align: top;
+    font-size: 18px;
+}
+.F1_help {
+    display: none;
+}
 
 /* Introduction fixed text on page */
 /* #post-body-content li {
@@ -456,6 +492,23 @@ div.postbox p.hor-form label + input[type="button"] {
     margin-right: 70px;
 }
 
+/* radio buttons need labels right after */ 
+div.postbox p input[type="radio"] + label {
+    float: none;
+    display: inline-block;
+    height: 30px;
+    width: auto;
+    vertical-align: baseline;
+}
+
+/* focus type icon shows inline after select box */
+#fcs_type_spn {
+    display: none;
+}
+#fcs_type_spn > img {
+    vertical-align: bottom;
+}
+
 div.postbox p.hor-form span.display-only {
     background-color: #ecf1f3;
     color: #000;
@@ -467,23 +520,11 @@ div.postbox p.hor-form span.display-only {
     margin-bottom: 8px;
     width: 190px;
 }
+
 div.postbox p.hor-form textarea {
     float: left;
 }
 
-/* grouping establishments together in display */
-div.postbox p.hor-form label.dbl-line {
-    	padding: 0 3px;
-}
-div.postbox p.hor-form .grp-top, div.postbox table.editform .grp-top {
-    border-top: 1px solid #bbb;
-}
-div.postbox p.hor-form .grp-btm, div.postbox table.editform .grp-btm {
-    border-bottom: 1px solid #bbb;
-}
-div.postbox table.editform .grp-btm {
-    padding-bottom: 10px;
-}
 
 /* wide controls; display-only box */
 div.postbox p.hor-form.wide span.display-only {
@@ -669,7 +710,11 @@ div.postbox p.fbk-msg {
 	font-weight: bold;
 	color: #363;
 }
-
+/* F1 contextual help is displayed in <div> with an image  */
+div.F1_help {
+    position: absolute;
+    right: 2px;
+}
 
 /* ***************************************** */
 /*              live/test switch             */

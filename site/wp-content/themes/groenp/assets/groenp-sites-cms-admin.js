@@ -69,7 +69,7 @@ $(document).ready(function () {
     $('#spp_prjct_id').change(function () {
 
         // populate read-only below Project name select with test available information
-        var active =  ( $("#spp_prjct_id option:selected").attr("data-active") == "1" )? "Yes": "No";
+        var active = ( $("#spp_prjct_id option:selected").attr("data-active") == "1" )? "Yes": "No";
         $('#spp_is_test_active').html(active);
         // $('#spp_dis_prjct_id').html($("#spp_prjct_id option:selected").attr("data-id"));
         $('#spp_dis_page_slug').html($("#spp_prjct_id option:selected").attr("data-slug"));
