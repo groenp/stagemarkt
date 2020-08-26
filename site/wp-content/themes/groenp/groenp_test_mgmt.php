@@ -114,8 +114,9 @@ function groenp_register_submenu_page_mngr()
 function groenp_test_meta_boxes_add()
 {
     // Retrieve project information
-    global $plugin_page;
-    $project = groenp_get_project_from_slug( $plugin_page );
+    // global $plugin_page;
+    // $project = groenp_get_project_from_slug( $plugin_page );
+    $project = groenp_get_project_from_file( basename(__FILE__) );
 
     // Add metaboxes to this php_file's submenu page
     if ( current_user_can('list_users') )
@@ -177,9 +178,13 @@ function groenp_anothertest_meta_box_cb()
 // ****************************************************************
 function groenp_testDB_meta_box_cb()  
 {     
+    // Retrieve project information
+    $project = groenp_get_project_from_file( basename(__FILE__) );
+    
     // retrieve Live/Test selection for database connection  
-    // (first check if any form submitted, then switch operated, otherwise read from test_set field)
-    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
+    $ckie_name =  'live-test4'. $project['page_slug'];
+    // $test_set = isset($_COOKIE[$ckie_name])? $_COOKIE[$ckie_name] : (isset($_POST['test_set'])? (isset($_POST['RefreshLT'])? (isset($_POST['live-test'])? $_POST['live-test'] : "") : $_POST['test_set'] ) : "");
+    $test_set = isset($_POST['RefreshLT'])? (isset($_POST['live-test'])? $_POST['live-test'] : "") : (isset($_COOKIE[$ckie_name])? $_COOKIE[$ckie_name] : "");
     
     // open database
     $con = testDB_open_database($test_set);
@@ -218,8 +223,6 @@ function groenp_testDB_meta_box_cb()
                 // Upload image if defined 
                 if ( $_FILES['img_url']['name'] ) 
                 {
-                    // get project info for directory slug
-                    $project = groenp_get_project_from_file( basename(__FILE__) );
                     // $upload_dir = $test_set ? $project['test_upl_dir'] : $project['upload_dir'];
                     $upload_dir = $project['page_slug'];
 

@@ -36,9 +36,9 @@
 /* - WP-Mail-SMTP plugin to use groenproductions.com for registration mail                  */
 /*                                                                                          */
 /* SECTION: Creation of Meta Boxes and linking of files:                                    */
-/* - Require PHP files based on user privileges                             (~line  940)    */
-/* - Welcome Meta Box                                                       (~line  950)    */
-/* - Settings Meta Box                                                      (~line 1000)    */
+/* - Require PHP files based on user privileges                             (~line  950)    */
+/* - Welcome Meta Box                                                       (~line  980)    */
+/* - Settings Meta Box                                                      (~line 1020)    */
 /*                                                                                          */
 /* Functions used in other Groen Productions PHP files for site management:                 */
 /* - Determine User's privileges for PHP file                               (~line 1080)    */
@@ -1014,10 +1014,47 @@ function groenp_welcome_meta_box_cb()
 
 
 // *****************************************************************************************    
-// Groen Productions - Callback for general SETTINGS Meta Box  
+// Groen Productions - Callback for general SETTINGS Meta Box with associated cookie setting 
 //                      - Projects table driven 
 //                      - $php_file = name of php file (basename())
-// *****************************************************************************************    
+// ***************************************************************************************** 
+function groenp_settings_cookie() 
+{
+    // this function runs always before a page load; cookies can only be set before page (header) build
+    // when setting a cookie it can only be read after a reload of the page: 
+    // pageload1 - set cookie => submit or follow link => pageload2 - read that cookie
+    // only do something when a Settings Box was on the page, and switch has been submitted
+
+    // renew cookie, but only if [test_set], so also Settings MB is on page
+    if ( isset($_POST['test_set']) )
+    {
+        // cookie needs to be set with unique project id
+        // $_GET['page'] contains the plugin_page
+        if ( isset($_GET['page']) ) {
+
+            // should be only 1 settings box per page; make box unique per page = project
+            $project = groenp_get_project_from_slug( $_GET['page'] );
+
+        } else {
+            // it's on dashboard, so most likely Subscriber; it may only have one project assigned
+            global $project; 
+        }
+
+        // cookie data
+        $cookie_name = "live-test4". $project['page_slug'];
+
+        // cookie value: either "" or "on"
+        //if [push button pressed]? value of switch (live-test can be set or not), else if [test_set] in form? value of test_set
+        $cookie_value = isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : ( isset($_POST['test_set'])? $_POST['test_set'] : "");
+        _log("set cookie: ". $cookie_name .": '". $cookie_value ."'");                                          // DEBUG //
+
+        setcookie($cookie_name, $cookie_value, time() + (86400 * 183), "/"); // 86400 = 1 day
+
+    } // end: only if test_set in POST
+} // end: groenp_settings_cookie()
+add_action( 'init', 'groenp_settings_cookie');
+
+
 function groenp_settings_meta_box_cb()
 {  
     // retrieve project information
@@ -1031,6 +1068,7 @@ function groenp_settings_meta_box_cb()
         // it's on dashboard, so most likely Subscriber; it may only have one project assigned
         global $project; 
     }
+    // _log("project is set with this slug: ".  $project['page_slug'] );                                           // DEBUG //
 
     // retrieve user's locale 
     $user = wp_get_current_user();
@@ -1045,13 +1083,27 @@ function groenp_settings_meta_box_cb()
     // create form url for this meta box
 	$form_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '#' . $func;
 
+
     // store the switch setting on load of form 
-    // switch can be set ("on" = TEST), can be off and not showing in $_POST ( "" = LIVE), or simply not set (other form loaded etc.)
-    // for this last alternative, $test_set is created that always stores the setting on load. it shows in every form
-    // 1) check if any form is submitted. if not, just load as not set, so LIVE
-    // 2) check if switch is set (by pushbutton: 'RefreshLT') and then check switch ('live-test') ignores everything else
-    // 3) check test_set field (switch is not used, simply copy over from previous submit)
-    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
+    // a) read cookie; cookie can be set ("on" = TEST), or switch was off (and cookie won't be set = LIVE)
+    // cookie is read before the same cookie is set, so when cookie is changed the Settings form is also submitted
+    // this is used to load the correct $test_set (outside of cookie read)
+    // b) $test_set is used in all meta boxes, to pass on the setting before there was cookie support. it is now only used to 
+    // display the setting since the switch itself might not be in view
+    // 1) check if the settings form is submitted (by pushbutton: 'RefreshLT'). if so, check switch ('live-test') and ignore everything else
+    //    if it is set it is TEST; if not set it is LIVE
+    // 2) check cookie; if it is set then TEST should be set, if it is not set then LIVE should be set
+
+    // read cookie:
+    $ckie_name =  'live-test4'. $project['page_slug'];
+    $test_set = isset($_POST['RefreshLT'])? (isset($_POST['live-test'])? $_POST['live-test'] : "") : (isset($_COOKIE[$ckie_name])? $_COOKIE[$ckie_name] : "");
+
+    // // DEBUG SECTION //
+    // _log("$ test_set: " . $test_set);
+    // _log("groenp_settings_meta_box_cb; read cookie ". $ckie_name .": '". (isset($_COOKIE[$ckie_name])? $_COOKIE[$ckie_name] : '') ."'");
+    // _log("live-test:". (isset($_POST['live-test'])? $_POST['live-test'] : "not set"));
+    // _log("test_set:". (isset($_POST['test_set'])? $_POST['test_set'] : "not set"));
+    // _log("RefreshLT:". (isset($_POST['RefreshLT'])? $_POST['RefreshLT'] : "not set"));
 
     // Meta box introduction
     // TRANSLATORS: Please review the + Privacy Statement and Terms of Use 

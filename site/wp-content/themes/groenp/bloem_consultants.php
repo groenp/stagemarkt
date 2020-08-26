@@ -1,7 +1,7 @@
 <?php
 /********************************************************************************************/
 /*                                                                            Pieter Groen  */
-/*  Version 0.1 - August 14, 2020                                                           */
+/*  Version 1.0 - August 14, 2020                                                           */
 /*                                                                                          */
 /*  PHP for Bloem-Consultants website in Groen Productions Sites Mgmt CMS:                  */
 /*   - Focus item types (admin only)                                                        */
@@ -16,7 +16,7 @@
 // *****************************************************************************************    
 function bloem_open_database($test = false)
 {
-    // connect with CRUD user (always for CMS!) and select correct db depdning on $test and whether on host
+    // connect with CRUD user (always for CMS!) and select correct db depending on $test and whether on host
     if ($test && ($_SERVER['SERVER_PORT'] == "80" || $_SERVER['SERVER_PORT'] == "443") )
     {
         $connect = mysqli_connect('localhost','bloemcnsltRuFC7N','C>Gtj7T@xA(Bew$n', 'bloem_test_cms');         // TEST db
@@ -106,12 +106,13 @@ function bloem_register_submenu_page_mngr()
 function bloem_meta_boxes_add()
 {
     // Retrieve project information
-    global $plugin_page;
-    $project = groenp_get_project_from_slug( $plugin_page );
+    $project = groenp_get_project_from_file( basename(__FILE__) );
 
     // Add metaboxes to this php_file's submenu page
+    $args = array('page_slug' => $project['page_slug']);
+
     // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
-    add_meta_box( 'gp-'. $project['page_slug'] .'-settings-mb', '<span class="intro"><i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'] .'</span>', 'groenp_settings_meta_box_cb', $project['page_slug'], 'normal' );
+    add_meta_box( 'gp-'. $project['page_slug'] .'-settings-mb', '<span class="intro"><i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'] .'</span>', 'groenp_settings_meta_box_cb', $project['page_slug'], 'normal');
     
     // In this case branch on user privileges, but only for me; managers should not edit classnames etc.
     if ( current_user_can('switch_themes') )
@@ -128,11 +129,10 @@ function bloem_meta_boxes_add_dash()
 {  
     // Retrieve project information
     $project = groenp_get_project_from_file( basename(__FILE__) );
-    // global $plugin_page; // doesn't work since it is on dashboard and not on its own page
 
     // Add metaboxes to the dashboard
     // TRANSLATORS: DO NOT TRANSLATE; part of core po-file
-    wp_add_dashboard_widget( 'gp-'. $project['page_slug'] .'-settings-mb', '<span class="intro"><i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'] .'</span>', 'groenp_settings_meta_box_cb');
+    wp_add_dashboard_widget( 'gp-'. $project['page_slug'] .'-settings-mb', '<span class="intro"><i class="wpicon">&#xf111;</i> '.  __("Settings") .' - '. $project['prjct_name'] .'</span>', 'groenp_settings_meta_box_cb' );
     wp_add_dashboard_widget( 'bloem_focus_items_mb', $project['prjct_name'] ." = Focus Items", 'bloem_focus_items_meta_box_cb' );
 } //end of: bloem_meta_boxes_add_dash()
 
@@ -141,11 +141,14 @@ function bloem_meta_boxes_add_dash()
 // Callback for Focus Items Meta Box
 // ****************************************************************
 function bloem_focus_items_meta_box_cb()  
-{     
-    // retrieve Live/Test selection for database connection  
-    // (first check if any form submitted, then switch operated, otherwise read from test_set field)
-    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
+{    
+    // Retrieve project information
+    $project = groenp_get_project_from_file( basename(__FILE__) );
     
+    // retrieve Live/Test selection for database connection
+    $ckie_name =  'live-test4'. $project['page_slug'];
+    $test_set = isset($_POST['RefreshLT'])? (isset($_POST['live-test'])? $_POST['live-test'] : "") : ( isset($_COOKIE[$ckie_name])? $_COOKIE[$ckie_name] : (isset($_POST['test_set'])? $_POST['test_set'] : "") );
+
     // open database
     $con = bloem_open_database($test_set);
 
@@ -572,22 +575,13 @@ function bloem_focus_items_meta_box_cb()
     // 5. Build add/edit form
     // ************************************************************
 
-    // // Retrieve edit row, if edit version of form
-    // if ( isset($editkey) )
-    // {
-    //     unset($stmt);
-    //     $stmt = mysqli_prepare($con, 'SELECT fcs_pin_order, fcs_is_pinned, fk_fcs_type_id, fcs_title, fcs_body, fcs_event, fcs_link_url, 
-    //         fcs_link_txt, fcs_is_link_ext, fcs_creat_date, fcs_exp_date FROM bloem_focus_items WHERE pk_fcs_id = ?');
-    //     mysqli_stmt_bind_param($stmt, 'i', $editkey);
-    //     mysqli_stmt_execute($stmt);
-    //     mysqli_stmt_bind_result($stmt, $editrow['fcs_pin_order'], $editrow['fcs_is_pinned'], $editrow['fk_fcs_type_id'], $editrow['fcs_title'], $editrow['fcs_body'],
-    //         $editrow['fcs_event'], $editrow['fcs_link_url'], $editrow['fcs_link_txt'], $editrow['fcs_is_link_ext'], $editrow['fcs_creat_date'], $editrow['fcs_exp_date'] );
-    //     mysqli_stmt_fetch($stmt);
-    //     mysqli_stmt_close($stmt); 
-    // }
+    // $editrow has been retreived before to determine whether $max_pin (saved in table heading) needs to be lowered
     
     // Start rendering the form
     echo "<h4>Add or edit Focus item <i id='F1_icon' class='wpicon'>&#xf468;</i></h4>
+
+    <div class='F1_help'><img src='../wp-content/uploads/groenp_bloem/contextual_help.png' /></div>
+
     <p class='hor-form'>
         <a class='anchr' name=add_" . $func . "></a>";
     
@@ -615,8 +609,6 @@ function bloem_focus_items_meta_box_cb()
         <label for='fcs_exp_date'>Expiry date for focus item</label><span>(dd-mm-yyyy, only in digits)<br />(Focus item will not show after this date)</span><input type='text' name='fcs_exp_date' id='fcs_exp_date' maxlength='10' value='". dis($editrow['fcs_exp_date'],"d") ."' pattern='(0[1-9]|1[0-9]|2[0-9]|3[01])-(0[1-9]|1[012])-20[23][0-9]' />
     </p>
 
-    <div class='F1_help'><img src='../wp-content/uploads/groenp_bloem/contextual_help.png' /></div>
-
     <p class='button-row'>";
 
     if ( isset($editkey) )
@@ -637,7 +629,8 @@ function bloem_focus_items_meta_box_cb()
 	unset($result);
 	unset($row);
     unset($editrow);
-	unset($projects);
+    unset($focus_types);
+    unset($focus_items);
 
 }  // End: bloem_focus_items_meta_box_cb() 
 
@@ -647,9 +640,12 @@ function bloem_focus_items_meta_box_cb()
 // ****************************************************************
 function bloem_focus_types_meta_box_cb()  
 {     
+    // Retrieve project information
+    $project = groenp_get_project_from_file( basename(__FILE__) );
+    
     // retrieve Live/Test selection for database connection  
-    // (first check if any form submitted, then switch operated, otherwise read from test_set field)
-    $test_set = isset($_POST['test_set'])? ( isset($_POST['RefreshLT'])? ( isset($_POST['live-test'])? $_POST['live-test'] : "" ) : $_POST['test_set'] ) : "";
+    $ckie_name =  'live-test4'. $project['page_slug'];
+    $test_set = isset($_POST['RefreshLT'])? (isset($_POST['live-test'])? $_POST['live-test'] : "") : (isset($_COOKIE[$ckie_name])? $_COOKIE[$ckie_name] : "");
     
     // open database
     $con = bloem_open_database($test_set);
@@ -691,11 +687,9 @@ function bloem_focus_types_meta_box_cb()
                 // Upload svg image if defined 
                 if ( $_FILES['fcs_img_url']['name'] ) 
                 {
-                    // get project info for directory slug
-                    $project = groenp_get_project_from_file( basename(__FILE__) );
                     // $uploads_dir = $test_set ? $project['test_upl_dir'] : $project['upload_dir'];
 
-                    // upload svg and retrieve url (filename, upload_dir)
+                    // upload svg and retrieve url (filename, uploads_dir)
                     $fcs_img_url = groenp_upload_svg($_FILES['fcs_img_url'], $project['page_slug'], 10);
                 }
                 else { $fcs_img_url = false; }
@@ -912,7 +906,6 @@ function bloem_focus_types_meta_box_cb()
 	unset($result);
 	unset($row);
     unset($editrow);
-	unset($projects);
 
 }  // End: bloem_focus_types_meta_box_cb() 
 
