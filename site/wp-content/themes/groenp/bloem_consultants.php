@@ -212,7 +212,7 @@ function bloem_focus_items_meta_box_cb()
 
                 // clean-up url
                 $fcs_link_url = prep($_POST['fcs_link_url'], 's');
-                $strip_list = array('http://', 'https://', 'bloem-consultants.com');
+                $strip_list = array('http://', 'https://', $project['base_url'], $project['test_url'], 'localhost:7088');
                 $fcs_link_url = str_replace($strip_list, "", $fcs_link_url);
 
                 $fcs_link_txt = prep($_POST['fcs_link_txt'], 's');
