@@ -220,6 +220,11 @@ function bloem_focus_items_meta_box_cb()
                 $fcs_creat_date = prep($now, 'd');
                 $fcs_exp_date = prep($_POST['fcs_exp_date'], 'd');
 
+                // set link url and link type to NULL, when link has been removed
+                if ( empty($fcs_link_url) ) {
+                    $fcs_link_url = NULL;
+                    $fcs_is_link_ext = NULL;
+                }
 
             // ************************************************************
 		    if ( isset($_POST[('add_'. $func)]) ) // insert form data into tables
@@ -252,11 +257,6 @@ function bloem_focus_items_meta_box_cb()
 			{
                 // sanitize editkey
                 $pk_fcs_id= prep($_POST['editkey'], 'i');
-                // set link url and link type to NULL, when link has been removed
-                if ( empty($fcs_link_url) ) {
-                    $fcs_link_url = NULL;
-                    $fcs_is_link_ext = NULL;
-                }
 
                 // create a prepared statement 
                 $query_string = 'UPDATE LOW_PRIORITY bloem_focus_items SET ' .
