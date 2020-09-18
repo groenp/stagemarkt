@@ -4,8 +4,9 @@
 .well*
 site/license.txt
 site/readme.html
-site/*.php
+site/wp-*.php
 !site/wp-config.php
+site/xmlrpc.php
 wp-*
 !wp-config.php
 !wp-content
@@ -26,3 +27,4 @@ site/logs/*.txt
 *).sql
 site/wp-content/languages/themes/twenty*
 site/wp-content/languages/plugins
+
